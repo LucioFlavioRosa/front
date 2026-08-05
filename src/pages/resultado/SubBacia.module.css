@@ -1,0 +1,225 @@
+.topo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.titulo {
+  margin: 0 0 4px;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-900);
+}
+
+.sub {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--text-500);
+}
+
+.seloFatura,
+.seloNaoFatura {
+  flex: none;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  border-radius: var(--radius-chip);
+  padding: 5px 12px;
+  color: #fff;
+}
+.seloFatura {
+  background: var(--res-teal);
+}
+.seloNaoFatura {
+  background: var(--res-ink);
+}
+
+.dupla {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.bloco {
+  margin-top: 14px;
+}
+
+.semReceita {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--text-600);
+  background: #f8fafc;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  padding: 18px;
+}
+
+/* ---------- explicabilidade ---------- */
+.explicaTravada,
+.explicaOk {
+  border-radius: var(--radius-card);
+  padding: 14px 16px;
+  border: 1px solid;
+}
+.explicaTravada {
+  background: var(--pend-bg);
+  border-color: var(--pend-border-2);
+}
+.explicaOk {
+  background: var(--ok-bg);
+  border-color: var(--ok-border-2);
+}
+
+.explicaTopo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.categoria {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-900);
+  background: var(--surface);
+  border-radius: var(--radius-chip);
+  padding: 4px 11px;
+}
+
+.elo {
+  font-size: 11.5px;
+  color: var(--text-600);
+}
+
+.eloLink {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--db-text-2);
+}
+
+.narrativa {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-800);
+  max-width: 85ch;
+}
+
+.seFosse {
+  margin-top: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+.seFosseTitulo {
+  margin: 0 0 8px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-400);
+}
+
+.seFosseGrade {
+  margin: 0;
+  display: grid;
+  gap: 5px;
+}
+
+.seFosseLinha {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 3px 0;
+}
+
+.seFosseK {
+  font-size: 11.5px;
+  color: var(--text-600);
+}
+
+.seFosseV,
+.seFosseVForte {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--text-900);
+  font-variant-numeric: tabular-nums;
+}
+.seFosseVForte {
+  font-weight: 800;
+  border-top: 1px solid var(--border-soft);
+  padding-top: 5px;
+}
+
+.seFosseNota {
+  margin: 10px 0 0;
+  font-size: 10.5px;
+  line-height: 1.5;
+  color: var(--text-500);
+}
+
+/* ---------- caminho ---------- */
+.caminho {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.passo,
+.passoAtual {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  border-radius: 7px;
+  padding: 5px 9px;
+}
+.passoAtual {
+  background: var(--res-teal-fundo);
+  color: var(--res-teal);
+  font-weight: 700;
+  border: 1px solid #99f6e4;
+}
+.passo {
+  background: #f1f5f9;
+  color: var(--text-600);
+  border: 1px solid var(--border);
+}
+
+.setaCaminho {
+  color: #cbd5e1;
+  margin-right: 2px;
+}
+
+.tituloTabela {
+  margin: 26px 0 10px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-900);
+}
+
+.id {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-600);
+}
+
+@media (max-width: 1080px) {
+  .dupla {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

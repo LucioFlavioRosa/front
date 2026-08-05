@@ -1,0 +1,266 @@
+/* ---------- KPI ---------- */
+.kpiGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.kpi {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  box-shadow: 0 2px 8px -4px rgba(15, 23, 42, 0.18);
+}
+.kpi_bom {
+  border-color: var(--ok-border-2);
+  background: var(--ok-bg);
+}
+.kpi_atencao {
+  border-color: var(--pend-border-2);
+  background: var(--pend-bg);
+}
+.kpi_ruim {
+  border-color: #fecaca;
+  background: var(--res-vermelho-fundo);
+}
+
+.kpiRotulo {
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-400);
+}
+
+.kpiValor {
+  margin-top: 4px;
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--text-900);
+  line-height: 1.15;
+}
+.kpi_bom .kpiValor {
+  color: var(--ok-text);
+}
+.kpi_atencao .kpiValor {
+  color: var(--pend-text-2);
+}
+.kpi_ruim .kpiValor {
+  color: var(--res-vermelho);
+}
+
+.kpiSub {
+  margin-top: 3px;
+  font-size: 10.5px;
+  color: var(--text-500);
+}
+
+/* ---------- selo de situacao ---------- */
+.selo {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: var(--radius-chip);
+  padding: 2px 8px;
+  white-space: nowrap;
+  border: 1px solid;
+}
+.selo_construida {
+  color: var(--res-teal);
+  background: var(--res-teal-fundo);
+  border-color: #99f6e4;
+}
+.selo_nao_construida {
+  color: var(--res-laranja);
+  background: var(--res-laranja-fundo);
+  border-color: #fed7aa;
+}
+.selo_terceiro {
+  color: #475569;
+  background: #f1f5f9;
+  border-color: var(--border);
+}
+.selo_sem_obra {
+  color: var(--text-400);
+  background: var(--surface);
+  border-color: #cbd5e1;
+  border-style: dashed;
+}
+
+/* ---------- tabela ---------- */
+.tabelaWrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+.tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.tabela th {
+  text-align: left;
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-400);
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border);
+  background: #fbfcfd;
+  white-space: nowrap;
+}
+
+.tabela td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border-soft);
+  color: var(--text-800);
+}
+
+.tabela tr:last-child td {
+  border-bottom: none;
+}
+
+.linhaClicavel:hover {
+  background: #f8fafc;
+}
+
+.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.colAcao {
+  width: 34px;
+  text-align: right;
+}
+
+.abrir {
+  color: var(--db-text-2);
+  text-decoration: none;
+  font-weight: 700;
+}
+.abrir:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.soLeitor {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.tabelaVazia {
+  font-size: 12.5px;
+  color: var(--text-500);
+  background: var(--surface);
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  margin: 0;
+}
+
+/* ---------- ficha (nivel 5) ---------- */
+.grupo {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+
+.grupoTitulo {
+  margin: 0 0 10px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-400);
+}
+
+.campos {
+  margin: 0;
+  display: grid;
+  gap: 9px;
+}
+
+.campo {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.campoRotulo {
+  font-size: 11.5px;
+  color: var(--text-500);
+}
+
+.campoValor {
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-900);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.campoNota {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-400);
+}
+
+/* ---------- painel ---------- */
+.painel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 14px 16px;
+  box-shadow: 0 2px 8px -4px rgba(15, 23, 42, 0.18);
+}
+
+.painelCabecalho {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.painelTitulo {
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-900);
+}
+
+.painelSub {
+  margin: 3px 0 0;
+  font-size: 10.5px;
+  color: var(--text-500);
+}
+
+.origem {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  color: var(--res-origem-texto);
+  background: var(--res-origem-bg);
+  border: 1px solid var(--res-origem-borda);
+  border-radius: var(--radius-chip);
+  padding: 3px 8px;
+  white-space: nowrap;
+}

@@ -32,7 +32,7 @@ backend real, use `VITE_API_PROXY` (ver `.env.example`).
 | Comando                 | O que faz                                                |
 | ----------------------- | -------------------------------------------------------- |
 | `npm run dev`           | Sobe o app com mocks                                     |
-| `npm test`              | Suíte completa (190 testes)                              |
+| `npm test`              | Suíte completa (223 testes)                              |
 | `npm run test:watch`    | Testes em watch                                          |
 | `npm run lint`          | ESLint                                                   |
 | `npm run format`        | Prettier (escreve)                                       |
@@ -79,9 +79,16 @@ Três decisões que explicam o código:
   usam `staleTime: Infinity` e a única mutação do pacote é excluir uma rodada.
   Nada de reducer, rascunho ou guarda de saída: aqui não se edita.
 
-**Estado:** a casca está pronta (rotas, header com seletor de rodada e chips de
-parâmetro, breadcrumb, camada de dados com mocks). Os níveis 1 a 5 são
-marcadores — cada fatia seguinte troca um por tela de verdade.
+**Os gráficos são próprios**, em `components/resultado/graficos.tsx` sobre
+`lib/svg.ts`. Não é teimosia: os 8 gráficos são estáticos (nenhum tem zoom ou
+brush) e três deles — cascata, losangos de meta e duplo eixo com anotação — são
+justamente o que as bibliotecas cobram caro para customizar. A geometria fica em
+funções puras, então dá para travar "a cascata fecha no total" num teste
+unitário, sem renderizar. O SVG é `aria-hidden` e cada quadro carrega uma tabela
+visualmente oculta como equivalente textual.
+
+**Estado:** as 6 fatias estão implementadas contra mocks. O que falta é o backend
+real — nenhum destes endpoints existe fora do MSW.
 
 ## De onde vem o dado
 

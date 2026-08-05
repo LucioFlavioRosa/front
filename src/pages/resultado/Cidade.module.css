@@ -1,0 +1,165 @@
+.titulo {
+  margin: 0 0 4px;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-900);
+}
+
+.sub {
+  margin: 0 0 18px;
+  font-size: 12.5px;
+  color: var(--text-500);
+}
+
+.dupla {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.paridadeBloco,
+.ebitdaBloco {
+  margin-top: 14px;
+}
+
+.tituloTabela {
+  margin: 26px 0 3px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-900);
+}
+
+.subTabela {
+  margin: 0 0 10px;
+  font-size: 11.5px;
+  color: var(--text-500);
+}
+
+.semDado {
+  color: var(--text-400);
+}
+
+/* ---------- paridade ---------- */
+.paridadeGrade {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 20px;
+}
+
+.faixas {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.faixa {
+  display: grid;
+  grid-template-columns: 1fr 130px 42px;
+  align-items: center;
+  gap: 10px;
+  font-size: 11.5px;
+  color: var(--text-600);
+}
+
+.faixaRotulo {
+  white-space: nowrap;
+}
+
+/* Largura FIXA de propósito: e o que torna as barras comparaveis entre linhas. */
+.trilha {
+  width: 130px;
+  height: 9px;
+  background: #eef1f4;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.barra {
+  display: block;
+  height: 100%;
+  background: var(--res-teal);
+  border-radius: 999px;
+}
+
+.faixaValor {
+  font-weight: 700;
+  color: var(--text-900);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Linha propria: colado no valor, o selo colidia com o numero. */
+.selos {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 6px;
+}
+
+.seloBase,
+.seloFinal {
+  font-size: 9.5px;
+  font-weight: 700;
+  border-radius: var(--radius-chip);
+  padding: 2px 8px;
+}
+.seloBase {
+  color: var(--text-600);
+  background: #f1f5f9;
+  border: 1px solid var(--border);
+}
+.seloFinal {
+  color: var(--res-teal);
+  background: var(--res-teal-fundo);
+  border: 1px solid #99f6e4;
+}
+
+.efeito {
+  background: #fbfcfd;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  align-self: start;
+}
+
+.efeitoLinha {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+.efeitoLinha:last-of-type {
+  border-bottom: none;
+}
+
+.efeitoK {
+  font-size: 11px;
+  color: var(--text-500);
+}
+
+.efeitoV {
+  font-size: 12.5px;
+  color: var(--text-900);
+  font-variant-numeric: tabular-nums;
+}
+
+.causalidade {
+  margin: 10px 0 0;
+  font-size: 11px;
+  line-height: 1.55;
+  color: var(--text-600);
+  background: var(--surface);
+  border-left: 2px solid var(--res-teal);
+  padding: 8px 10px;
+  border-radius: 0 6px 6px 0;
+}
+
+@media (max-width: 1080px) {
+  .dupla,
+  .paridadeGrade {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

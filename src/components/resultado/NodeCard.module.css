@@ -1,0 +1,275 @@
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px -4px rgba(15, 23, 42, 0.18);
+  width: 290px;
+  flex: none;
+}
+.destacado {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+.cardEte {
+  width: 300px;
+}
+
+.cabecalho {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 9px 11px;
+  color: #fff;
+}
+
+/* A cor do cabecalho E a informacao: fatura, nao fatura, CTS ou ETE. */
+.cabFatura {
+  background: var(--res-teal);
+}
+.cabInk {
+  background: var(--res-ink);
+}
+.cabCts {
+  background: var(--res-cts);
+}
+.cabEte {
+  background: var(--res-ete);
+}
+
+.identidade {
+  min-width: 0;
+}
+
+.id {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  word-break: break-all;
+}
+
+.marcaCts {
+  font-family: var(--font-sans);
+  font-weight: 800;
+}
+
+.pareada {
+  margin: 2px 0 0;
+  font-size: 10px;
+  opacity: 0.92;
+}
+
+.linkPar {
+  color: #fff;
+  text-decoration: underline;
+}
+.linkPar:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 1px;
+}
+
+.direita {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+  flex: none;
+}
+
+.vazao {
+  font-size: 10.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.selo {
+  font-size: 8.5px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: var(--radius-chip);
+  padding: 2px 7px;
+  white-space: nowrap;
+}
+
+.componentes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.comp {
+  border-bottom: 1px solid var(--border-soft);
+}
+.comp:last-child {
+  border-bottom: none;
+}
+
+.compLink {
+  display: grid;
+  grid-template-columns: 10px 1fr auto;
+  align-items: center;
+  gap: 4px 7px;
+  padding: 7px 11px;
+  text-decoration: none;
+  color: inherit;
+}
+a.compLink:hover {
+  background: #f8fafc;
+}
+a.compLink:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: -2px;
+}
+
+.quad {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  display: inline-block;
+}
+.quadConstruida {
+  background: var(--res-teal);
+}
+.quadNaoConstruida {
+  background: var(--res-laranja);
+}
+.quadTerceiro {
+  background: var(--res-cinza);
+}
+.quadSemObra {
+  background: var(--surface);
+  border: 1px solid #cbd5e1;
+}
+
+.nomeComp {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-800);
+}
+
+.capex {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-900);
+  font-variant-numeric: tabular-nums;
+}
+
+.subLinha {
+  grid-column: 2 / -1;
+}
+
+.detalhe,
+.detalheFraco,
+.detalheLaranja {
+  font-size: 9.5px;
+}
+.detalhe {
+  color: var(--text-500);
+}
+.detalheFraco {
+  color: var(--text-400);
+}
+.detalheLaranja {
+  color: var(--res-laranja);
+  font-weight: 700;
+}
+
+.rodapeNo {
+  padding: 7px 11px;
+  background: #fbfcfd;
+  border-top: 1px solid var(--border-soft);
+}
+
+.abrirNo {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--db-text-2);
+  text-decoration: none;
+}
+.abrirNo:hover {
+  text-decoration: underline;
+}
+.abrirNo:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+.semModulos {
+  padding: 10px 11px;
+  font-size: 10.5px;
+  color: var(--text-400);
+}
+
+.rodapeEte {
+  padding: 9px 11px;
+  background: var(--res-ete-fundo);
+  border-top: 1px solid #ddd6fe;
+  display: grid;
+  gap: 4px;
+}
+
+.eteLinha {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 10.5px;
+  color: var(--text-600);
+}
+.eteLinha strong {
+  color: var(--text-900);
+  font-variant-numeric: tabular-nums;
+}
+
+.ocupacao {
+  color: var(--res-ete);
+}
+.semDado {
+  color: var(--text-400);
+}
+
+.naoAtendida span,
+.naoAtendida strong {
+  color: var(--res-vermelho);
+}
+
+/* ---------- legenda ---------- */
+.legenda {
+  margin-top: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+
+.legendaLista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+}
+
+.legendaItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
+  color: var(--text-600);
+}
+
+.faixaLegenda {
+  width: 14px;
+  height: 9px;
+  border-radius: 2px;
+}
+.faixaCts {
+  background: var(--res-cts);
+}
+.faixaEte {
+  background: var(--res-ete);
+}

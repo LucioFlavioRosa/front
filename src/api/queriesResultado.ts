@@ -24,8 +24,9 @@ export const chavesResultado = {
   runs: (filtro?: { unidadeId?: string; usuario?: string }) =>
     ['runs', 'lista', filtro?.unidadeId ?? '*', filtro?.usuario ?? '*'] as const,
   meta: (runId: string) => ['runs', runId, 'meta'] as const,
-  ano: (runId: string) => ['runs', runId, 'ano'] as const,
-  mes: (runId: string) => ['runs', runId, 'mes'] as const,
+  painel: (runId: string) => ['runs', runId, 'painel'] as const,
+  ebitda: (runId: string, cidadeId?: string) =>
+    ['runs', runId, 'ebitda', cidadeId ?? 'unidade'] as const,
   cidades: (runId: string) => ['runs', runId, 'cidades'] as const,
   cidade: (runId: string, cidadeId: string) => ['runs', runId, 'cidades', cidadeId] as const,
   topologia: (runId: string, sistemaId: string) => ['runs', runId, 'sistemas', sistemaId] as const,
@@ -48,6 +49,69 @@ export function useRunMeta(runId: string | undefined) {
     queryKey: chavesResultado.meta(runId ?? '—'),
     queryFn: () => resultados.meta(runId as string),
     enabled: !!runId,
+    ...IMUTAVEL,
+  })
+}
+
+export function usePainel(runId: string | undefined) {
+  return useQuery({
+    queryKey: chavesResultado.painel(runId ?? '—'),
+    queryFn: () => resultados.painel(runId as string),
+    enabled: !!runId,
+    ...IMUTAVEL,
+  })
+}
+
+export function useEbitda(runId: string | undefined, cidadeId?: string) {
+  return useQuery({
+    queryKey: chavesResultado.ebitda(runId ?? '—', cidadeId),
+    queryFn: () => resultados.ebitda(runId as string, cidadeId),
+    enabled: !!runId,
+    ...IMUTAVEL,
+  })
+}
+
+export function useCidades(runId: string | undefined) {
+  return useQuery({
+    queryKey: chavesResultado.cidades(runId ?? '—'),
+    queryFn: () => resultados.cidades(runId as string),
+    enabled: !!runId,
+    ...IMUTAVEL,
+  })
+}
+
+export function useCidade(runId: string | undefined, cidadeId: string | undefined) {
+  return useQuery({
+    queryKey: chavesResultado.cidade(runId ?? '—', cidadeId ?? '—'),
+    queryFn: () => resultados.cidade(runId as string, cidadeId as string),
+    enabled: !!runId && !!cidadeId,
+    ...IMUTAVEL,
+  })
+}
+
+export function useTopologia(runId: string | undefined, sistemaId: string | undefined) {
+  return useQuery({
+    queryKey: chavesResultado.topologia(runId ?? '—', sistemaId ?? '—'),
+    queryFn: () => resultados.topologia(runId as string, sistemaId as string),
+    enabled: !!runId && !!sistemaId,
+    ...IMUTAVEL,
+  })
+}
+
+export function useSubBacia(runId: string | undefined, subId: string | undefined) {
+  return useQuery({
+    queryKey: chavesResultado.subbacia(runId ?? '—', subId ?? '—'),
+    queryFn: () => resultados.subbacia(runId as string, subId as string),
+    enabled: !!runId && !!subId,
+    ...IMUTAVEL,
+  })
+}
+
+export function useObra(runId: string | undefined, obraId: string | undefined) {
+  return useQuery({
+    queryKey: chavesResultado.obra(runId ?? '—', obraId ?? '—'),
+    queryFn: () => resultados.obra(runId as string, obraId as string),
+    enabled: !!runId && !!obraId,
     ...IMUTAVEL,
   })
 }

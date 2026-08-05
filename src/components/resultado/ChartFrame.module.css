@@ -1,0 +1,162 @@
+.quadro {
+  margin: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 14px 16px 12px;
+  box-shadow: 0 2px 8px -4px rgba(15, 23, 42, 0.18);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.cabecalho {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.titulo {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-900);
+  line-height: 1.35;
+}
+
+.subtitulo {
+  margin: 3px 0 0;
+  font-size: 10.5px;
+  color: var(--text-500);
+  line-height: 1.4;
+}
+
+/* Chip da tabela de origem. Mesmo cyan do "dado travado" do cadastro: nos dois
+   casos ele diz "este numero veio de fora, nao foi digitado aqui". */
+.origem {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  color: var(--res-origem-texto);
+  background: var(--res-origem-bg);
+  border: 1px solid var(--res-origem-borda);
+  border-radius: var(--radius-chip);
+  padding: 3px 8px;
+  white-space: nowrap;
+}
+
+.area {
+  position: relative;
+  width: 100%;
+}
+.area svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.tooltip {
+  position: absolute;
+  transform: translate(-50%, -110%);
+  pointer-events: none;
+  z-index: 5;
+  background: #0f172a;
+  color: #fff;
+  border-radius: 8px;
+  padding: 7px 10px;
+  font-size: 11px;
+  line-height: 1.5;
+  white-space: nowrap;
+  box-shadow: 0 6px 20px -6px rgba(15, 23, 42, 0.5);
+}
+
+.tipTitulo {
+  font-weight: 700;
+  margin-bottom: 3px;
+}
+
+.tipLinha {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tipCor {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex: none;
+}
+
+.tipRotulo {
+  color: #cbd5e1;
+}
+
+.tipValor {
+  margin-left: auto;
+  font-weight: 700;
+  padding-left: 10px;
+}
+
+.legenda {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+}
+
+.legendaItem {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  color: var(--text-600);
+}
+
+.marcaQuadrado {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+}
+.marcaLinha {
+  width: 12px;
+  height: 0;
+  border-top: 2px solid;
+}
+.marcaTracejada {
+  width: 12px;
+  height: 0;
+  border-top: 2px dashed;
+}
+.marcaLosango {
+  width: 8px;
+  height: 8px;
+  transform: rotate(45deg);
+}
+
+.nota {
+  margin: 10px 0 0;
+  font-size: 10.5px;
+  line-height: 1.5;
+  color: var(--text-500);
+  background: #f8fafc;
+  border-left: 2px solid var(--border);
+  padding: 6px 10px;
+  border-radius: 0 6px 6px 0;
+}
+
+/* Visualmente oculta, mas lida por leitor de tela e alcancavel pelo Tab. */
+.tabelaOculta {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

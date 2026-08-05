@@ -1,0 +1,172 @@
+.titulo {
+  margin: 0 0 4px;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-900);
+}
+
+.sub {
+  margin: 0 0 16px;
+  font-size: 12.5px;
+  color: var(--text-500);
+}
+
+.corpo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 232px;
+  gap: 16px;
+  align-items: start;
+}
+
+.diagramaWrap {
+  min-width: 0;
+}
+
+/* O diagrama rola na horizontal DENTRO do seu container — a pagina nunca rola
+   de lado, que e a regra do layout deste app. */
+.diagrama {
+  display: flex;
+  gap: 26px;
+  align-items: flex-start;
+  overflow-x: auto;
+  padding: 4px 4px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+}
+
+.coluna {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 12px 0 0 12px;
+}
+.coluna:last-child {
+  padding-right: 12px;
+}
+
+.colunaRotulo {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-400);
+  white-space: nowrap;
+}
+
+.noWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.seta {
+  position: absolute;
+  right: -20px;
+  color: #cbd5e1;
+  font-size: 16px;
+  font-weight: 700;
+}
+.coluna:nth-last-child(2) .seta {
+  color: var(--res-ete);
+}
+
+/* ---------- rail ---------- */
+.rail {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 12px 10px;
+  position: sticky;
+  top: 96px;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+}
+
+.railTitulo {
+  margin: 0 0 8px 4px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-400);
+}
+
+.railLista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.railItem,
+.railItemAtivo {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 8px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  font-family: inherit;
+  font-size: 11px;
+  text-align: left;
+  padding: 6px 8px;
+  border: none;
+  border-radius: 7px;
+  cursor: pointer;
+  background: transparent;
+  color: var(--text-800);
+}
+.railItem:hover {
+  background: #f8fafc;
+}
+.railItemAtivo {
+  background: #ecfeff;
+  color: var(--db-text);
+  font-weight: 700;
+}
+.railItem:focus-visible,
+.railItemAtivo:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: -2px;
+}
+
+.pontoFatura,
+.pontoInk,
+.pontoCts {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.pontoFatura {
+  background: var(--res-teal);
+}
+.pontoInk {
+  background: var(--res-ink);
+}
+.pontoCts {
+  background: var(--res-cts);
+}
+
+.railId {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.railVazao {
+  font-size: 9.5px;
+  color: var(--text-400);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 1080px) {
+  .corpo {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .rail {
+    position: static;
+    max-height: none;
+  }
+}
