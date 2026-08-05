@@ -1,9 +1,30 @@
-/* ---------- KPI ---------- */
+/* ---------- KPI ----------
+   Colunas FIXAS por faixa, e nao `auto-fit`. Com auto-fit e minmax(150px), uma
+   tela larga criava ~10 colunas de ~145px — e "R$ 304.182.900" a 19px precisa de
+   ~155px so para o texto, entao o numero vazava do card. Cinco colunas deixam os
+   10 KPIs do nivel global em duas fileiras, com ~290px cada: sobra folga para o
+   maior valor que a rodada pode produzir. */
 .kpiGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 12px;
   margin-bottom: 18px;
+}
+
+@media (max-width: 1200px) {
+  .kpiGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+@media (max-width: 920px) {
+  .kpiGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 640px) {
+  .kpiGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .kpi {
@@ -12,6 +33,8 @@
   border-radius: 12px;
   padding: 12px 14px;
   box-shadow: 0 2px 8px -4px rgba(15, 23, 42, 0.18);
+  /* sem isto, um valor longo estica a coluna do grid em vez de caber nela */
+  min-width: 0;
 }
 .kpi_bom {
   border-color: var(--ok-border-2);
@@ -36,10 +59,16 @@
 
 .kpiValor {
   margin-top: 4px;
-  font-size: 19px;
+  /* Acompanha a largura do card: 17px na faixa estreita, 20px na larga. Evita
+     ter que escolher entre "pequeno demais no desktop" e "vaza no notebook". */
+  font-size: clamp(17px, 1.25vw, 20px);
   font-weight: 800;
   color: var(--text-900);
-  line-height: 1.15;
+  line-height: 1.2;
+  /* Numero longo quebra em vez de transbordar — rede de seguranca para o dia em
+     que uma unidade tiver um CAPEX de 10 digitos. */
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
 }
 .kpi_bom .kpiValor {
   color: var(--ok-text);
