@@ -36,8 +36,18 @@ import type {
   ReceitaAno,
 } from '../../domain/resultado'
 
-const W = 560
-const H = 240
+const W = 860
+const H = 340
+
+/**
+ * Tamanhos de texto em unidades do viewBox.
+ *
+ * O SVG e desenhado num viewBox de 860 e renderizado em ~700px, entao tudo
+ * encolhe ~20% na tela: 12 aqui vira ~10px lidos. Antes era o contrario — 560 de
+ * viewBox num container de 740px AMPLIAVA todo texto em 32%, e foi isso que fez
+ * os rotulos parecerem grandes demais e colidirem.
+ */
+const TXT = { eixo: 12, rotuloEixo: 11, valor: 12, nome: 13 }
 
 const COR = {
   teal: 'var(--res-teal)',
@@ -78,7 +88,7 @@ function Eixos({
             stroke={v === 0 ? COR.eixo : COR.grid}
             strokeWidth={v === 0 ? 1 : 1}
           />
-          <text x={cx.x - 6} y={y(v) + 3} textAnchor="end" fontSize={9} fill={COR.eixo}>
+          <text x={cx.x - 10} y={y(v) + 4} textAnchor="end" fontSize={TXT.eixo} fill={COR.eixo}>
             {formataY(v)}
           </text>
         </g>
@@ -87,16 +97,16 @@ function Eixos({
         <text
           key={r.texto}
           x={r.x}
-          y={cx.y + cx.altura + 14}
+          y={cx.y + cx.altura + 20}
           textAnchor="middle"
-          fontSize={9}
+          fontSize={TXT.eixo}
           fill={COR.eixo}
         >
           {r.texto}
         </text>
       ))}
       {rotuloY && (
-        <text x={cx.x - 38} y={cx.y - 4} fontSize={8.5} fill={COR.eixo}>
+        <text x={cx.x - 54} y={cx.y - 14} fontSize={TXT.rotuloEixo} fill={COR.eixo}>
           {rotuloY}
         </text>
       )}
@@ -111,6 +121,63 @@ function rotulosDeAno(anos: number[], x: (a: number) => number) {
 }
 
 const milhoes = (v: number) => (v === 0 ? '0' : `${Math.round(v / 1_000_000)}`)
+
+/** Quebra um rotulo em ate 2 linhas, sem cortar palavra no meio. */
+function quebra(texto: string, largura: number): string[] {
+  const linhas: string[] = []
+  let atual = ''
+  for (const palavra of texto.split(' ')) {
+    if (atual === '') atual = palavra
+    else if (`${atual} ${palavra}`.length <= largura) atual += ` ${palavra}`
+    else {
+      linhas.push(atual)
+      atual = palavra
+    }
+  }
+  if (atual) linhas.push(atual)
+  return linhas.slice(0, 2)
+}
+
+/**
+ * Linha vertical de referencia COM rotulo. Sem o texto, a tracejada so significa
+ * algo para quem for ate a legenda — e no meio de um grafico denso, ninguem vai.
+ */
+function Referencia({
+  x,
+  cx,
+  cor,
+  texto,
+  ancora = 'start',
+}: {
+  x: number
+  cx: ReturnType<typeof areaUtil>
+  cor: string
+  texto: string
+  ancora?: 'start' | 'end'
+}) {
+  return (
+    <g>
+      <line
+        x1={x}
+        y1={cx.y}
+        x2={x}
+        y2={cx.y + cx.altura}
+        stroke={cor}
+        strokeWidth={1.3}
+        strokeDasharray="5 3"
+      />
+      <text
+        x={ancora === 'start' ? x + 6 : x - 6}
+        y={cx.y - 6}
+        textAnchor={ancora}
+        fontSize={TXT.rotuloEixo}
+        fill={cor}
+      >
+        {texto}
+      </text>
+    </g>
+  )
+}
 
 // ===========================================================================
 //  1 · CASCATA (global, cidade e sub-bacia usam este mesmo componente)
@@ -159,16 +226,7 @@ export function GraficoCascata({
     >
       {({ mostrar }) => (
         <svg viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
-          <Eixos
-            cx={cx}
-            dominio={dominio}
-            rotuloY="R$ mi (VP)"
-            formataY={milhoes}
-            rotulosX={passos.map((p, i) => ({
-              x: cx.x + (cx.largura / passos.length) * (i + 0.5),
-              texto: p.rotulo.length > 12 ? `${p.rotulo.slice(0, 11)}…` : p.rotulo,
-            }))}
-          />
+          <Eixos cx={cx} dominio={dominio} rotuloY="R$ mi (VP)" formataY={milhoes} rotulosX={[]} />
           {passos.map((p, i) => {
             const cxBarra = cx.x + (cx.largura / passos.length) * (i + 0.5)
             const yTopo = y(Math.max(p.de, p.ate))
@@ -196,16 +254,33 @@ export function GraficoCascata({
                   fill={corDe(p.tipo, p.valor)}
                   rx={2}
                 />
+                {/* Preso dentro da area util: sem o clamp, a barra mais alta
+                    empurrava o valor para fora do viewBox. */}
                 <text
                   x={cxBarra}
-                  y={yTopo - 4}
+                  y={Math.max(cx.y + 12, yTopo - 8)}
                   textAnchor="middle"
-                  fontSize={9}
+                  fontSize={TXT.valor}
                   fontWeight={700}
                   fill={corDe(p.tipo, p.valor)}
                 >
                   {milhoes(p.valor)}
                 </text>
+                {/* Rotulo em ate 2 linhas, sob a barra. Truncar com reticencias
+                    escondia qual parcela era: "Receita…" e "Receita…" ficavam
+                    iguais, e sao a direta e a indireta. */}
+                {quebra(p.rotulo, 14).map((linha, li) => (
+                  <text
+                    key={li}
+                    x={cxBarra}
+                    y={cx.y + cx.altura + 18 + li * 14}
+                    textAnchor="middle"
+                    fontSize={TXT.eixo}
+                    fill={COR.eixo}
+                  >
+                    {linha}
+                  </text>
+                ))}
               </g>
             )
           })}
@@ -403,9 +478,10 @@ export function GraficoCurvaS({ pontos }: { pontos: PontoCurvaS[] }) {
 //  4 · CAPEX POR ELEMENTO DE OBRA (barras horizontais)
 // ===========================================================================
 export function GraficoCapexComponente({ itens }: { itens: CapexPorComponente[] }) {
-  const alturaLinha = 24
-  const alt = itens.length * alturaLinha + 20
-  const cx = areaUtil(W, alt, { topo: 6, direita: 60, baixo: 14, esquerda: 120 })
+  const alturaLinha = 38
+  const alt = itens.length * alturaLinha + 26
+  // A esquerda cabe "Coletor de tempo seco"; a direita, "R$ 137,0 Mi · 45,1%".
+  const cx = areaUtil(W, alt, { topo: 10, direita: 200, baixo: 16, esquerda: 230 })
   const max = Math.max(...itens.map((i) => i.capex), 1)
   const x = escala([0, max], [cx.x, cx.x + cx.largura])
 
@@ -444,19 +520,31 @@ export function GraficoCapexComponente({ itens }: { itens: CapexPorComponente[] 
                   })
                 }
               >
-                <text x={cx.x - 8} y={yLinha + 12} textAnchor="end" fontSize={10} fill="#334155">
+                <text
+                  x={cx.x - 14}
+                  y={yLinha + 21}
+                  textAnchor="end"
+                  fontSize={TXT.nome}
+                  fill="#334155"
+                >
                   {i.componente}
                 </text>
                 <rect
                   x={cx.x}
-                  y={yLinha + 2}
+                  y={yLinha + 9}
                   width={Math.max(1, x(i.capex) - cx.x)}
-                  height={14}
+                  height={18}
                   fill={COR.teal}
-                  rx={2}
+                  rx={3}
                 />
-                <text x={x(i.capex) + 6} y={yLinha + 13} fontSize={9.5} fill="#475569">
-                  {brlMi(i.capex)}
+                <text
+                  x={x(i.capex) + 12}
+                  y={yLinha + 23}
+                  fontSize={TXT.valor}
+                  fontWeight={700}
+                  fill="#475569"
+                >
+                  {brlMi(i.capex)} · {pct(i.pctDoTotal)}
                 </text>
               </g>
             )
@@ -644,7 +732,7 @@ export function GraficoEbitda({
   fimCapex: number
   escopo: string
 }) {
-  const cx = areaUtil(W, H, { topo: 16, direita: 40, baixo: 24, esquerda: 46 })
+  const cx = areaUtil(W, H, { topo: 38, direita: 58, baixo: 34, esquerda: 60 })
   const dominio = limites(anos.map((a) => a.ebitda))
   const y = escala(dominio, [cx.y + cx.altura, cx.y])
   const x = escala([anos[0].ano, anos[anos.length - 1].ano], [cx.x + 12, cx.x + cx.largura - 12])
@@ -689,7 +777,13 @@ export function GraficoEbitda({
           />
           {/* eixo direito: margem % */}
           {[0, 50, 100].map((v) => (
-            <text key={v} x={cx.x + cx.largura + 6} y={yMargem(v) + 3} fontSize={9} fill={COR.eixo}>
+            <text
+              key={v}
+              x={cx.x + cx.largura + 10}
+              y={yMargem(v) + 4}
+              fontSize={TXT.eixo}
+              fill={COR.eixo}
+            >
               {v}%
             </text>
           ))}
@@ -727,15 +821,7 @@ export function GraficoEbitda({
               strokeWidth={1.5}
             />
           )}
-          <line
-            x1={x(fimCapex)}
-            y1={cx.y}
-            x2={x(fimCapex)}
-            y2={cx.y + cx.altura}
-            stroke={COR.laranja}
-            strokeWidth={1.3}
-            strokeDasharray="5 3"
-          />
+          <Referencia x={x(fimCapex)} cx={cx} cor={COR.laranja} texto="fim do CAPEX" />
           {anoViraPositivo && (
             <text
               x={x(anoViraPositivo)}
@@ -817,23 +903,13 @@ export function GraficoCobertura({
           <path d={areaSob(coords, y(0))} fill={COR.teal} opacity={0.14} />
           <path d={caminho(coords)} fill="none" stroke={COR.teal} strokeWidth={2} />
 
-          <line
-            x1={x(fimCapex)}
-            y1={cx.y}
-            x2={x(fimCapex)}
-            y2={cx.y + cx.altura}
-            stroke={COR.laranja}
-            strokeWidth={1.3}
-            strokeDasharray="5 3"
-          />
-          <line
-            x1={x(fimConcessao)}
-            y1={cx.y}
-            x2={x(fimConcessao)}
-            y2={cx.y + cx.altura}
-            stroke="#0f172a"
-            strokeWidth={1.2}
-            strokeDasharray="4 3"
+          <Referencia x={x(fimCapex)} cx={cx} cor={COR.laranja} texto="fim do CAPEX" />
+          <Referencia
+            x={x(fimConcessao)}
+            cx={cx}
+            cor="#0f172a"
+            texto="fim da concessão"
+            ancora="end"
           />
 
           {metas.map((m) => (

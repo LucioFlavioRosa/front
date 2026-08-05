@@ -2476,29 +2476,45 @@
      "obraId": "lig_d1b38_1_1",
      "componente": "Ligação de esgoto",
      "situacao": "construida",
+     "quantidade": 80.0,
+     "unidade": "un",
+     "precoUnitario": 1850.0,
      "capex": 180000,
-     "anoInicio": 2027
+     "anoInicio": 2027,
+     "prazoMeses": 6
     },
     {
      "obraId": "red_d1b38_1_1",
      "componente": "Rede coletora",
      "situacao": "construida",
+     "quantidade": 103.4,
+     "unidade": "m",
+     "precoUnitario": 2270.5,
      "capex": 325000,
-     "anoInicio": 2028
+     "anoInicio": 2028,
+     "prazoMeses": 7
     },
     {
      "obraId": "tro_d1b38_1_1",
      "componente": "Tronco",
      "situacao": "construida",
+     "quantidade": 126.8,
+     "unidade": "m",
+     "precoUnitario": 2691.0,
      "capex": 470000,
-     "anoInicio": 2029
+     "anoInicio": 2029,
+     "prazoMeses": 8
     },
     {
      "obraId": "eee_d1b38_1_1",
      "componente": "EEE",
      "situacao": "terceiro",
+     "quantidade": 150.2,
+     "unidade": "m",
+     "precoUnitario": 3111.5,
      "capex": 0,
-     "anoInicio": null
+     "anoInicio": null,
+     "prazoMeses": 7
     }
    ]
   },
@@ -2627,29 +2643,45 @@
      "obraId": "lig_d1b38_1_2",
      "componente": "Ligação de esgoto",
      "situacao": "construida",
+     "quantidade": 80.0,
+     "unidade": "un",
+     "precoUnitario": 1850.0,
      "capex": 180000,
-     "anoInicio": 2027
+     "anoInicio": 2027,
+     "prazoMeses": 6
     },
     {
      "obraId": "red_d1b38_1_2",
      "componente": "Rede coletora",
      "situacao": "construida",
+     "quantidade": 103.4,
+     "unidade": "m",
+     "precoUnitario": 2270.5,
      "capex": 325000,
-     "anoInicio": 2028
+     "anoInicio": 2028,
+     "prazoMeses": 7
     },
     {
      "obraId": "tro_d1b38_1_2",
      "componente": "Tronco",
      "situacao": "terceiro",
+     "quantidade": 126.8,
+     "unidade": "m",
+     "precoUnitario": 2691.0,
      "capex": 0,
-     "anoInicio": null
+     "anoInicio": null,
+     "prazoMeses": 7
     },
     {
      "obraId": "lin_d1b38_1_2",
      "componente": "Linha de recalque",
      "situacao": "construida",
+     "quantidade": 173.6,
+     "unidade": "m",
+     "precoUnitario": 3532.0,
      "capex": 760000,
-     "anoInicio": 2027
+     "anoInicio": 2027,
+     "prazoMeses": 10
     }
    ]
   },
@@ -2777,29 +2809,45 @@
      "obraId": "lig_d1b38_2_3",
      "componente": "Ligação de esgoto",
      "situacao": "construida",
+     "quantidade": 80.0,
+     "unidade": "un",
+     "precoUnitario": 1850.0,
      "capex": 180000,
-     "anoInicio": 2027
+     "anoInicio": 2027,
+     "prazoMeses": 6
     },
     {
      "obraId": "red_d1b38_2_3",
      "componente": "Rede coletora",
      "situacao": "terceiro",
+     "quantidade": 103.4,
+     "unidade": "m",
+     "precoUnitario": 2270.5,
      "capex": 0,
-     "anoInicio": null
+     "anoInicio": null,
+     "prazoMeses": 7
     },
     {
      "obraId": "eee_d1b38_2_3",
      "componente": "EEE",
      "situacao": "construida",
+     "quantidade": 150.2,
+     "unidade": "m",
+     "precoUnitario": 3111.5,
      "capex": 615000,
-     "anoInicio": 2030
+     "anoInicio": 2030,
+     "prazoMeses": 9
     },
     {
      "obraId": "lin_d1b38_2_3",
      "componente": "Linha de recalque",
      "situacao": "construida",
+     "quantidade": 173.6,
+     "unidade": "m",
+     "precoUnitario": 3532.0,
      "capex": 760000,
-     "anoInicio": 2027
+     "anoInicio": 2027,
+     "prazoMeses": 10
     }
    ]
   },
@@ -2928,29 +2976,45 @@
      "obraId": "lig_d1b38_2_4",
      "componente": "Ligação de esgoto",
      "situacao": "terceiro",
+     "quantidade": 80.0,
+     "unidade": "un",
+     "precoUnitario": 1850.0,
      "capex": 0,
-     "anoInicio": null
+     "anoInicio": null,
+     "prazoMeses": 7
     },
     {
      "obraId": "tro_d1b38_2_4",
      "componente": "Tronco",
      "situacao": "construida",
+     "quantidade": 126.8,
+     "unidade": "m",
+     "precoUnitario": 2691.0,
      "capex": 470000,
-     "anoInicio": 2029
+     "anoInicio": 2029,
+     "prazoMeses": 8
     },
     {
      "obraId": "eee_d1b38_2_4",
      "componente": "EEE",
      "situacao": "construida",
+     "quantidade": 150.2,
+     "unidade": "m",
+     "precoUnitario": 3111.5,
      "capex": 615000,
-     "anoInicio": 2030
+     "anoInicio": 2030,
+     "prazoMeses": 9
     },
     {
      "obraId": "lin_d1b38_2_4",
      "componente": "Linha de recalque",
      "situacao": "construida",
+     "quantidade": 173.6,
+     "unidade": "m",
+     "precoUnitario": 3532.0,
      "capex": 760000,
-     "anoInicio": 2027
+     "anoInicio": 2027,
+     "prazoMeses": 10
     }
    ]
   },
@@ -3019,29 +3083,45 @@
      "obraId": "red_d1b38_2_1",
      "componente": "Rede coletora",
      "situacao": "nao-construida",
+     "quantidade": 103.4,
+     "unidade": "m",
+     "precoUnitario": 2270.5,
      "capex": 0,
-     "anoInicio": null
+     "anoInicio": null,
+     "prazoMeses": 7
     },
     {
      "obraId": "tro_d1b38_2_1",
      "componente": "Tronco",
      "situacao": "nao-construida",
+     "quantidade": 126.8,
+     "unidade": "m",
+     "precoUnitario": 2691.0,
      "capex": 0,
-     "anoInicio": null
+     "anoInicio": null,
+     "prazoMeses": 8
     },
     {
      "obraId": "eee_d1b38_2_1",
      "componente": "EEE",
      "situacao": "nao-construida",
+     "quantidade": 150.2,
+     "unidade": "m",
+     "precoUnitario": 3111.5,
      "capex": 0,
-     "anoInicio": null
+     "anoInicio": null,
+     "prazoMeses": 9
     },
     {
      "obraId": "lin_d1b38_2_1",
      "componente": "Linha de recalque",
      "situacao": "terceiro",
+     "quantidade": 173.6,
+     "unidade": "m",
+     "precoUnitario": 3532.0,
      "capex": 0,
-     "anoInicio": null
+     "anoInicio": null,
+     "prazoMeses": 7
     }
    ]
   },
@@ -3111,29 +3191,45 @@
      "obraId": "lig_d1b38_2_2",
      "componente": "Ligação de esgoto",
      "situacao": "nao-construida",
+     "quantidade": 80.0,
+     "unidade": "un",
+     "precoUnitario": 1850.0,
      "capex": 0,
-     "anoInicio": null
+     "anoInicio": null,
+     "prazoMeses": 6
     },
     {
      "obraId": "red_d1b38_2_2",
      "componente": "Rede coletora",
      "situacao": "nao-construida",
+     "quantidade": 103.4,
+     "unidade": "m",
+     "precoUnitario": 2270.5,
      "capex": 0,
-     "anoInicio": null
+     "anoInicio": null,
+     "prazoMeses": 7
     },
     {
      "obraId": "tro_d1b38_2_2",
      "componente": "Tronco",
      "situacao": "nao-construida",
+     "quantidade": 126.8,
+     "unidade": "m",
+     "precoUnitario": 2691.0,
      "capex": 0,
-     "anoInicio": null
+     "anoInicio": null,
+     "prazoMeses": 8
     },
     {
      "obraId": "eee_d1b38_2_2",
      "componente": "EEE",
      "situacao": "terceiro",
+     "quantidade": 150.2,
+     "unidade": "m",
+     "precoUnitario": 3111.5,
      "capex": 0,
-     "anoInicio": null
+     "anoInicio": null,
+     "prazoMeses": 7
     }
    ]
   },
@@ -3202,22 +3298,34 @@
      "obraId": "col_cts_d1b38_1_1",
      "componente": "Coletor de tempo seco",
      "situacao": "nao-construida",
+     "quantidade": 80.0,
+     "unidade": "un",
+     "precoUnitario": 1850.0,
      "capex": 0,
-     "anoInicio": null
+     "anoInicio": null,
+     "prazoMeses": 6
     },
     {
      "obraId": "tro_cts_d1b38_1_1",
      "componente": "Tronco",
      "situacao": "terceiro",
+     "quantidade": 103.4,
+     "unidade": "m",
+     "precoUnitario": 2270.5,
      "capex": 0,
-     "anoInicio": null
+     "anoInicio": null,
+     "prazoMeses": 7
     },
     {
      "obraId": "lin_cts_d1b38_1_1",
      "componente": "Linha de recalque",
      "situacao": "nao-construida",
+     "quantidade": 150.2,
+     "unidade": "m",
+     "precoUnitario": 3111.5,
      "capex": 0,
-     "anoInicio": null
+     "anoInicio": null,
+     "prazoMeses": 9
     }
    ]
   },
@@ -3287,22 +3395,34 @@
      "obraId": "col_cts_d1b38_2_4",
      "componente": "Coletor de tempo seco",
      "situacao": "terceiro",
+     "quantidade": 80.0,
+     "unidade": "un",
+     "precoUnitario": 1850.0,
      "capex": 0,
-     "anoInicio": null
+     "anoInicio": null,
+     "prazoMeses": 7
     },
     {
      "obraId": "eee_cts_d1b38_2_4",
      "componente": "EEE",
      "situacao": "nao-construida",
+     "quantidade": 126.8,
+     "unidade": "m",
+     "precoUnitario": 2691.0,
      "capex": 0,
-     "anoInicio": null
+     "anoInicio": null,
+     "prazoMeses": 8
     },
     {
      "obraId": "lin_cts_d1b38_2_4",
      "componente": "Linha de recalque",
      "situacao": "nao-construida",
+     "quantidade": 150.2,
+     "unidade": "m",
+     "precoUnitario": 3111.5,
      "capex": 0,
-     "anoInicio": null
+     "anoInicio": null,
+     "prazoMeses": 9
     }
    ]
   },
@@ -3430,29 +3550,45 @@
      "obraId": "lig_d1b41_1_1",
      "componente": "Ligação de esgoto",
      "situacao": "construida",
+     "quantidade": 80.0,
+     "unidade": "un",
+     "precoUnitario": 1850.0,
      "capex": 180000,
-     "anoInicio": 2027
+     "anoInicio": 2027,
+     "prazoMeses": 6
     },
     {
      "obraId": "red_d1b41_1_1",
      "componente": "Rede coletora",
      "situacao": "construida",
+     "quantidade": 103.4,
+     "unidade": "m",
+     "precoUnitario": 2270.5,
      "capex": 325000,
-     "anoInicio": 2028
+     "anoInicio": 2028,
+     "prazoMeses": 7
     },
     {
      "obraId": "tro_d1b41_1_1",
      "componente": "Tronco",
      "situacao": "construida",
+     "quantidade": 126.8,
+     "unidade": "m",
+     "precoUnitario": 2691.0,
      "capex": 470000,
-     "anoInicio": 2029
+     "anoInicio": 2029,
+     "prazoMeses": 8
     },
     {
      "obraId": "eee_d1b41_1_1",
      "componente": "EEE",
      "situacao": "terceiro",
+     "quantidade": 150.2,
+     "unidade": "m",
+     "precoUnitario": 3111.5,
      "capex": 0,
-     "anoInicio": null
+     "anoInicio": null,
+     "prazoMeses": 7
     }
    ]
   },
@@ -3581,29 +3717,45 @@
      "obraId": "lig_d1b41_1_2",
      "componente": "Ligação de esgoto",
      "situacao": "construida",
+     "quantidade": 80.0,
+     "unidade": "un",
+     "precoUnitario": 1850.0,
      "capex": 180000,
-     "anoInicio": 2027
+     "anoInicio": 2027,
+     "prazoMeses": 6
     },
     {
      "obraId": "red_d1b41_1_2",
      "componente": "Rede coletora",
      "situacao": "construida",
+     "quantidade": 103.4,
+     "unidade": "m",
+     "precoUnitario": 2270.5,
      "capex": 325000,
-     "anoInicio": 2028
+     "anoInicio": 2028,
+     "prazoMeses": 7
     },
     {
      "obraId": "tro_d1b41_1_2",
      "componente": "Tronco",
      "situacao": "terceiro",
+     "quantidade": 126.8,
+     "unidade": "m",
+     "precoUnitario": 2691.0,
      "capex": 0,
-     "anoInicio": null
+     "anoInicio": null,
+     "prazoMeses": 7
     },
     {
      "obraId": "lin_d1b41_1_2",
      "componente": "Linha de recalque",
      "situacao": "construida",
+     "quantidade": 173.6,
+     "unidade": "m",
+     "precoUnitario": 3532.0,
      "capex": 760000,
-     "anoInicio": 2027
+     "anoInicio": 2027,
+     "prazoMeses": 10
     }
    ]
   },
@@ -3672,29 +3824,45 @@
      "obraId": "lig_d1b41_2_1",
      "componente": "Ligação de esgoto",
      "situacao": "nao-construida",
+     "quantidade": 80.0,
+     "unidade": "un",
+     "precoUnitario": 1850.0,
      "capex": 0,
-     "anoInicio": null
+     "anoInicio": null,
+     "prazoMeses": 6
     },
     {
      "obraId": "red_d1b41_2_1",
      "componente": "Rede coletora",
      "situacao": "terceiro",
+     "quantidade": 103.4,
+     "unidade": "m",
+     "precoUnitario": 2270.5,
      "capex": 0,
-     "anoInicio": null
+     "anoInicio": null,
+     "prazoMeses": 7
     },
     {
      "obraId": "eee_d1b41_2_1",
      "componente": "EEE",
      "situacao": "nao-construida",
+     "quantidade": 150.2,
+     "unidade": "m",
+     "precoUnitario": 3111.5,
      "capex": 0,
-     "anoInicio": null
+     "anoInicio": null,
+     "prazoMeses": 9
     },
     {
      "obraId": "lin_d1b41_2_1",
      "componente": "Linha de recalque",
      "situacao": "nao-construida",
+     "quantidade": 173.6,
+     "unidade": "m",
+     "precoUnitario": 3532.0,
      "capex": 0,
-     "anoInicio": null
+     "anoInicio": null,
+     "prazoMeses": 10
     }
    ]
   }
@@ -3726,6 +3894,11 @@
    "categoria": null,
    "elo": null,
    "narrativa": null,
+   "ligacoesNovas": 2530,
+   "ticketMedio": 103.6,
+   "precoPorLigacao": 71.15,
+   "capexConstruido": 975000,
+   "capexQueFalta": 0,
    "dependencias": [
     {
      "subbaciaId": "d1b38_1_1",
@@ -3762,6 +3935,11 @@
    "categoria": null,
    "elo": null,
    "narrativa": null,
+   "ligacoesNovas": 2530,
+   "ticketMedio": 103.6,
+   "precoPorLigacao": 128.46,
+   "capexConstruido": 975000,
+   "capexQueFalta": 0,
    "dependencias": [
     {
      "subbaciaId": "d1b38_1_1",
@@ -3798,6 +3976,11 @@
    "categoria": null,
    "elo": null,
    "narrativa": null,
+   "ligacoesNovas": 2530,
+   "ticketMedio": 103.6,
+   "precoPorLigacao": 185.77,
+   "capexConstruido": 975000,
+   "capexQueFalta": 0,
    "dependencias": [
     {
      "subbaciaId": "d1b38_1_1",
@@ -3848,6 +4031,11 @@
    "categoria": "Travada por obra da cadeia",
    "elo": "red_d1b38_1_1",
    "narrativa": "Fora do plano: a cadeia até a ETE não se completa, então esta obra não geraria receita no horizonte da concessão.",
+   "ligacoesNovas": 2530,
+   "ticketMedio": 103.6,
+   "precoPorLigacao": 0.0,
+   "capexConstruido": 975000,
+   "capexQueFalta": 0,
    "dependencias": [
     {
      "subbaciaId": "d1b38_1_1",
@@ -3898,6 +4086,11 @@
    "categoria": null,
    "elo": null,
    "narrativa": null,
+   "ligacoesNovas": 2075,
+   "ticketMedio": 103.6,
+   "precoPorLigacao": 86.75,
+   "capexConstruido": 1265000,
+   "capexQueFalta": 0,
    "dependencias": [
     {
      "subbaciaId": "d1b38_1_2",
@@ -3934,6 +4127,11 @@
    "categoria": null,
    "elo": null,
    "narrativa": null,
+   "ligacoesNovas": 2075,
+   "ticketMedio": 103.6,
+   "precoPorLigacao": 156.63,
+   "capexConstruido": 1265000,
+   "capexQueFalta": 0,
    "dependencias": [
     {
      "subbaciaId": "d1b38_1_2",
@@ -3970,6 +4168,11 @@
    "categoria": "Travada por obra da cadeia",
    "elo": "red_d1b38_1_2",
    "narrativa": "Fora do plano: a cadeia até a ETE não se completa, então esta obra não geraria receita no horizonte da concessão.",
+   "ligacoesNovas": 2075,
+   "ticketMedio": 103.6,
+   "precoPorLigacao": 0.0,
+   "capexConstruido": 1265000,
+   "capexQueFalta": 0,
    "dependencias": [
     {
      "subbaciaId": "d1b38_1_2",
@@ -4006,6 +4209,11 @@
    "categoria": null,
    "elo": null,
    "narrativa": null,
+   "ligacoesNovas": 2075,
+   "ticketMedio": 103.6,
+   "precoPorLigacao": 366.27,
+   "capexConstruido": 1265000,
+   "capexQueFalta": 0,
    "dependencias": [
     {
      "subbaciaId": "d1b38_1_2",
@@ -4042,6 +4250,11 @@
    "categoria": null,
    "elo": null,
    "narrativa": null,
+   "ligacoesNovas": 3199,
+   "ticketMedio": 103.6,
+   "precoPorLigacao": 56.27,
+   "capexConstruido": 1555000,
+   "capexQueFalta": 0,
    "dependencias": [
     {
      "subbaciaId": "d1b38_2_3",
@@ -4078,6 +4291,11 @@
    "categoria": "Travada por obra da cadeia",
    "elo": "red_d1b38_2_3",
    "narrativa": "Fora do plano: a cadeia até a ETE não se completa, então esta obra não geraria receita no horizonte da concessão.",
+   "ligacoesNovas": 3199,
+   "ticketMedio": 103.6,
+   "precoPorLigacao": 0.0,
+   "capexConstruido": 1555000,
+   "capexQueFalta": 0,
    "dependencias": [
     {
      "subbaciaId": "d1b38_2_3",
@@ -4114,6 +4332,11 @@
    "categoria": null,
    "elo": null,
    "narrativa": null,
+   "ligacoesNovas": 3199,
+   "ticketMedio": 103.6,
+   "precoPorLigacao": 192.25,
+   "capexConstruido": 1555000,
+   "capexQueFalta": 0,
    "dependencias": [
     {
      "subbaciaId": "d1b38_2_3",
@@ -4164,6 +4387,11 @@
    "categoria": null,
    "elo": null,
    "narrativa": null,
+   "ligacoesNovas": 3199,
+   "ticketMedio": 103.6,
+   "precoPorLigacao": 237.57,
+   "capexConstruido": 1555000,
+   "capexQueFalta": 0,
    "dependencias": [
     {
      "subbaciaId": "d1b38_2_3",
@@ -4214,6 +4442,11 @@
    "categoria": "Travada por obra da cadeia",
    "elo": "red_d1b38_2_4",
    "narrativa": "Fora do plano: a cadeia até a ETE não se completa, então esta obra não geraria receita no horizonte da concessão.",
+   "ligacoesNovas": 2738,
+   "ticketMedio": 103.6,
+   "precoPorLigacao": 0.0,
+   "capexConstruido": 1845000,
+   "capexQueFalta": 0,
    "dependencias": [
     {
      "subbaciaId": "d1b38_2_4",
@@ -4250,6 +4483,11 @@
    "categoria": null,
    "elo": null,
    "narrativa": null,
+   "ligacoesNovas": 2738,
+   "ticketMedio": 103.6,
+   "precoPorLigacao": 171.66,
+   "capexConstruido": 1845000,
+   "capexQueFalta": 0,
    "dependencias": [
     {
      "subbaciaId": "d1b38_2_4",
@@ -4293,6 +4531,11 @@
    "categoria": null,
    "elo": null,
    "narrativa": null,
+   "ligacoesNovas": 2738,
+   "ticketMedio": 103.6,
+   "precoPorLigacao": 224.62,
+   "capexConstruido": 1845000,
+   "capexQueFalta": 0,
    "dependencias": [
     {
      "subbaciaId": "d1b38_2_4",
@@ -4336,6 +4579,11 @@
    "categoria": null,
    "elo": null,
    "narrativa": null,
+   "ligacoesNovas": 2738,
+   "ticketMedio": 103.6,
+   "precoPorLigacao": 277.57,
+   "capexConstruido": 1845000,
+   "capexQueFalta": 0,
    "dependencias": [
     {
      "subbaciaId": "d1b38_2_4",
@@ -4379,6 +4627,11 @@
    "categoria": "Travada por obra da cadeia",
    "elo": "red_d1b38_2_1",
    "narrativa": "Fora do plano: a cadeia até a ETE não se completa, então esta obra não geraria receita no horizonte da concessão.",
+   "ligacoesNovas": 1191,
+   "ticketMedio": 103.6,
+   "precoPorLigacao": 0.0,
+   "capexConstruido": 0,
+   "capexQueFalta": 540000,
    "dependencias": [
     {
      "subbaciaId": "d1b38_2_1",
@@ -4415,6 +4668,11 @@
    "categoria": "Travada por obra da cadeia",
    "elo": "red_d1b38_2_1",
    "narrativa": "Fora do plano: a cadeia até a ETE não se completa, então esta obra não geraria receita no horizonte da concessão.",
+   "ligacoesNovas": 1191,
+   "ticketMedio": 103.6,
+   "precoPorLigacao": 0.0,
+   "capexConstruido": 0,
+   "capexQueFalta": 540000,
    "dependencias": [
     {
      "subbaciaId": "d1b38_2_1",
@@ -4458,6 +4716,11 @@
    "categoria": "Travada por obra da cadeia",
    "elo": "red_d1b38_2_1",
    "narrativa": "Fora do plano: a cadeia até a ETE não se completa, então esta obra não geraria receita no horizonte da concessão.",
+   "ligacoesNovas": 1191,
+   "ticketMedio": 103.6,
+   "precoPorLigacao": 0.0,
+   "capexConstruido": 0,
+   "capexQueFalta": 540000,
    "dependencias": [
     {
      "subbaciaId": "d1b38_2_1",
@@ -4501,6 +4764,11 @@
    "categoria": "Travada por obra da cadeia",
    "elo": "red_d1b38_2_1",
    "narrativa": "Fora do plano: a cadeia até a ETE não se completa, então esta obra não geraria receita no horizonte da concessão.",
+   "ligacoesNovas": 1191,
+   "ticketMedio": 103.6,
+   "precoPorLigacao": 0.0,
+   "capexConstruido": 0,
+   "capexQueFalta": 540000,
    "dependencias": [
     {
      "subbaciaId": "d1b38_2_1",
@@ -4544,6 +4812,11 @@
    "categoria": "Travada por obra da cadeia",
    "elo": "red_d1b38_2_2",
    "narrativa": "Fora do plano: a cadeia até a ETE não se completa, então esta obra não geraria receita no horizonte da concessão.",
+   "ligacoesNovas": 1142,
+   "ticketMedio": 103.6,
+   "precoPorLigacao": 0.0,
+   "capexConstruido": 0,
+   "capexQueFalta": 540000,
    "dependencias": [
     {
      "subbaciaId": "d1b38_2_2",
@@ -4580,6 +4853,11 @@
    "categoria": "Travada por obra da cadeia",
    "elo": "red_d1b38_2_2",
    "narrativa": "Fora do plano: a cadeia até a ETE não se completa, então esta obra não geraria receita no horizonte da concessão.",
+   "ligacoesNovas": 1142,
+   "ticketMedio": 103.6,
+   "precoPorLigacao": 0.0,
+   "capexConstruido": 0,
+   "capexQueFalta": 540000,
    "dependencias": [
     {
      "subbaciaId": "d1b38_2_2",
@@ -4616,6 +4894,11 @@
    "categoria": "Travada por obra da cadeia",
    "elo": "red_d1b38_2_2",
    "narrativa": "Fora do plano: a cadeia até a ETE não se completa, então esta obra não geraria receita no horizonte da concessão.",
+   "ligacoesNovas": 1142,
+   "ticketMedio": 103.6,
+   "precoPorLigacao": 0.0,
+   "capexConstruido": 0,
+   "capexQueFalta": 540000,
    "dependencias": [
     {
      "subbaciaId": "d1b38_2_2",
@@ -4652,6 +4935,11 @@
    "categoria": "Travada por obra da cadeia",
    "elo": "red_d1b38_2_2",
    "narrativa": "Fora do plano: a cadeia até a ETE não se completa, então esta obra não geraria receita no horizonte da concessão.",
+   "ligacoesNovas": 1142,
+   "ticketMedio": 103.6,
+   "precoPorLigacao": 0.0,
+   "capexConstruido": 0,
+   "capexQueFalta": 540000,
    "dependencias": [
     {
      "subbaciaId": "d1b38_2_2",
@@ -4688,6 +4976,11 @@
    "categoria": "Travada por obra da cadeia",
    "elo": "red_cts_d1b38_1_1",
    "narrativa": "Fora do plano: a cadeia até a ETE não se completa, então esta obra não geraria receita no horizonte da concessão.",
+   "ligacoesNovas": 694,
+   "ticketMedio": 97.3,
+   "precoPorLigacao": 0.0,
+   "capexConstruido": 0,
+   "capexQueFalta": 360000,
    "dependencias": [
     {
      "subbaciaId": "cts_d1b38_1_1",
@@ -4724,6 +5017,11 @@
    "categoria": "Travada por obra da cadeia",
    "elo": "red_cts_d1b38_1_1",
    "narrativa": "Fora do plano: a cadeia até a ETE não se completa, então esta obra não geraria receita no horizonte da concessão.",
+   "ligacoesNovas": 694,
+   "ticketMedio": 97.3,
+   "precoPorLigacao": 0.0,
+   "capexConstruido": 0,
+   "capexQueFalta": 360000,
    "dependencias": [
     {
      "subbaciaId": "cts_d1b38_1_1",
@@ -4760,6 +5058,11 @@
    "categoria": "Travada por obra da cadeia",
    "elo": "red_cts_d1b38_1_1",
    "narrativa": "Fora do plano: a cadeia até a ETE não se completa, então esta obra não geraria receita no horizonte da concessão.",
+   "ligacoesNovas": 694,
+   "ticketMedio": 97.3,
+   "precoPorLigacao": 0.0,
+   "capexConstruido": 0,
+   "capexQueFalta": 360000,
    "dependencias": [
     {
      "subbaciaId": "cts_d1b38_1_1",
@@ -4796,6 +5099,11 @@
    "categoria": "Travada por obra da cadeia",
    "elo": "red_cts_d1b38_2_4",
    "narrativa": "Fora do plano: a cadeia até a ETE não se completa, então esta obra não geraria receita no horizonte da concessão.",
+   "ligacoesNovas": 602,
+   "ticketMedio": 97.3,
+   "precoPorLigacao": 0.0,
+   "capexConstruido": 0,
+   "capexQueFalta": 360000,
    "dependencias": [
     {
      "subbaciaId": "cts_d1b38_2_4",
@@ -4832,6 +5140,11 @@
    "categoria": "Travada por obra da cadeia",
    "elo": "red_cts_d1b38_2_4",
    "narrativa": "Fora do plano: a cadeia até a ETE não se completa, então esta obra não geraria receita no horizonte da concessão.",
+   "ligacoesNovas": 602,
+   "ticketMedio": 97.3,
+   "precoPorLigacao": 0.0,
+   "capexConstruido": 0,
+   "capexQueFalta": 360000,
    "dependencias": [
     {
      "subbaciaId": "cts_d1b38_2_4",
@@ -4868,6 +5181,11 @@
    "categoria": "Travada por obra da cadeia",
    "elo": "red_cts_d1b38_2_4",
    "narrativa": "Fora do plano: a cadeia até a ETE não se completa, então esta obra não geraria receita no horizonte da concessão.",
+   "ligacoesNovas": 602,
+   "ticketMedio": 97.3,
+   "precoPorLigacao": 0.0,
+   "capexConstruido": 0,
+   "capexQueFalta": 360000,
    "dependencias": [
     {
      "subbaciaId": "cts_d1b38_2_4",
@@ -4904,6 +5222,11 @@
    "categoria": null,
    "elo": null,
    "narrativa": null,
+   "ligacoesNovas": 1744,
+   "ticketMedio": 103.6,
+   "precoPorLigacao": 103.21,
+   "capexConstruido": 975000,
+   "capexQueFalta": 0,
    "dependencias": [
     {
      "subbaciaId": "d1b41_1_1",
@@ -4940,6 +5263,11 @@
    "categoria": null,
    "elo": null,
    "narrativa": null,
+   "ligacoesNovas": 1744,
+   "ticketMedio": 103.6,
+   "precoPorLigacao": 186.35,
+   "capexConstruido": 975000,
+   "capexQueFalta": 0,
    "dependencias": [
     {
      "subbaciaId": "d1b41_1_1",
@@ -4976,6 +5304,11 @@
    "categoria": null,
    "elo": null,
    "narrativa": null,
+   "ligacoesNovas": 1744,
+   "ticketMedio": 103.6,
+   "precoPorLigacao": 269.5,
+   "capexConstruido": 975000,
+   "capexQueFalta": 0,
    "dependencias": [
     {
      "subbaciaId": "d1b41_1_1",
@@ -5026,6 +5359,11 @@
    "categoria": "Travada por obra da cadeia",
    "elo": "red_d1b41_1_1",
    "narrativa": "Fora do plano: a cadeia até a ETE não se completa, então esta obra não geraria receita no horizonte da concessão.",
+   "ligacoesNovas": 1744,
+   "ticketMedio": 103.6,
+   "precoPorLigacao": 0.0,
+   "capexConstruido": 975000,
+   "capexQueFalta": 0,
    "dependencias": [
     {
      "subbaciaId": "d1b41_1_1",
@@ -5076,6 +5414,11 @@
    "categoria": null,
    "elo": null,
    "narrativa": null,
+   "ligacoesNovas": 1357,
+   "ticketMedio": 103.6,
+   "precoPorLigacao": 132.65,
+   "capexConstruido": 1265000,
+   "capexQueFalta": 0,
    "dependencias": [
     {
      "subbaciaId": "d1b41_1_2",
@@ -5112,6 +5455,11 @@
    "categoria": null,
    "elo": null,
    "narrativa": null,
+   "ligacoesNovas": 1357,
+   "ticketMedio": 103.6,
+   "precoPorLigacao": 239.5,
+   "capexConstruido": 1265000,
+   "capexQueFalta": 0,
    "dependencias": [
     {
      "subbaciaId": "d1b41_1_2",
@@ -5148,6 +5496,11 @@
    "categoria": "Travada por obra da cadeia",
    "elo": "red_d1b41_1_2",
    "narrativa": "Fora do plano: a cadeia até a ETE não se completa, então esta obra não geraria receita no horizonte da concessão.",
+   "ligacoesNovas": 1357,
+   "ticketMedio": 103.6,
+   "precoPorLigacao": 0.0,
+   "capexConstruido": 1265000,
+   "capexQueFalta": 0,
    "dependencias": [
     {
      "subbaciaId": "d1b41_1_2",
@@ -5184,6 +5537,11 @@
    "categoria": null,
    "elo": null,
    "narrativa": null,
+   "ligacoesNovas": 1357,
+   "ticketMedio": 103.6,
+   "precoPorLigacao": 560.06,
+   "capexConstruido": 1265000,
+   "capexQueFalta": 0,
    "dependencias": [
     {
      "subbaciaId": "d1b41_1_2",
@@ -5220,6 +5578,11 @@
    "categoria": "Travada por obra da cadeia",
    "elo": "red_d1b41_2_1",
    "narrativa": "Fora do plano: a cadeia até a ETE não se completa, então esta obra não geraria receita no horizonte da concessão.",
+   "ligacoesNovas": 964,
+   "ticketMedio": 103.6,
+   "precoPorLigacao": 0.0,
+   "capexConstruido": 0,
+   "capexQueFalta": 540000,
    "dependencias": [
     {
      "subbaciaId": "d1b41_2_1",
@@ -5256,6 +5619,11 @@
    "categoria": "Travada por obra da cadeia",
    "elo": "red_d1b41_2_1",
    "narrativa": "Fora do plano: a cadeia até a ETE não se completa, então esta obra não geraria receita no horizonte da concessão.",
+   "ligacoesNovas": 964,
+   "ticketMedio": 103.6,
+   "precoPorLigacao": 0.0,
+   "capexConstruido": 0,
+   "capexQueFalta": 540000,
    "dependencias": [
     {
      "subbaciaId": "d1b41_2_1",
@@ -5292,6 +5660,11 @@
    "categoria": "Travada por obra da cadeia",
    "elo": "red_d1b41_2_1",
    "narrativa": "Fora do plano: a cadeia até a ETE não se completa, então esta obra não geraria receita no horizonte da concessão.",
+   "ligacoesNovas": 964,
+   "ticketMedio": 103.6,
+   "precoPorLigacao": 0.0,
+   "capexConstruido": 0,
+   "capexQueFalta": 540000,
    "dependencias": [
     {
      "subbaciaId": "d1b41_2_1",
@@ -5328,6 +5701,11 @@
    "categoria": "Travada por obra da cadeia",
    "elo": "red_d1b41_2_1",
    "narrativa": "Fora do plano: a cadeia até a ETE não se completa, então esta obra não geraria receita no horizonte da concessão.",
+   "ligacoesNovas": 964,
+   "ticketMedio": 103.6,
+   "precoPorLigacao": 0.0,
+   "capexConstruido": 0,
+   "capexQueFalta": 540000,
    "dependencias": [
     {
      "subbaciaId": "d1b41_2_1",

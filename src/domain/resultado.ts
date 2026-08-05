@@ -423,13 +423,25 @@ export interface Explicacao {
   } | null
 }
 
-/** Linha da tabela de elementos da sub-bacia. */
+/**
+ * Linha da tabela de elementos da sub-bacia.
+ *
+ * As colunas sao as do prototipo: elemento, componente, quantidade, preco
+ * unitario, CAPEX, inicio e decisao. Quantidade e preco estao aqui, e nao so na
+ * ficha, porque e olhando para eles que se entende um CAPEX que parece alto — a
+ * pergunta "e caro por que?" se responde na propria tabela.
+ */
 export interface ElementoLinha {
   obraId: string
   componente: string
   situacao: SituacaoObra
+  quantidade: number | null
+  unidade: string | null
+  precoUnitario: number | null
   capex: number
   anoInicio: number | null
+  /** Meses de execucao — o que sustenta o "terceiro · prazo Nm". */
+  prazoMeses: number | null
 }
 
 export interface SubBaciaDetalhe {
@@ -492,6 +504,18 @@ export interface ObraDetalhe {
    * obrigada a mostrar a origem — sao coisas economicamente diferentes.
    */
   waccOrigem: 'proprio' | 'medio'
+  /**
+   * Base comercial da sub-bacia a que a obra serve. Nao e enfeite: e o que
+   * transforma o CAPEX de um numero absoluto em algo comparavel — R$ 223 mil e
+   * caro ou barato depende de quantas ligacoes ele destrava e de quanto cada uma
+   * fatura. O `precoPorLigacao` e a razao entre os dois.
+   */
+  ligacoesNovas: number | null
+  ticketMedio: number | null
+  precoPorLigacao: number | null
+  /** CAPEX ja construido e o que ainda falta na cadeia desta sub-bacia. */
+  capexConstruido: number | null
+  capexQueFalta: number | null
   dataInicio: string | null
   dataPronta: string | null
   categoria: string | null

@@ -92,6 +92,30 @@ export function Elemento() {
           <Campo rotulo="Pronta" valor={o.dataPronta ?? VAZIO} />
         </FieldGroup>
 
+        <FieldGroup titulo="Base comercial da sub-bacia">
+          {/* Estes tres campos sao o que torna o CAPEX comparavel: R$ 223 mil e
+              caro ou barato depende de quantas ligacoes ele destrava e de quanto
+              cada uma fatura. */}
+          <Campo rotulo="Ligações novas" valor={inteiro(o.ligacoesNovas)} />
+          <Campo rotulo="Ticket médio" valor={brl(o.ticketMedio)} nota="por ligação/mês" />
+          <Campo
+            rotulo="Preço por ligação"
+            valor={brl(o.precoPorLigacao)}
+            nota={o.ligacoesNovas ? `${brl(o.capex)} ÷ ${inteiro(o.ligacoesNovas)}` : undefined}
+          />
+        </FieldGroup>
+
+        <FieldGroup titulo="Cadeia da sub-bacia">
+          {/* "Quanto falta" e a pergunta seguinte de quem ve uma obra fora do
+              plano: ela sozinha nao destrava nada se a cadeia continua aberta. */}
+          <Campo rotulo="CAPEX já construído" valor={brl(o.capexConstruido)} />
+          <Campo
+            rotulo="CAPEX que falta"
+            valor={brl(o.capexQueFalta)}
+            nota={o.capexQueFalta ? 'para a cadeia fechar até a ETE' : 'cadeia completa'}
+          />
+        </FieldGroup>
+
         <FieldGroup titulo="Capital">
           {/* A ORIGEM do WACC importa tanto quanto o numero: "proprio" e um
               financiamento contratado para esta obra; "medio" e o campo que veio

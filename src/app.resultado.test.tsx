@@ -269,6 +269,20 @@ describe('nível sub-bacia', () => {
     expect(await screen.findByText(/mesmo teto de orçamento/)).toBeTruthy()
   })
 
+  it('a tabela de elementos traz quantidade, preço e decisão', async () => {
+    // Sao as colunas do prototipo. Quantidade e preco estao na TABELA, e nao so
+    // na ficha, porque e olhando para eles que se responde "por que esse CAPEX?".
+    renderApp(`/resultados/${RUN}/sub-bacias/d1b38_1_1`)
+    const tabela = (await screen.findByText('Elementos')).parentElement as HTMLElement
+    const cab = within(tabela)
+      .getAllByRole('columnheader')
+      .map((c) => c.textContent)
+    expect(cab).toContain('Quantidade')
+    expect(cab).toContain('Preço unitário')
+    expect(cab).toContain('Decisão')
+    expect(cab).toContain('Início')
+  })
+
   it('a que fatura mostra a curva de receita', async () => {
     renderApp(`/resultados/${RUN}/sub-bacias/d1b38_1_1`)
     expect((await screen.findAllByText('Receita ao longo do tempo')).length).toBeGreaterThan(0)
@@ -288,6 +302,20 @@ describe('nível elemento', () => {
     renderApp(`/resultados/${RUN}/obras/tro_d1b38_1_1`)
     expect(await screen.findByText('Quem depende deste elemento')).toBeTruthy()
     expect(await screen.findByText(/portão de qualidade da rodada/)).toBeTruthy()
+  })
+
+  it('traz a base comercial que torna o CAPEX comparável', async () => {
+    // R$ 223 mil e caro ou barato depende de quantas ligacoes destrava.
+    renderApp(`/resultados/${RUN}/obras/lig_d1b38_1_1`)
+    expect(await screen.findByText('Base comercial da sub-bacia')).toBeTruthy()
+    expect(await screen.findByText('Ligações novas')).toBeTruthy()
+    expect(await screen.findByText('Preço por ligação')).toBeTruthy()
+  })
+
+  it('mostra o estado da cadeia: o que já foi construído e o que falta', async () => {
+    renderApp(`/resultados/${RUN}/obras/tro_d1b38_2_1`)
+    expect(await screen.findByText('Cadeia da sub-bacia')).toBeTruthy()
+    expect(await screen.findByText('CAPEX que falta')).toBeTruthy()
   })
 
   it('CAPEX traz a conta quantidade × preço ao lado', async () => {

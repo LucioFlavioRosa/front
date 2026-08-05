@@ -2,7 +2,7 @@ import { Link, useParams } from 'react-router-dom'
 import { useSubBacia } from '../../api/queriesResultado'
 import { Carregando, ErroCarga } from '../../components/Estado'
 import { useCrumbs } from '../../state/CrumbsResultado'
-import { brl, vazao as fmtVazao } from '../../lib/formato'
+import { brl, inteiro, vazao as fmtVazao, VAZIO } from '../../lib/formato'
 import { DataTable, Painel, SeloSituacao } from '../../components/resultado/pecas'
 import { GraficoCascata, GraficoReceitaSubBacia } from '../../components/resultado/graficos'
 import type { ElementoLinha, Explicacao } from '../../domain/resultado'
@@ -113,26 +113,49 @@ export function SubBacia() {
         vazio="Esta ficha não tem obras cadastradas."
         colunas={[
           {
-            chave: 'comp',
-            titulo: 'Componente',
-            render: (e) => <strong>{e.componente}</strong>,
-          },
-          {
             chave: 'id',
-            titulo: 'Obra',
+            titulo: 'Elemento',
             render: (e) => <code className={styles.id}>{e.obraId}</code>,
           },
+          { chave: 'comp', titulo: 'Componente', render: (e) => <strong>{e.componente}</strong> },
           {
-            chave: 'sit',
-            titulo: 'Situação',
-            render: (e) => <SeloSituacao situacao={e.situacao} />,
+            chave: 'qtd',
+            titulo: 'Quantidade',
+            numerica: true,
+            render: (e) =>
+              e.quantidade === null ? VAZIO : `${inteiro(e.quantidade)} ${e.unidade ?? ''}`,
           },
-          { chave: 'capex', titulo: 'CAPEX', numerica: true, render: (e) => brl(e.capex) },
+          {
+            chave: 'preco',
+            titulo: 'Preço unitário',
+            numerica: true,
+            render: (e) => brl(e.precoUnitario),
+          },
+          {
+            chave: 'capex',
+            titulo: 'CAPEX',
+            numerica: true,
+            render: (e) => <strong>{brl(e.capex)}</strong>,
+          },
           {
             chave: 'ano',
             titulo: 'Início',
             numerica: true,
-            render: (e) => e.anoInicio ?? '—',
+            // Obra de terceiro nao tem inicio nosso — tem prazo, que e o que
+            // importa: ela ocupa lugar na sequencia sem consumir orcamento.
+            render: (e) =>
+              e.anoInicio !== null ? (
+                String(e.anoInicio)
+              ) : e.situacao === 'terceiro' ? (
+                <span className={styles.fraco}>prazo {inteiro(e.prazoMeses)}m</span>
+              ) : (
+                VAZIO
+              ),
+          },
+          {
+            chave: 'sit',
+            titulo: 'Decisão',
+            render: (e) => <SeloSituacao situacao={e.situacao} />,
           },
         ]}
       />

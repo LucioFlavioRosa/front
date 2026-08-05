@@ -20,8 +20,12 @@ export interface Caixa {
   altura: number
 }
 
-/** Margens padrao: espaco para rotulos do eixo Y (esquerda) e dos anos (baixo). */
-export const MARGEM = { topo: 14, direita: 14, baixo: 24, esquerda: 46 }
+/**
+ * Margens padrao. Generosas de proposito: o topo precisa caber o rotulo do eixo Y
+ * e os valores escritos acima das barras sem encostar na borda; a esquerda,
+ * "R$ mi" mais o maior numero do eixo.
+ */
+export const MARGEM = { topo: 30, direita: 20, baixo: 34, esquerda: 60 }
 
 export function areaUtil(largura: number, altura: number, margem = MARGEM): Caixa {
   return {
