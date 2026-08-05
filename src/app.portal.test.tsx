@@ -51,13 +51,11 @@ describe('portal', () => {
     expect(await screen.findByRole('heading', { name: 'Histórico de simulações' })).toBeTruthy()
   })
 
-  it('simular é honesto sobre ainda não existir, em vez de fingir um botão', async () => {
+  it('simular leva à tela de disparo da rodada', async () => {
     renderApp('/')
     fireEvent.click(await screen.findByRole('link', { name: /Fazer simulação/ }))
-    expect(await screen.findByText('Esta tela ainda não foi construída')).toBeTruthy()
-    // E explica o que a rodada vai pedir, que e a informacao util hoje.
-    expect(screen.getByText('Usar CTS')).toBeTruthy()
-    expect(screen.queryByRole('button', { name: /Simular|Disparar/ })).toBeNull()
+    expect(await screen.findByRole('heading', { name: 'Nova simulação' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Iniciar simulação' })).toBeTruthy()
   })
 })
 

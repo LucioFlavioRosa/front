@@ -132,6 +132,9 @@ export function apiFake(estado: EstadoApi, dados: Record<string, unknown>) {
           estado.liberarPost = (erro?: Error) => (erro ? falha(erro) : ok())
         })
       if (estado.erroPost) throw estado.erroPost
+      // Resposta declarada pelo teste ganha de tudo — é assim que o POST de
+      // `/runs` devolve o `run_id` que a tela de simulação precisa.
+      if (path in estado.respostas) return estado.respostas[path]
       // O POST de CTS devolve a ficha criada (contrato de api/escrita.ts) — e é
       // essa versão, a do servidor, que entra no cadastro.
       return (body as { cts?: unknown })?.cts ?? {}

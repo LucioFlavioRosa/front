@@ -8,7 +8,7 @@ da unidade:
 | ------------- | ------------------------------------------------------------------------- |
 | `/`           | **Portal** — os três caminhos do fluxo                                    |
 | `/cadastro`   | **Cadastro** — confere e grava os dados que a simulação consome (escrita) |
-| `/simular`    | **Simulação** — dispara a rodada _(ainda não construída; ver abaixo)_     |
+| `/simular`    | **Simulação** — dispara uma rodada do otimizador (a única criação do app) |
 | `/resultados` | **Resultados** — lê as tabelas de uma rodada executada (leitura pura)     |
 
 A raiz é um portal, e não a seleção de unidade, porque **o que você quer fazer
@@ -16,10 +16,19 @@ determina se a unidade importa**: cadastro e simulação são de uma unidade, o
 histórico é do usuário e já traz a unidade em cada rodada. Antes era preciso
 escolher uma unidade para só então descobrir o que dava para fazer com ela.
 
-A tela de `/simular` é um marcador honesto: o disparo da rodada está **fora do
-escopo dos dois handoffs** — não há protótipo nem contrato de API para ele, e o
-backend que executa o job também não existe. Ela explica o que a rodada vai
-pedir e leva aos dois caminhos que funcionam.
+A tela de `/simular` traduz os parâmetros do notebook de teste em controles de
+negócio, valida o que impede a rodada e acompanha o progresso. Três regras dela
+merecem atenção de quem for mexer:
+
+- **Parsing pt-BR + notação do notebook**: se a string tem vírgula, o ponto é
+  separador de milhar (`1.234,5`); se não tem, o ponto é decimal (`0.35`). Sem
+  isso, um valor copiado do notebook vira outro número.
+- **A janela de CAPEX é derivada** do cronograma, nunca digitada. Dois campos
+  para a mesma verdade divergiriam no primeiro ano zerado.
+- **Bloquear × avisar**: só impedem a rodada as coisas que a tornam impossível
+  (sem unidade, cadastro com pendências, orçamento zerado). Ignorar as metas
+  muda muito o resultado, mas é escolha legítima — avisa. Bloquear o incomum
+  treina o usuário a ignorar avisos.
 
 Este app **não roda a simulação** — ele prepara o cadastro que ela consome e lê o
 resultado que ela produziu. Quem executa é o job no Databricks.
@@ -44,7 +53,7 @@ backend real, use `VITE_API_PROXY` (ver `.env.example`).
 | Comando                 | O que faz                                                |
 | ----------------------- | -------------------------------------------------------- |
 | `npm run dev`           | Sobe o app com mocks                                     |
-| `npm test`              | Suíte completa (235 testes)                              |
+| `npm test`              | Suíte completa (274 testes)                              |
 | `npm run test:watch`    | Testes em watch                                          |
 | `npm run lint`          | ESLint                                                   |
 | `npm run format`        | Prettier (escreve)                                       |

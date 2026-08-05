@@ -25,8 +25,8 @@ const CAMINHOS = [
     to: '/simular',
     titulo: 'Fazer simulação',
     texto:
-      'Dispara uma rodada do otimizador com os parâmetros da simulação — orçamento, janela de CAPEX, foco e uso de CTS.',
-    acao: 'Preparar rodada →',
+      'Dispara uma rodada do otimizador: orçamento por ano, janela de CAPEX, objetivo entre VPL e cobertura, receita e demanda.',
+    acao: 'Nova simulação →',
     tom: 'simular' as const,
   },
   {
