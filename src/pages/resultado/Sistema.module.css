@@ -23,13 +23,17 @@
 }
 
 /* O diagrama rola na horizontal DENTRO do seu container — a pagina nunca rola
-   de lado, que e a regra do layout deste app. */
+   de lado, que e a regra do layout deste app.
+
+   O padding vertical e maior que o necessario de proposito: `overflow-x: auto`
+   torna o eixo Y `auto` tambem, entao a sombra dos cards seria cortada em cima e
+   embaixo sem essa folga. */
 .diagrama {
   display: flex;
   gap: 26px;
   align-items: flex-start;
   overflow-x: auto;
-  padding: 4px 4px 14px;
+  padding: 10px 4px 18px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
@@ -40,9 +44,20 @@
   flex-direction: column;
   gap: 14px;
   padding: 12px 0 0 12px;
+  /* CRITICO: sem `flex: none` a coluna e um item flex encolhivel, e num
+     container com overflow o navegador ESPREME as colunas antes de deixar rolar.
+     Como os cards tem largura fixa (290px), eles transbordavam da propria coluna
+     e apareciam cortados — a ETE, por ser a ultima, era a mais afetada. Com
+     `flex: none` o container estoura e a barra de rolagem aparece, que e o
+     comportamento correto. */
+  flex: none;
 }
+
+/* Respiro no fim do diagrama. Vai no ULTIMO FILHO e nao no `padding-right` do
+   container: em container flex com rolagem, o padding da direita e ignorado no
+   fim do scroll, e a ETE ficaria colada na borda. */
 .coluna:last-child {
-  padding-right: 12px;
+  padding-right: 16px;
 }
 
 .colunaRotulo {
