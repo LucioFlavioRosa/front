@@ -1,0 +1,95 @@
+/* Estados transversais de carga: skeleton e erro de rede. */
+.wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 22px 26px;
+}
+
+.titulo {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-900);
+}
+
+.texto {
+  font-size: 13px;
+  color: var(--text-500);
+  line-height: 1.55;
+  margin-top: 6px;
+  max-width: 62ch;
+}
+
+/* ---- skeleton ---- */
+.barras {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.barra {
+  height: 12px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--border-soft), var(--border), var(--border-soft));
+  background-size: 200% 100%;
+  animation: brilho 1.2s ease-in-out infinite;
+}
+
+@keyframes brilho {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* ---- erro ---- */
+.erro {
+  border-color: #fecaca;
+  background: #fef2f2;
+}
+
+.erroTitulo {
+  color: #991b1b;
+}
+
+.erroTexto {
+  color: #b91c1c;
+}
+
+.acoes {
+  margin-top: 14px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.retry {
+  background: var(--text-900);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 18px;
+  border-radius: 10px;
+  border: none;
+}
+
+.retry:disabled {
+  background: var(--text-400);
+  cursor: progress;
+}
+
+.detalhe {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: #b91c1c;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .barra {
+    animation: none;
+  }
+}

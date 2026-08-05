@@ -1,0 +1,5 @@
+[
+  { "id": "u-jacarei", "regionalId": "r-sudeste", "nome": "Águas de Jacareí", "databricksConectado": true },
+  { "id": "u-piracicaba", "regionalId": "r-sudeste", "nome": "Águas do Mirante (Piracicaba)", "databricksConectado": true },
+  { "id": "u-rondonopolis", "regionalId": "r-centro-oeste", "nome": "Águas de Rondonópolis", "databricksConectado": true }
+]

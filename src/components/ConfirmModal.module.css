@@ -1,0 +1,74 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  background: var(--overlay);
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  animation: fade 0.15s ease;
+}
+
+.card {
+  width: 460px;
+  max-width: 100%;
+  background: var(--surface);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  padding: 24px;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-900);
+  margin-bottom: 10px;
+}
+
+.warn {
+  color: var(--pend-accent);
+}
+
+.text {
+  font-size: 14px;
+  color: var(--text-600);
+  margin-bottom: 22px;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.btn {
+  padding: 9px 16px;
+  border-radius: var(--radius-field);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-600);
+  font-weight: 600;
+}
+
+.btn:hover {
+  background: var(--border-soft);
+}
+
+.confirm {
+  border-color: transparent;
+  background: var(--pend-text-2);
+  color: #fff;
+}
+
+.confirm:hover {
+  background: #92400e;
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}

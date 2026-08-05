@@ -1,0 +1,194 @@
+/* Tabela de obras — compartilhada por sub-bacia (5 componentes) e CTS (4).
+   Espelha o Grupo 03 do prototipo (linhas 388-556). */
+.wrap {
+  overflow-x: auto;
+}
+
+.table {
+  /* 11 colunas: abaixo disto elas se espremem e o cabecalho quebra em lugar
+     errado. Preferimos rolar na horizontal (o .wrap cuida) a espremer. */
+  min-width: 1120px;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+
+.table thead tr {
+  background: #f8fafc;
+}
+
+.table th {
+  padding: 7px 8px 6px;
+  color: #334155;
+  font-weight: 600;
+  border-bottom: 1px solid var(--border);
+  /* Rotulos de 1 e de 2 linhas alinhados pela base da faixa de unidade. */
+  vertical-align: bottom;
+}
+
+/* Linha 1: o nome da coluna, inteiro e sem quebrar no meio. Um pontinho menor
+   que o corpo — cabecalho nao disputa atencao com o dado. */
+.thRotulo {
+  display: block;
+  white-space: nowrap;
+  line-height: 1.25;
+  font-size: 11.5px;
+}
+
+/* Linha 2: a unidade, discreta — vira uma faixa que o olho pula quando nao
+   precisa. O espaco rigido nas colunas sem unidade mantem a altura igual. */
+.thUnidade {
+  display: block;
+  margin-top: 2px;
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--text-400);
+  white-space: nowrap;
+  min-height: 13px;
+}
+
+/* A coluna do componente fica fixa: rolando na horizontal, o nome da obra
+   continua na tela — sem ele, as celulas da direita viram numeros sem dono. */
+.thComp,
+.tdComp {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  border-right: 1px solid var(--border);
+}
+
+.thComp {
+  text-align: left;
+  padding-left: 16px !important;
+  font-weight: 700 !important;
+  background: #f8fafc;
+}
+
+.thRight {
+  text-align: right;
+}
+
+.thLeft {
+  text-align: left;
+}
+
+.thCapex {
+  text-align: right;
+  color: var(--text-500) !important;
+  background: var(--calc-bg);
+}
+
+/* Filete que abre um bloco de colunas (prazos · janela · custo do capital):
+   com 11 colunas seguidas, o olho precisa de um agrupamento para se guiar. */
+.grupo {
+  border-left: 1px solid var(--border);
+}
+
+/* "?" de ajuda: botao de verdade com aparencia de link. */
+.help {
+  cursor: pointer;
+  color: var(--db-text-2);
+  font-weight: 800;
+  background: none;
+  border: none;
+  padding: 0 2px;
+  font-size: inherit;
+  font-family: inherit;
+  border-radius: 4px;
+}
+
+.table td {
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.tdComp {
+  padding: 6px 16px;
+  font-weight: 600;
+  color: var(--text-900);
+  /* Opaco porque a coluna e fixa: as celulas da direita passam por baixo. */
+  background: var(--surface);
+}
+
+/* Ancora de coleta (Ligacao de esgoto / Coletor de tempo seco): e ela que liga
+   o faturamento, entao ganha destaque discreto. */
+.tdAncora {
+  color: var(--db-text);
+}
+
+/* Selo da obra que acontece sem CAPEX da unidade. Discreto: e informacao de
+   contexto, nao alerta — a obra esta certa do jeito que esta. */
+.terceiros {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 7px;
+  border-radius: var(--radius-chip);
+  background: var(--db-bg);
+  border: 1px solid var(--db-border);
+  color: var(--db-text-2);
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+  vertical-align: 1px;
+}
+
+.tdUn {
+  padding: 6px 8px;
+  color: var(--text-500);
+}
+
+.tdInput {
+  padding: 4px 6px;
+}
+
+/* Mesmo fundo do cabecalho da coluna: a faixa do calculado atravessa a tabela
+   inteira, deixando claro que ali nao se digita. */
+.tdCapex {
+  padding: 6px 8px;
+  text-align: right;
+  background: var(--calc-bg);
+  color: var(--text-600);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.input {
+  text-align: right;
+  border-radius: 6px;
+  padding: 4px 7px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-800);
+}
+
+/* Legenda dos codigos das janelas — duas linhas discretas, coladas na tabela. */
+.legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+  padding: 8px 16px 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-500);
+}
+
+.legenda strong {
+  color: var(--text-600);
+  font-weight: 700;
+}
+
+.legenda code {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--text-800);
+  background: var(--calc-bg);
+  border-radius: 4px;
+  padding: 0 4px;
+}
+
+.foot {
+  padding: 8px 16px;
+  background: #f8fafc;
+  border-top: 1px solid var(--border);
+  font-size: 11.5px;
+  color: var(--text-400);
+}

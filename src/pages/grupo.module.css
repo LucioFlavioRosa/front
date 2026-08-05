@@ -1,0 +1,453 @@
+/* Estilos compartilhados dos grupos G1/G2/G4 (espelham o prototipo). */
+.groupHeader {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.back {
+  color: var(--text-400);
+  font-size: 16px;
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+.h2 {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--text-900);
+}
+
+.groupSub {
+  font-size: 12px;
+  color: var(--text-500);
+}
+
+.headActions {
+  margin-left: auto;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.headChip {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: var(--radius-chip);
+  border: 1px solid;
+  white-space: nowrap;
+}
+
+.salvar {
+  background: var(--brand);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 18px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+}
+.salvar:hover {
+  background: var(--brand-hover);
+}
+
+.salvar:disabled {
+  background: var(--text-400);
+  cursor: progress;
+}
+
+.avisoSemSalvar {
+  margin: 0 0 14px;
+  padding: 10px 14px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--pend-text);
+  background: var(--pend-bg);
+  border: 1px solid var(--pend-border-2);
+  border-radius: var(--radius-field);
+}
+
+/* Desabilitado por nao haver o que salvar (nao por gravacao em voo). */
+.salvar.semMudanca {
+  background: var(--surface);
+  color: var(--text-400);
+  border: 1px solid var(--border);
+  cursor: default;
+}
+
+.board {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 280px 1fr;
+}
+
+.detailPane {
+  padding: 22px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: #fbfcfd;
+  overflow: auto;
+}
+
+.detailHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.detailHeaderBetween {
+  justify-content: space-between;
+}
+
+.titleMono {
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--text-900);
+  font-family: var(--font-mono);
+}
+
+.titlePlain {
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--text-900);
+}
+
+.titleId {
+  font-size: 12px;
+  color: var(--text-400);
+  font-family: var(--font-mono);
+}
+
+.titleSub {
+  font-size: 12px;
+  color: var(--text-400);
+}
+
+.titleNome {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-500);
+}
+
+/* Cards de secao do usuario (amarelo) */
+.userCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.userHeader {
+  background: #fefce8;
+  padding: 9px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.userHeaderLabel {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--pend-text-3);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.addLink {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--db-text-2);
+  cursor: pointer;
+  white-space: nowrap;
+  background: none;
+  border: none;
+}
+
+.cardIntro {
+  padding: 10px 16px;
+  font-size: 12px;
+  color: var(--text-500);
+  line-height: 1.5;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.paramsBody {
+  padding: 4px 16px 10px;
+}
+
+/* "?" de ajuda: botao de verdade com aparencia de link. */
+.help {
+  cursor: pointer;
+  color: var(--db-text-2);
+  font-weight: 800;
+  background: none;
+  border: none;
+  padding: 0 2px;
+  font-size: inherit;
+  font-family: inherit;
+  border-radius: 4px;
+}
+
+/* Badge "ETE nova / existente" (G4) */
+.novaBadge {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: var(--radius-chip);
+  border: 1px solid;
+}
+
+/* Tabela editavel (metas / paridade — G2) */
+.miniTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.miniTable thead tr {
+  background: #f8fafc;
+}
+.miniTable th {
+  text-align: left;
+  padding: 8px 16px;
+  color: #334155;
+  font-weight: 700;
+  border-bottom: 1px solid var(--border);
+}
+.miniTable td {
+  border-bottom: 1px solid var(--border-soft);
+  padding: 5px 16px;
+}
+.miniInput {
+  text-align: right;
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-800);
+}
+.del {
+  color: #cbd5e1;
+  cursor: pointer;
+  font-weight: 700;
+  background: none;
+  border: none;
+  padding: 2px 6px;
+  font-size: inherit;
+  border-radius: 4px;
+}
+.del:hover {
+  color: #dc2626;
+}
+.tableNote {
+  padding: 8px 16px;
+  background: #f8fafc;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--text-400);
+}
+
+/* Grid de duas colunas (metas | paridade) */
+.twoCol {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  align-items: start;
+}
+
+/* Tabelas nao devem estourar a largura do card em telas estreitas. */
+.tabelaWrap {
+  overflow-x: auto;
+}
+
+/* (menu lateral do G2 agora usa o CascadeTree, como G1/G3/G4) */
+
+/* Card Databricks com grid de campos rotulados (G1) */
+.dbGridCard {
+  background: var(--surface);
+  border: 1px solid var(--db-border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.dbGridHeader {
+  background: var(--db-bg);
+  padding: 9px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.dbGridTitle {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--db-text-2);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+}
+.dbToggle {
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 5px 12px;
+  border-radius: 8px;
+  white-space: nowrap;
+  background: var(--surface);
+  color: var(--db-text-2);
+  border: 1px solid var(--db-border);
+}
+.dbToggleOn {
+  background: var(--ok-bg);
+  color: var(--ok-text);
+  border-color: var(--ok-border);
+}
+
+.dbGridBody {
+  display: grid;
+  gap: 12px;
+  padding: 14px 16px;
+}
+
+/* unidade-regional: 4 colunas + WACC mais largo (desenho do prototipo). */
+.dbGridBody5 {
+  grid-template-columns: repeat(4, 1fr) 1.3fr;
+}
+
+/* Cadeia hierarquica: quantas colunas couberem. */
+.dbGridBodyAuto {
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+.dbFieldLabel {
+  display: block;
+  font-size: 11px;
+  color: var(--db-text-2);
+  font-weight: 600;
+}
+.dbReadBox {
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 13px;
+  font-weight: 700;
+  margin-top: 3px;
+  background: #f7feff;
+  color: var(--db-text);
+}
+.dbInput {
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 13px;
+  font-weight: 700;
+  margin-top: 3px;
+  color: var(--text-800);
+}
+.dbCalcBox {
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 13px;
+  font-weight: 700;
+  margin-top: 3px;
+  background: var(--calc-bg);
+  color: var(--calc-text);
+  border: 1.5px solid var(--border);
+}
+.dbHint {
+  font-size: 10px;
+  color: var(--text-400);
+  margin-top: 2px;
+}
+
+/* Tabela de topologia (G1) */
+.topoTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.topoTable thead tr {
+  background: #f8fafc;
+}
+.topoTable th {
+  text-align: left;
+  padding: 10px 18px;
+  color: #334155;
+  font-weight: 700;
+  border-bottom: 1px solid var(--border);
+}
+.topoTable td {
+  padding: 8px 18px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.topoId {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--db-text);
+}
+.topoJus {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  border-radius: 6px;
+  padding: 2px 8px;
+}
+.topoInput {
+  width: 110px;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 12.5px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--text-800);
+}
+.tableFoot {
+  padding: 10px 18px;
+  background: #f8fafc;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text-400);
+}
+
+/* ---------- Responsivo ----------
+   O layout do handoff foi desenhado para desktop largo (max 1500px). Abaixo
+   disso o board master/detail empilha e as grades viram uma coluna, em vez de
+   comprimir o rail e a ficha ate ficarem ilegiveis. */
+@media (max-width: 1080px) {
+  .board {
+    grid-template-columns: 1fr;
+  }
+
+  .dbGridBody5 {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  }
+}
+
+@media (max-width: 880px) {
+  .twoCol {
+    grid-template-columns: 1fr;
+  }
+
+  .detailPane {
+    padding: 18px 16px;
+  }
+}
+
+@media (max-width: 700px) {
+  .groupHeader {
+    flex-wrap: wrap;
+  }
+
+  .headActions {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .h2 {
+    font-size: 17px;
+  }
+}

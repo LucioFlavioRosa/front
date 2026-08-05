@@ -1,0 +1,151 @@
+{
+  "pares": [
+    {
+      "sub": "b2_1_1",
+      "cts": "cts_b2_1_1"
+    },
+    {
+      "sub": "b2_1_4",
+      "cts": "cts_b2_1_4"
+    },
+    {
+      "sub": "b3_1_1",
+      "cts": "cts_b3_1_1"
+    }
+  ],
+  "ctss": {
+    "cts_b2_1_1": {
+      "id": "cts_b2_1_1",
+      "nome": "CTS 1_1",
+      "subId": "b2_1_1",
+      "sisId": "s2",
+      "sistema": "Sistema 2 · Rio das Ostras",
+      "jusante": "b2_1_2",
+      "db": {
+        "fat": "3.410",
+        "arr": "3.042",
+        "ligU": "62",
+        "ligA": "19",
+        "ligN": "43",
+        "ecoU": "68",
+        "ecoA": "21",
+        "ecoN": "47",
+        "ligUInd": "1",
+        "ligAInd": "1",
+        "fatInd": "477",
+        "arrInd": "426",
+        "ticket": "R$ 179"
+      },
+      "params": {
+        "preco": "1.334",
+        "tarr": "2",
+        "ramp": "2",
+        "vaz": "3,1",
+        "vazInd": "0,2",
+        "pot": "1,0",
+        "popU": "218",
+        "popA": "67"
+      },
+      "obrasOverride": {
+        "0": {
+          "qtd": "412,5",
+          "preco": "1.482,30",
+          "opex": "9.140",
+          "tPred": "6",
+          "dur": "8"
+        }
+      }
+    },
+    "cts_b2_1_4": {
+      "id": "cts_b2_1_4",
+      "nome": "CTS 1_4",
+      "subId": "b2_1_4",
+      "sisId": "s2",
+      "sistema": "Sistema 2 · Rio das Ostras",
+      "jusante": "e2",
+      "db": {
+        "fat": "7.860",
+        "arr": "6.418",
+        "ligU": "138",
+        "ligA": "44",
+        "ligN": "94",
+        "ecoU": "151",
+        "ecoA": "48",
+        "ecoN": "103",
+        "ligUInd": "5",
+        "ligAInd": "2",
+        "fatInd": "1.729",
+        "arrInd": "1.412",
+        "ticket": "R$ 186"
+      },
+      "params": {
+        "preco": "1.180",
+        "tarr": "3",
+        "ramp": "4",
+        "vaz": "6,7",
+        "vazInd": "0,7",
+        "pot": "",
+        "popU": "483",
+        "popA": "154"
+      },
+      "obrasOverride": {
+        "0": {
+          "qtd": "738,2",
+          "preco": "1.479,60",
+          "opex": "",
+          "tPred": "9",
+          "dur": "11"
+        },
+        "1": {
+          "qtd": "",
+          "preco": "1.200,00",
+          "opex": "0",
+          "tPred": "0",
+          "dur": "0"
+        }
+      }
+    },
+    "cts_b3_1_1": {
+      "id": "cts_b3_1_1",
+      "nome": "CTS 1_1",
+      "subId": "b3_1_1",
+      "sisId": "s3",
+      "sistema": "Sistema 3 · Búzios",
+      "jusante": "b3_1_2",
+      "db": {
+        "fat": "12.204",
+        "arr": "9.845",
+        "ligU": "204",
+        "ligA": "66",
+        "ligN": "138",
+        "ecoU": "224",
+        "ecoA": "72",
+        "ecoN": "152",
+        "ligUInd": "2",
+        "ligAInd": "1",
+        "fatInd": "1.098",
+        "arrInd": "886",
+        "ticket": "R$ 205"
+      },
+      "params": {
+        "preco": "902",
+        "tarr": "4",
+        "ramp": "6",
+        "vaz": "",
+        "vazInd": "",
+        "pot": "",
+        "popU": "717",
+        "popA": "230"
+      },
+      "obrasOverride": {
+        "0": {
+          "qtd": "1.106,4",
+          "preco": "1.483,10",
+          "opex": "24.318",
+          "tPred": "5",
+          "dur": ""
+        }
+      }
+    }
+  }
+}

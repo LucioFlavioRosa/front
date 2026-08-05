@@ -1,0 +1,85 @@
+/* Espelha o card de grupo do hub (prototipo, linhas 101-114). */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition:
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+}
+
+.card:hover {
+  box-shadow: 0 8px 24px -10px rgba(15, 23, 42, 0.18);
+  transform: translateY(-1px);
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.titleWrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.n {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text-400);
+}
+
+.titulo {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-900);
+}
+
+.chip {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: var(--radius-chip);
+  border: 1px solid;
+  white-space: nowrap;
+}
+
+.desc {
+  font-size: 13px;
+  color: var(--text-500);
+  line-height: 1.5;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-soft);
+}
+
+.rows {
+  font-size: 12px;
+  color: var(--text-400);
+}
+
+.origem {
+  color: var(--db-text-2);
+}
+
+.abrir {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-900);
+}

@@ -1,0 +1,14 @@
+# Fora do contexto de build: reduz a imagem e evita invalidar cache à toa.
+node_modules
+dist
+.git
+.github
+.vite
+.tsbuild
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+deploy/k8s
+*.md
+!DEPLOY.md

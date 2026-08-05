@@ -1,0 +1,143 @@
+/* Espelha o painel de dicionario do prototipo (linhas 647-675). */
+.panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: var(--dict-w);
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  box-shadow: -12px 0 40px -20px rgba(15, 23, 42, 0.25);
+  z-index: var(--z-panel);
+  padding: 24px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow: auto;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.kicker {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-400);
+}
+
+.close {
+  cursor: pointer;
+  color: var(--text-400);
+  font-weight: 700;
+  font-size: 15px;
+  background: none;
+  border: none;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.rotulo {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--text-900);
+}
+
+.tec {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--pend-text);
+  background: #fefce8;
+  border: 1px solid var(--pend-border-2);
+  border-radius: 6px;
+  padding: 2px 8px;
+}
+
+.chips {
+  margin-top: 6px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: var(--radius-chip);
+  padding: 3px 10px;
+  border: 1px solid;
+}
+
+.chipTipo {
+  color: var(--text-600);
+  background: var(--calc-bg);
+  border-color: var(--border);
+}
+
+.section {
+}
+
+.sectionTop {
+  border-top: 1px solid var(--border-soft);
+  padding-top: 12px;
+}
+
+.sectionTitle {
+  font-size: 12px;
+  font-weight: 800;
+  color: #334155;
+}
+
+.sectionBody {
+  font-size: 13px;
+  color: var(--text-600);
+  line-height: 1.55;
+  margin-top: 4px;
+}
+
+.exemplo {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+.exemploLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-400);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.exemploValor {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-900);
+  margin-top: 2px;
+}
+
+.empty {
+  color: var(--text-400);
+  font-size: 13px;
+}
+
+/* Em telas estreitas o painel ocupa a largura toda (drawer), com um leve
+   recuo a esquerda para o conteudo atras nao desaparecer por completo. */
+@media (max-width: 560px) {
+  .panel {
+    width: 100%;
+    left: 0;
+    padding: 20px 16px;
+  }
+}

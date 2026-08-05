@@ -1,0 +1,116 @@
+{
+  "cidades": [
+    {
+      "id": "c1",
+      "nome": "Maricá",
+      "fim": "2045",
+      "cob": "ligacoes"
+    },
+    {
+      "id": "c2",
+      "nome": "Saquarema",
+      "fim": "2046",
+      "cob": "ligacoes"
+    },
+    {
+      "id": "c3",
+      "nome": "Araruama",
+      "fim": "2041",
+      "cob": ""
+    },
+    {
+      "id": "c4",
+      "nome": "Cabo Frio",
+      "fim": "2041",
+      "cob": "ligacoes"
+    },
+    {
+      "id": "c5",
+      "nome": "Iguaba",
+      "fim": "",
+      "cob": ""
+    },
+    {
+      "id": "c6",
+      "nome": "Rio das Ostras",
+      "fim": "2043",
+      "cob": "populacao"
+    },
+    {
+      "id": "c9",
+      "nome": "Búzios",
+      "fim": "2046",
+      "cob": "ligacoes"
+    },
+    {
+      "id": "c10",
+      "nome": "Silva Jardim",
+      "fim": "2049",
+      "cob": "economias"
+    }
+  ],
+  "metas": [
+    {
+      "cid": "c1",
+      "ano": "2028",
+      "pct": "48"
+    },
+    {
+      "cid": "c1",
+      "ano": "2029",
+      "pct": "59"
+    },
+    {
+      "cid": "c1",
+      "ano": "2031",
+      "pct": "71"
+    },
+    {
+      "cid": "c1",
+      "ano": "2036",
+      "pct": "82"
+    },
+    {
+      "cid": "c10",
+      "ano": "2036",
+      "pct": "81"
+    },
+    {
+      "cid": "c2",
+      "ano": "2030",
+      "pct": ""
+    }
+  ],
+  "fator": [
+    {
+      "cid": "c1",
+      "cob": "0",
+      "par": "0,80"
+    },
+    {
+      "cid": "c1",
+      "cob": "40",
+      "par": "0,85"
+    },
+    {
+      "cid": "c1",
+      "cob": "60",
+      "par": "0,90"
+    },
+    {
+      "cid": "c1",
+      "cob": "80",
+      "par": "0,95"
+    },
+    {
+      "cid": "c1",
+      "cob": "90",
+      "par": "1,00"
+    },
+    {
+      "cid": "c2",
+      "cob": "0",
+      "par": "0,80"
+    }
+  ]
+}

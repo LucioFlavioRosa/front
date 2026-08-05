@@ -1,0 +1,165 @@
+/* Espelha a tela de selecao do prototipo (linhas 56-88). */
+.wrap {
+  max-width: 720px;
+  margin: 40px auto 0;
+}
+
+.head {
+  text-align: center;
+}
+
+.logo {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--grad-logo);
+  margin: 0 auto;
+}
+
+.titulo {
+  margin: 18px 0 0;
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text-900);
+}
+
+.sub {
+  margin: 8px 0 0;
+  font-size: 14px;
+  color: var(--text-500);
+  line-height: 1.6;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px;
+  margin-top: 24px;
+  box-shadow: 0 8px 32px -16px rgba(15, 23, 42, 0.15);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: #334155;
+}
+
+.erroSlot {
+  margin-bottom: 18px;
+}
+
+.select {
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 6px;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-weight: 600;
+  border: 1.5px solid #cbd5e1;
+  background: var(--surface);
+  color: var(--text-800);
+}
+
+.select:disabled {
+  background: var(--border-soft);
+  color: var(--text-400);
+  cursor: not-allowed;
+}
+
+.resumo {
+  margin-top: 18px;
+  background: var(--ok-bg);
+  border: 1px solid var(--ok-border-2);
+  border-radius: 12px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.resumoLabel {
+  font-size: 10.5px;
+  color: var(--text-500);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.resumoNum {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-900);
+  font-variant-numeric: tabular-nums;
+}
+
+.resumoNota {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--ok-text);
+  font-weight: 600;
+}
+
+.actions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.cta {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 11px 26px;
+  border-radius: 12px;
+  border: none;
+  background: var(--brand);
+  cursor: pointer;
+}
+
+.cta:hover:not(:disabled) {
+  background: var(--brand-hover);
+}
+
+.cta:disabled {
+  background: #cbd5e1;
+  cursor: not-allowed;
+}
+
+.footer {
+  margin-top: 16px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-400);
+}
+
+/* ---------- Responsivo ---------- */
+@media (max-width: 620px) {
+  .wrap {
+    margin-top: 20px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .card {
+    padding: 20px 16px;
+  }
+
+  .resumoNota {
+    margin-left: 0;
+  }
+
+  .cta {
+    width: 100%;
+  }
+}

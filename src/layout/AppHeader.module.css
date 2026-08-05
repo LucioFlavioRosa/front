@@ -1,0 +1,176 @@
+/* Espelha o header do prototipo (Cadastro de Dados.dc.html, linhas 24-51). */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-header);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.inner {
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 12px 28px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Botao (leva ao hub): reset de aparencia, mantendo o desenho do prototipo. */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  text-align: left;
+  flex-shrink: 0;
+}
+
+.brandText1 {
+  display: block;
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--text-900);
+  line-height: 1.2;
+}
+
+.brandText2 {
+  display: block;
+  font-size: 10px;
+  color: var(--text-400);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.context {
+  font-size: 13px;
+  color: var(--text-400);
+  min-width: 0;
+}
+
+.unidadeLink {
+  cursor: pointer;
+  color: var(--db-text-2);
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+}
+
+.unidadeLink:hover {
+  text-decoration: underline;
+}
+
+.grupoTitulo {
+  color: var(--text-900);
+  font-weight: 700;
+}
+
+.trocar {
+  font-size: 12px;
+  color: var(--text-400);
+  cursor: pointer;
+  margin-left: 8px;
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.trocar:hover {
+  color: var(--db-text-2);
+}
+
+.right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.completude {
+  width: 200px;
+}
+
+.completudeTop {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-500);
+  margin-bottom: 4px;
+}
+
+.pct {
+  color: var(--ok-text);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.bar {
+  height: 7px;
+  border-radius: var(--radius-chip);
+  background: var(--border);
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  background: var(--grad-progress);
+  transition: width 0.25s ease;
+}
+
+.dbChip {
+  font-size: 12px;
+  color: var(--db-text-2);
+  background: var(--db-bg);
+  border: 1px solid var(--db-border);
+  border-radius: var(--radius-chip);
+  padding: 5px 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Fichas com edicao ainda nao enviada ao cadastro (ambar = atencao, nao erro). */
+.naoSalvo {
+  font-size: 12px;
+  color: var(--pend-text);
+  background: var(--pend-bg);
+  border: 1px solid var(--pend-border);
+  border-radius: var(--radius-chip);
+  padding: 5px 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* ---------- Responsivo ----------
+   O header comprime na ordem inversa da importancia: primeiro o chip de conexao,
+   depois a barra de completude encolhe; marca e contexto ficam ate o fim. */
+@media (max-width: 1000px) {
+  .completude {
+    width: 140px;
+  }
+}
+
+@media (max-width: 820px) {
+  .inner {
+    flex-wrap: wrap;
+    padding: 10px 16px;
+    gap: 10px;
+  }
+
+  .dbChip {
+    display: none;
+  }
+
+  .context {
+    order: 3;
+    width: 100%;
+  }
+
+  .right {
+    order: 2;
+  }
+}

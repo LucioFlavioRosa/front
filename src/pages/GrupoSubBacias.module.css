@@ -1,0 +1,96 @@
+/* Espelha o Grupo 03 do prototipo (linhas 388-556).
+   O cabecalho (voltar/titulo/subtitulo) vem do GrupoHeader + grupo.module.css. */
+.headChip {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: var(--radius-chip);
+  border: 1px solid;
+  white-space: nowrap;
+}
+
+/* Board master/detail */
+.board {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  min-height: 680px;
+}
+
+/* Cards de secao do usuario (parametros / obras) */
+.userCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.userHeader {
+  background: #fefce8;
+  padding: 9px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.userHeaderLabel {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--pend-text-3);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.userHeaderNote {
+  font-size: 12px;
+  color: var(--text-400);
+}
+
+.paramsBody {
+  padding: 4px 16px 10px;
+}
+
+/* A tabela de obras vive em components/ObrasTable (compartilhada com o G5). */
+
+.sheetFoot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sheetFootNote {
+  font-size: 12px;
+  color: var(--text-400);
+}
+
+.prox {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--db-text-2);
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+/* ---------- Responsivo (mesmos limites do grupo.module.css) ---------- */
+@media (max-width: 1080px) {
+  .board {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+}
+
+@media (max-width: 700px) {
+  .userHeader {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .sheetFoot {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}

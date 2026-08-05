@@ -1,0 +1,213 @@
+/* Espelha o rail/arvore do prototipo (linhas 402-457). */
+.rail {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  border-right: 1px solid var(--border);
+}
+
+.toolbar {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Rotulo visivel so para leitores de tela (o placeholder nao serve de nome). */
+.oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.busca {
+  background: #f8fafc;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 13px;
+  color: var(--text-800);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.filtros {
+  display: flex;
+  gap: 8px;
+}
+
+.filtro {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: var(--radius-chip);
+  cursor: pointer;
+  border: 1px solid #cbd5e1;
+  background: var(--surface);
+  color: var(--text-500);
+}
+
+.filtroAtivoPend {
+  background: #fef3c7;
+  border-color: var(--pend-accent);
+  color: var(--pend-text);
+}
+
+.filtroAtivoTodas {
+  background: var(--db-bg);
+  border-color: var(--db-border);
+  color: var(--db-text-2);
+}
+
+.scroll {
+  overflow: auto;
+  flex: 1;
+}
+
+/* ---- linhas (botoes: reset de aparencia + largura total) ---- */
+.branch {
+  width: 100%;
+  padding: 9px 16px;
+  border: none;
+  border-bottom: 1px solid var(--border-soft);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  background: transparent;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+}
+
+.branch:hover {
+  background: var(--border-soft);
+}
+
+.branchRoot {
+  background: #f8fafc;
+}
+
+.arrow {
+  color: var(--text-400);
+  font-size: 11px;
+  width: 12px;
+  flex-shrink: 0;
+}
+
+.branchBody {
+  display: block;
+  flex: 1;
+  min-width: 0;
+}
+
+.branchTitulo {
+  display: block;
+  font-weight: 700;
+  font-size: 12.5px;
+  color: var(--text-900);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.branchSub {
+  display: block;
+  font-size: 10.5px;
+  color: var(--text-400);
+}
+
+.leaf {
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid var(--border-soft);
+  border-left: 3px solid transparent;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  cursor: pointer;
+  background: transparent;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+}
+
+.leaf:hover {
+  background: var(--border-soft);
+}
+
+.leafSel,
+.leafSel:hover {
+  background: var(--ok-bg);
+  border-left-color: var(--brand);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.leafId {
+  display: block;
+  flex: 1;
+  min-width: 0;
+  font-weight: 700;
+  font-size: 12.5px;
+  color: var(--text-900);
+  font-family: var(--font-mono);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leafBody {
+  display: block;
+  flex: 1;
+  min-width: 0;
+}
+
+.leafSub {
+  display: block;
+  font-size: 10.5px;
+  color: var(--text-400);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leafStatus {
+  font-size: 10.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Foco visivel dentro do rail (o :focus-visible global cuida da cor). */
+.branch:focus-visible,
+.leaf:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: -2px;
+  box-shadow: none;
+}
+
+/* Quando o board empilha (<=1080px), o rail passa a faixa superior: a borda vai
+   para baixo e a lista ganha altura maxima para nao empurrar a ficha pra fora. */
+@media (max-width: 1080px) {
+  .rail {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .scroll {
+    max-height: 320px;
+  }
+}

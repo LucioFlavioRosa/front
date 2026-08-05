@@ -1,0 +1,84 @@
+/* Espelha a linha de parametro do prototipo (linhas 499-509). */
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 16px;
+  align-items: center;
+  padding: 9px 0;
+  border-bottom: 1px solid #f8fafc;
+}
+
+.rotulo {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-900);
+}
+
+/* Botao de verdade (alcancavel por Tab), com aparencia de link "?". */
+.help {
+  cursor: pointer;
+  color: var(--db-text-2);
+  font-weight: 800;
+  margin-left: 2px;
+  background: none;
+  border: none;
+  padding: 0 2px;
+  font-size: inherit;
+  border-radius: 4px;
+}
+
+.tecnico {
+  font-size: 11px;
+  color: var(--text-400);
+  font-family: var(--font-mono);
+}
+
+.control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.input {
+  width: 100px;
+  text-align: right;
+  border-radius: 8px;
+  padding: 7px 10px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-800);
+}
+
+.select {
+  border-radius: 8px;
+  padding: 7px 10px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-800);
+}
+
+/* <output>: inline por padrao — precisa de inline-block para a largura valer. */
+.calc {
+  display: inline-block;
+  width: 100px;
+  text-align: right;
+  border-radius: 8px;
+  padding: 7px 10px;
+  font-size: 13.5px;
+  font-weight: 700;
+  border: 1.5px solid var(--border);
+  background: var(--calc-bg);
+  color: var(--calc-text);
+}
+
+.unidade {
+  font-size: 12px;
+  color: var(--text-400);
+  white-space: nowrap;
+}
+
+.ajuda {
+  font-size: 12px;
+  color: var(--text-500);
+  line-height: 1.45;
+}

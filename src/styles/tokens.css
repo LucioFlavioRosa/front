@@ -1,0 +1,82 @@
+/* Design tokens — fonte da verdade: README do handoff (secao "Design tokens")
+   + linguagem visual de origem do dado. Nao inventar cores fora daqui. */
+:root {
+  /* ---- Base / superficie ---- */
+  --bg-app: #eef1f4;
+  --surface: #ffffff;
+
+  /* ---- Texto ---- */
+  --text-900: #0f172a;
+  --text-800: #1e293b;
+  --text-600: #475569;
+  --text-500: #64748b;
+  --text-400: #94a3b8;
+
+  /* ---- Bordas ---- */
+  --border: #e2e8f0;
+  --border-soft: #f1f5f9;
+
+  /* ---- Marca (verde Aegea) ---- */
+  --brand: #16a34a;
+  --brand-hover: #15803d;
+  --brand-grad-a: #16a34a;
+  --brand-grad-b: #0891b2;
+  --grad-logo: linear-gradient(135deg, #16a34a, #0891b2);
+  --grad-progress: linear-gradient(90deg, #16a34a, #22c55e);
+
+  /* ---- Databricks (cyan) = dado travado ---- */
+  --db-bg: #ecfeff;
+  --db-bg-soft: #f7feff;
+  --db-border: #a5f3fc;
+  --db-text: #155e75;
+  --db-text-2: #0e7490;
+
+  /* ---- Pendente (ambar) = campo do usuario vazio ---- */
+  --pend-bg: #fffbeb;
+  --pend-border: #fcd34d;
+  --pend-border-2: #fde68a;
+  --pend-accent: #f59e0b;
+  --pend-text: #92400e;
+  --pend-text-2: #b45309;
+  --pend-text-3: #a16207;
+
+  /* ---- OK (verde) = campo preenchido ---- */
+  --ok-bg: #f0fdf4;
+  --ok-border: #86efac;
+  --ok-border-2: #bbf7d0;
+  --ok-text: #15803d;
+  --ok-text-2: #166534;
+
+  /* ---- Calculado (cinza) = campos f, nunca editaveis ---- */
+  --calc-bg: #f1f5f9;
+  --calc-border: #e2e8f0;
+  --calc-text: #475569;
+
+  /* ---- Tipografia ---- */
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, Consolas, monospace;
+
+  /* ---- Radius ---- */
+  --radius-card: 14px; /* cards 12-16 */
+  --radius-field: 8px; /* campos 6-10 */
+  --radius-chip: 999px;
+
+  /* ---- Sombra / foco ---- */
+  --shadow-card: 0 8px 32px -12px rgba(15, 23, 42, 0.15);
+  --focus-ring: 0 0 0 3px rgba(34, 197, 94, 0.15);
+
+  /* ---- Overlay do modal ---- */
+  --overlay: rgba(15, 23, 42, 0.45);
+
+  /* ---- Toast ---- */
+  --toast-bg: #0f172a;
+
+  /* ---- Layout ---- */
+  --header-h: 60px;
+  --rail-w: 292px; /* rail da arvore 280-300 */
+  --dict-w: 360px; /* painel de dicionario */
+  --z-header: 20;
+  --z-panel: 30;
+  --z-modal: 40;
+  --z-toast: 50;
+}

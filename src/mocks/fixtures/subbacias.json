@@ -1,0 +1,384 @@
+{
+  "arvore": [
+    {
+      "id": "sup1",
+      "nome": "Superintendência 1",
+      "cidades": [
+        {
+          "id": "c1",
+          "nome": "Maricá",
+          "sistemas": [
+            {
+              "id": "s1",
+              "nome": "Sistema 1",
+              "subIds": [
+                "b1_1_1"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "c9",
+          "nome": "Búzios",
+          "sistemas": [
+            {
+              "id": "s3",
+              "nome": "Sistema 3",
+              "subIds": [
+                "b3_1_1",
+                "b3_1_2",
+                "b3_2_1"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sup2",
+      "nome": "Superintendência 2",
+      "cidades": [
+        {
+          "id": "c6",
+          "nome": "Rio das Ostras",
+          "sistemas": [
+            {
+              "id": "s2",
+              "nome": "Sistema 2",
+              "subIds": [
+                "b2_1_1",
+                "b2_1_2",
+                "b2_1_3",
+                "b2_1_4"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "subs": {
+    "b1_1_1": {
+      "id": "b1_1_1",
+      "nome": "Sub-bacia 1_1",
+      "sisId": "s1",
+      "sistema": "Sistema 1 · Maricá",
+      "jusante": "e1",
+      "db": {
+        "fat": "260.964",
+        "arr": "211.642",
+        "ligU": "3.214",
+        "ligA": "1.318",
+        "ligN": "1.896",
+        "ecoU": "9.642",
+        "ecoA": "3.953",
+        "ecoN": "5.689",
+        "ligUInd": "67",
+        "ligAInd": "28",
+        "fatInd": "36.535",
+        "arrInd": "29.630",
+        "ticket": "R$ 198"
+      },
+      "params": {
+        "preco": "784",
+        "tarr": "6",
+        "ramp": "2",
+        "vaz": "165,9",
+        "vazInd": "10,4",
+        "pot": "1,0",
+        "popU": "30.854",
+        "popA": "12.650"
+      },
+      "obrasOverride": {
+        "0": {
+          "qtd": "761,6",
+          "preco": "2.500,14",
+          "opex": "49.847",
+          "tPred": "10",
+          "dur": "15"
+        },
+        "4": {
+          "qtd": "436,3",
+          "preco": "900,03",
+          "opex": "11.390",
+          "tPred": "7",
+          "dur": "12"
+        }
+      }
+    },
+    "b2_1_1": {
+      "id": "b2_1_1",
+      "nome": "Sub-bacia 1_1",
+      "sisId": "s2",
+      "sistema": "Sistema 2 · Rio das Ostras",
+      "jusante": "b2_1_2",
+      "db": {
+        "fat": "9.027",
+        "arr": "8.052",
+        "ligU": "158",
+        "ligA": "51",
+        "ligN": "107",
+        "ecoU": "174",
+        "ecoA": "56",
+        "ecoN": "118",
+        "ligUInd": "6",
+        "ligAInd": "2",
+        "fatInd": "1.986",
+        "arrInd": "1.771",
+        "ticket": "R$ 177"
+      },
+      "params": {
+        "preco": "1.334",
+        "tarr": "2",
+        "ramp": "2",
+        "vaz": "7,9",
+        "vazInd": "0,9",
+        "pot": "1,0",
+        "popU": "557",
+        "popA": "179"
+      },
+      "obrasOverride": {
+        "0": {
+          "qtd": "38,3",
+          "preco": "2.497,70",
+          "opex": "2.738",
+          "tPred": "11",
+          "dur": "9",
+          "wacc": "0,078"
+        }
+      }
+    },
+    "b2_1_2": {
+      "id": "b2_1_2",
+      "nome": "Sub-bacia 1_2",
+      "sisId": "s2",
+      "sistema": "Sistema 2 · Rio das Ostras",
+      "jusante": "b2_1_3",
+      "db": {
+        "fat": "20.460",
+        "arr": "16.143",
+        "ligU": "289",
+        "ligA": "93",
+        "ligN": "196",
+        "ecoU": "318",
+        "ecoA": "102",
+        "ecoN": "216",
+        "ligUInd": "3",
+        "ligAInd": "1",
+        "fatInd": "1.841",
+        "arrInd": "1.453",
+        "ticket": "R$ 220"
+      },
+      "params": {
+        "preco": "533",
+        "tarr": "1",
+        "ramp": "12",
+        "vaz": "14,5",
+        "vazInd": "0,5",
+        "pot": "1,0",
+        "popU": "1.018",
+        "popA": "326"
+      },
+      "obrasOverride": {
+        "0": {
+          "qtd": "92",
+          "preco": "2.500,40",
+          "opex": "6.193",
+          "tPred": "1",
+          "dur": "7"
+        }
+      }
+    },
+    "b2_1_3": {
+      "id": "b2_1_3",
+      "nome": "Sub-bacia 1_3",
+      "sisId": "s2",
+      "sistema": "Sistema 2 · Rio das Ostras",
+      "jusante": "b2_1_4",
+      "db": {
+        "fat": "25.312",
+        "arr": "21.034",
+        "ligU": "352",
+        "ligA": "113",
+        "ligN": "239",
+        "ecoU": "387",
+        "ecoA": "124",
+        "ecoN": "263",
+        "ligUInd": "17",
+        "ligAInd": "5",
+        "fatInd": "7.847",
+        "arrInd": "6.521",
+        "ticket": "R$ 224"
+      },
+      "params": {
+        "preco": "1.312",
+        "tarr": "5",
+        "ramp": "12",
+        "vaz": "",
+        "vazInd": "",
+        "pot": "1,0",
+        "popU": "1.238",
+        "popA": "397"
+      },
+      "obrasOverride": {
+        "0": {
+          "qtd": "113",
+          "preco": "2.501,00",
+          "opex": "7.900",
+          "tPred": "2",
+          "dur": "8"
+        }
+      }
+    },
+    "b2_1_4": {
+      "id": "b2_1_4",
+      "nome": "Sub-bacia 1_4",
+      "sisId": "s2",
+      "sistema": "Sistema 2 · Rio das Ostras",
+      "jusante": "e2",
+      "db": {
+        "fat": "6.380",
+        "arr": "5.640",
+        "ligU": "360",
+        "ligA": "116",
+        "ligN": "244",
+        "ecoU": "396",
+        "ecoA": "127",
+        "ecoN": "269",
+        "ligUInd": "10",
+        "ligAInd": "3",
+        "fatInd": "1.148",
+        "arrInd": "1.015",
+        "ticket": "R$ 55"
+      },
+      "params": {
+        "preco": "",
+        "tarr": "",
+        "ramp": "3",
+        "vaz": "18,1",
+        "vazInd": "1,5",
+        "pot": "1,0",
+        "popU": "1.267",
+        "popA": "406"
+      },
+      "obrasOverride": {
+        "3": {
+          "qtd": "",
+          "preco": "",
+          "opex": "",
+          "tPred": "",
+          "dur": ""
+        },
+        "2": {
+          "qtd": "0",
+          "dur": "8",
+          "tPred": "3"
+        }
+      }
+    },
+    "b3_1_1": {
+      "id": "b3_1_1",
+      "nome": "Sub-bacia 1_1",
+      "sisId": "s3",
+      "sistema": "Sistema 3 · Búzios",
+      "jusante": "b3_1_2",
+      "db": {
+        "fat": "15.912",
+        "arr": "13.843",
+        "ligU": "142",
+        "ligA": "78",
+        "ligN": "64",
+        "ecoU": "156",
+        "ecoA": "85",
+        "ecoN": "71",
+        "ligUInd": "9",
+        "ligAInd": "5",
+        "fatInd": "6.047",
+        "arrInd": "5.260",
+        "ticket": "R$ 204"
+      },
+      "params": {
+        "preco": "1.105",
+        "tarr": "8",
+        "ramp": "12",
+        "vaz": "7,6",
+        "vazInd": "1,4",
+        "pot": "1,0",
+        "popU": "499",
+        "popA": "272"
+      },
+      "obrasOverride": {}
+    },
+    "b3_1_2": {
+      "id": "b3_1_2",
+      "nome": "Sub-bacia 1_2",
+      "sisId": "s3",
+      "sistema": "Sistema 3 · Búzios",
+      "jusante": "b3_1_3",
+      "db": {
+        "fat": "11.869",
+        "arr": "9.282",
+        "ligU": "151",
+        "ligA": "83",
+        "ligN": "68",
+        "ecoU": "166",
+        "ecoA": "91",
+        "ecoN": "75",
+        "ligUInd": "3",
+        "ligAInd": "1",
+        "fatInd": "1.424",
+        "arrInd": "1.114",
+        "ticket": "R$ 143"
+      },
+      "params": {
+        "preco": "564",
+        "tarr": "4",
+        "ramp": "",
+        "vaz": "8,1",
+        "vazInd": "0,5",
+        "pot": "1,0",
+        "popU": "531",
+        "popA": "291"
+      },
+      "obrasOverride": {}
+    },
+    "b3_2_1": {
+      "id": "b3_2_1",
+      "nome": "Sub-bacia 2_1",
+      "sisId": "s3",
+      "sistema": "Sistema 3 · Búzios",
+      "jusante": "b3_2_2",
+      "db": {
+        "fat": "31.682",
+        "arr": "25.567",
+        "ligU": "267",
+        "ligA": "146",
+        "ligN": "121",
+        "ecoU": "294",
+        "ecoA": "161",
+        "ecoN": "133",
+        "ligUInd": "10",
+        "ligAInd": "6",
+        "fatInd": "7.920",
+        "arrInd": "6.392",
+        "ticket": "R$ 217"
+      },
+      "params": {
+        "preco": "",
+        "tarr": "11",
+        "ramp": "2",
+        "vaz": "",
+        "vazInd": "",
+        "pot": "1,0",
+        "popU": "941",
+        "popA": "515"
+      },
+      "obrasOverride": {
+        "1": {
+          "qtd": "",
+          "preco": ""
+        }
+      }
+    }
+  }
+}

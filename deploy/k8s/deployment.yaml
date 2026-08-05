@@ -1,0 +1,78 @@
+# Deployment do frontend. Valores marcados com TROCAR são placeholders.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cadastro-web
+  labels:
+    app.kubernetes.io/name: cadastro-web
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: cadastro-web
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: cadastro-web
+      annotations:
+        # Faz o rollout acontecer quando só o ConfigMap muda (o pod não recarrega
+        # o volume sozinho a tempo de valer a pena). Atualize o valor no deploy,
+        # ou use um plugin que calcule o hash do ConfigMap.
+        configmap/revision: "1" # TROCAR a cada mudança no configmap.yaml
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 101
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: web
+          image: registry.exemplo.aegea.com.br/cadastro-web:0.1.0 # TROCAR
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            # Site estático: consumo baixo e previsível. Ajuste com dado real.
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 2
+            periodSeconds: 10
+          volumeMounts:
+            # Config de runtime por cima do arquivo que veio na imagem.
+            - name: config
+              mountPath: /usr/share/nginx/html/config.js
+              subPath: config.js
+              readOnly: true
+            # readOnlyRootFilesystem: o nginx precisa escrever nestes caminhos.
+            - name: cache
+              mountPath: /var/cache/nginx
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: config
+          configMap:
+            name: cadastro-web-config
+        - name: cache
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}

@@ -1,0 +1,5 @@
+[
+  { "id": "r-sudeste", "nome": "Regional Sudeste" },
+  { "id": "r-centro-oeste", "nome": "Regional Centro-Oeste" },
+  { "id": "r-nordeste", "nome": "Regional Nordeste" }
+]

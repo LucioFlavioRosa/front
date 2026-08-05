@@ -1,0 +1,28 @@
+# Config de runtime do frontend — é ESTE arquivo que muda entre ambientes.
+# A mesma imagem roda em dev, homologação e produção; só o ConfigMap difere.
+#
+# ATENÇÃO: nada aqui é segredo. O conteúdo é servido ao navegador em /config.js.
+# Client id e authority de SSO são públicos por natureza; client SECRET não é —
+# aplicação SPA não usa client secret. Se alguém pedir para colocar um aqui, a
+# resposta é não: o fluxo correto é Authorization Code + PKCE, sem secret.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cadastro-web-config
+  labels:
+    app.kubernetes.io/name: cadastro-web
+data:
+  config.js: |
+    window.__CADASTRO_CONFIG__ = {
+      // Vazio = "/api" na mesma origem, roteado pelo Ingress. É o recomendado:
+      // sem CORS e sem depender do domínio do backend.
+      apiUrl: '',
+
+      // TROCAR quando o SSO for ligado. Enquanto authority e clientId estiverem
+      // vazios, o app não manda Authorization e funciona sem autenticação.
+      sso: {
+        authority: '',        // ex.: https://login.microsoftonline.com/<TENANT_ID>/v2.0
+        clientId: '',         // ex.: 00000000-0000-0000-0000-000000000000
+        escopos: [],          // ex.: ['api://cadastro-otimizador/.default']
+      },
+    }

@@ -1,0 +1,43 @@
+# Ingress: um host servindo as duas coisas.
+#
+#   /api  -> Service do backend do cadastro
+#   /     -> Service do frontend (este projeto)
+#
+# A ordem importa: /api precisa vir ANTES de /, senão o frontend captura tudo e
+# a API nunca é alcançada. Servir os dois no mesmo host é o que deixa o app usar
+# `apiUrl: ''` (caminho relativo) — sem CORS e sem o domínio do backend no bundle.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: cadastro-web
+  labels:
+    app.kubernetes.io/name: cadastro-web
+  annotations:
+    # TROCAR conforme o controller do cluster (nginx, traefik, alb...).
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  ingressClassName: nginx # TROCAR
+  tls:
+    - hosts:
+        - cadastro.exemplo.aegea.com.br # TROCAR
+      secretName: cadastro-web-tls # TROCAR
+  rules:
+    - host: cadastro.exemplo.aegea.com.br # TROCAR
+      http:
+        paths:
+          # A API primeiro.
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: cadastro-api # TROCAR pelo Service do backend
+                port:
+                  number: 80
+          # O frontend por último: pega todo o resto, incluindo as rotas do SPA.
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: cadastro-web
+                port:
+                  number: 80

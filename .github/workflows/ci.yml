@@ -1,0 +1,38 @@
+# Portão automático do projeto: o mesmo que `npm run verificar` roda localmente.
+#
+# O repositório ainda não existe (o código foi entregue como pasta), então este
+# arquivo é o ponto de partida para quando ele for criado — nada aqui depende de
+# segredo ou de infraestrutura da Aegea.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # `npm ci` (e não `install`) para o CI usar exatamente o package-lock.
+      - run: npm ci
+
+      # Cada passo isolado: quem lê o log vê qual portão caiu, sem abrir o job.
+      - name: Lint
+        run: npm run lint
+
+      - name: Formatação
+        run: npm run format:check
+
+      - name: Tipos e build
+        run: npm run build
+
+      - name: Testes
+        run: npm test

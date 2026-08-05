@@ -1,0 +1,9 @@
+{
+  "etes": [
+    { "id": "e1", "sub": "Sistema 1 · Maricá", "cidId": "c1", "nova": "Sim", "capMod": "49", "capexMod": "415.175", "opexMod": "65.934", "tExec": "12", "capNom": "0", "vazOp": "0", "terreno": "912.405", "modulos": "4", "wacc": "0,091" },
+    { "id": "e2", "sub": "Sistema 2 · Rio das Ostras", "cidId": "c6", "nova": "Sim", "capMod": "20", "capexMod": "404.446", "opexMod": "49.343", "tExec": "18", "capNom": "0", "vazOp": "0", "terreno": "1.056.981", "modulos": "", "wacc": "0,091" },
+    { "id": "e3", "sub": "Sistema 3 · Búzios", "cidId": "c9", "nova": "Sim", "capMod": "26", "capexMod": "423.113", "opexMod": "47.774", "tExec": "9", "capNom": "0", "vazOp": "0", "terreno": "2.580.716", "modulos": "4", "wacc": "0,091" },
+    { "id": "e5", "sub": "Sistema 5 · Silva Jardim", "cidId": "c10", "nova": "Sim", "capMod": "25", "capexMod": "688.846", "opexMod": "", "tExec": "13", "capNom": "0", "vazOp": "0", "terreno": "2.050.769", "modulos": "5", "wacc": "0,091" },
+    { "id": "e6", "sub": "Sistema 6 · Casimiro", "cidId": "c11", "nova": "Nao", "capMod": "64", "capexMod": "467.138", "opexMod": "48.153", "tExec": "6", "capNom": "302,6", "vazOp": "230,1", "terreno": "0", "modulos": "0", "wacc": "0,071" }
+  ]
+}
