@@ -7,6 +7,8 @@ import { GrupoContrato } from './pages/GrupoContrato'
 import { GrupoSubBacias } from './pages/GrupoSubBacias'
 import { GrupoEtes } from './pages/GrupoEtes'
 import { GrupoCts } from './pages/GrupoCts'
+import { Portal } from './pages/Portal'
+import { Simular } from './pages/Simular'
 import { ResultsShell } from './layout/ResultsShell'
 import { Historico } from './pages/resultado/Historico'
 import { Global } from './pages/resultado/Global'
@@ -34,7 +36,12 @@ export const routes: RouteObject[] = [
     path: '/',
     element: <AppShell />,
     children: [
-      { index: true, element: <SelecaoUnidade /> },
+      // A raiz e o PORTAL: os tres caminhos do produto. Antes era a selecao de
+      // unidade, o que obrigava a escolher uma unidade para so depois descobrir o
+      // que dava para fazer com ela — e o historico nem precisa de unidade.
+      { index: true, element: <Portal /> },
+      { path: 'cadastro', element: <SelecaoUnidade /> },
+      { path: 'simular', element: <Simular /> },
       {
         path: 'unidade/:unidadeId',
         children: [

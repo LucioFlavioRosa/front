@@ -43,7 +43,11 @@ export function ResultsHeader() {
   return (
     <header className={styles.header}>
       <div className={styles.inner}>
-        <Link to="/resultados" className={styles.brand}>
+        {/* Desvio consciente do handoff, que dizia "o logo volta para a lista":
+            aquilo foi escrito quando o historico ERA a porta de entrada. Agora
+            existe um portal antes dele, e o logo leva la — a lista continua a um
+            clique, como primeiro degrau do breadcrumb. */}
+        <Link to="/" className={styles.brand} aria-label="Ir para a tela inicial">
           <Logo size={30} />
           <span>
             <span className={styles.brandText1}>aegea · Otimizador de CAPEX</span>

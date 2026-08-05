@@ -10,6 +10,13 @@ import styles from './AppHeader.module.css'
  * (unidade / titulo do grupo + "trocar unidade"), barra de completude e chip
  * "Databricks conectado". max-width 1500px.
  */
+/** Segunda linha da marca, por area. No portal fica so o nome do produto. */
+function areaDaRota(pathname: string): string {
+  if (pathname.startsWith('/simular')) return 'Simulação'
+  if (pathname === '/') return 'Otimizador de CAPEX'
+  return 'Cadastro de dados'
+}
+
 const TITULO_GRUPO: Record<string, string> = {
   hierarquia: 'Hierarquia & Topologia',
   'contrato-metas': 'Contrato & Metas',
@@ -31,21 +38,29 @@ export function AppHeader() {
   const grupoTitulo = slug && slug !== unidadeId ? TITULO_GRUPO[slug] : undefined
 
   const goHub = () => navigate(unidadeId ? `/unidade/${unidadeId}` : '/')
+  const goInicio = () => navigate('/')
 
   // Titulo da aba acompanha onde o usuario esta (o header ja tem os dois dados).
   useEffect(() => {
+    // O portal e a tela de simulacao definem o proprio titulo.
+    if (pathname === '/' || pathname.startsWith('/simular')) return
     const partes = [grupoTitulo, unidade?.nome, 'Cadastro · Otimizador CAPEX'].filter(Boolean)
     document.title = partes.join(' · ')
-  }, [grupoTitulo, unidade?.nome])
+  }, [grupoTitulo, unidade?.nome, pathname])
 
   return (
     <header className={styles.header}>
       <div className={styles.inner}>
-        <button type="button" className={styles.brand} onClick={goHub}>
+        <button
+          type="button"
+          className={styles.brand}
+          onClick={unidadeId ? goHub : goInicio}
+          aria-label={unidadeId ? 'Ir para o hub da unidade' : 'Ir para a tela inicial'}
+        >
           <Logo size={32} />
           <span>
             <span className={styles.brandText1}>aegea · Base do Otimizador</span>
-            <span className={styles.brandText2}>Cadastro de dados</span>
+            <span className={styles.brandText2}>{areaDaRota(pathname)}</span>
           </span>
         </button>
 
@@ -61,7 +76,7 @@ export function AppHeader() {
                 <strong className={styles.grupoTitulo}>{grupoTitulo}</strong>
               </>
             )}
-            <button type="button" className={styles.trocar} onClick={() => navigate('/')}>
+            <button type="button" className={styles.trocar} onClick={() => navigate('/cadastro')}>
               ▾ trocar unidade
             </button>
           </nav>

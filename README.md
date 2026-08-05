@@ -4,10 +4,22 @@ Frontend do **Otimizador de sequência de obras** (o MILP que escolhe quais obra
 entram no plano, em que ano). São dois produtos na mesma casca, ligados pelo hub
 da unidade:
 
-| Rota          | Produto        | O que faz                                                  |
-| ------------- | -------------- | ---------------------------------------------------------- |
-| `/`           | **Cadastro**   | confere e grava os dados que a simulação consome (escrita) |
-| `/resultados` | **Resultados** | lê as tabelas de uma rodada já executada (leitura pura)    |
+| Rota          | O que é                                                                   |
+| ------------- | ------------------------------------------------------------------------- |
+| `/`           | **Portal** — os três caminhos do fluxo                                    |
+| `/cadastro`   | **Cadastro** — confere e grava os dados que a simulação consome (escrita) |
+| `/simular`    | **Simulação** — dispara a rodada _(ainda não construída; ver abaixo)_     |
+| `/resultados` | **Resultados** — lê as tabelas de uma rodada executada (leitura pura)     |
+
+A raiz é um portal, e não a seleção de unidade, porque **o que você quer fazer
+determina se a unidade importa**: cadastro e simulação são de uma unidade, o
+histórico é do usuário e já traz a unidade em cada rodada. Antes era preciso
+escolher uma unidade para só então descobrir o que dava para fazer com ela.
+
+A tela de `/simular` é um marcador honesto: o disparo da rodada está **fora do
+escopo dos dois handoffs** — não há protótipo nem contrato de API para ele, e o
+backend que executa o job também não existe. Ela explica o que a rodada vai
+pedir e leva aos dois caminhos que funcionam.
 
 Este app **não roda a simulação** — ele prepara o cadastro que ela consome e lê o
 resultado que ela produziu. Quem executa é o job no Databricks.
@@ -32,7 +44,7 @@ backend real, use `VITE_API_PROXY` (ver `.env.example`).
 | Comando                 | O que faz                                                |
 | ----------------------- | -------------------------------------------------------- |
 | `npm run dev`           | Sobe o app com mocks                                     |
-| `npm test`              | Suíte completa (226 testes)                              |
+| `npm test`              | Suíte completa (233 testes)                              |
 | `npm run test:watch`    | Testes em watch                                          |
 | `npm run lint`          | ESLint                                                   |
 | `npm run format`        | Prettier (escreve)                                       |

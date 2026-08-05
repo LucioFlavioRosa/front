@@ -41,7 +41,7 @@ describe('falha de carga', () => {
   })
 
   it('a tela de seleção avisa quando não consegue listar as regionais', async () => {
-    renderApp('/')
+    renderApp('/cadastro')
 
     expect(await screen.findByText(/Não foi possível carregar a lista de regionais/)).toBeTruthy()
     // O select fica desabilitado com o motivo no lugar do "Selecione…".
