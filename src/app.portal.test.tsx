@@ -76,6 +76,29 @@ describe('navegação depois da reorganização', () => {
     ).toBeTruthy()
   })
 
+  it('o cadastro NÃO oferece caminho para o histórico', async () => {
+    // As areas nao se cruzam: o cadastro prepara o dado, resultado e outra
+    // coisa. Quem quer ver rodadas passa pelo portal, que e onde os tres
+    // caminhos convivem — atalho cruzado embaralharia a escolha que o portal
+    // acabou de organizar.
+    renderApp('/unidade/u-jacarei')
+    await screen.findByRole('heading', { name: /Dados da/ })
+
+    const paraResultados = screen
+      .queryAllByRole('link')
+      .filter((a) => a.getAttribute('href')?.startsWith('/resultados'))
+    expect(paraResultados).toEqual([])
+  })
+
+  it('a seleção de unidade também não leva ao histórico', async () => {
+    renderApp('/cadastro')
+    await screen.findByLabelText('Regional')
+    const paraResultados = screen
+      .queryAllByRole('link')
+      .filter((a) => a.getAttribute('href')?.startsWith('/resultados'))
+    expect(paraResultados).toEqual([])
+  })
+
   it('nos resultados, a marca leva ao início e o breadcrumb ao histórico', async () => {
     renderApp('/resultados')
     // Desvio consciente do handoff: ele dizia "o logo volta para a lista", mas
