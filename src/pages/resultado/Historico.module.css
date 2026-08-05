@@ -1,0 +1,133 @@
+.titulo {
+  margin: 0 0 4px;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-900);
+}
+
+.sub {
+  margin: 0 0 18px;
+  font-size: 12.5px;
+  color: var(--text-500);
+}
+
+.lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 14px;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 18px 20px;
+  box-shadow: 0 2px 8px -4px rgba(15, 23, 42, 0.18);
+}
+
+.cabecalho {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.nome {
+  margin: 0 0 3px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-900);
+}
+
+.meta {
+  margin: 0;
+  font-size: 11.5px;
+  color: var(--text-500);
+}
+
+.id {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-600);
+}
+
+.seloBom,
+.seloRuim {
+  font-size: 10.5px;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 4px 10px;
+  white-space: nowrap;
+}
+.seloBom {
+  color: var(--ok-text);
+  background: var(--ok-bg);
+  border: 1px solid var(--ok-border-2);
+}
+.seloRuim {
+  color: #b91c1c;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+.aviso {
+  margin: 14px 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--pend-text);
+  background: var(--pend-bg);
+  border: 1px solid var(--pend-border-2);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.metricas {
+  margin: 16px 0 14px;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px 18px;
+}
+
+.metrica {
+  margin: 0;
+}
+
+.metricaK {
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-400);
+}
+
+.metricaV,
+.metricaVDestaque {
+  margin: 2px 0 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-900);
+}
+.metricaVDestaque {
+  color: #0f9b8e;
+}
+
+.ver {
+  display: inline-block;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #fff;
+  background: #0f9b8e;
+  border-radius: 8px;
+  padding: 8px 14px;
+  text-decoration: none;
+}
+.ver:hover {
+  background: #0d8579;
+}
+.ver:focus-visible {
+  outline: 2px solid var(--text-900);
+  outline-offset: 2px;
+}

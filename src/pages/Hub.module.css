@@ -107,6 +107,25 @@
   line-height: 1.5;
 }
 
+/* Porta de entrada dos resultados. Fica no card do bloqueio da simulacao porque
+   e ali que o usuario pensa em "rodar" — mas o link nao depende de completude. */
+.verResultados {
+  display: inline-block;
+  margin-top: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--db-text-2);
+  text-decoration: none;
+}
+.verResultados:hover {
+  text-decoration: underline;
+}
+.verResultados:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
 /* ---------- Responsivo ---------- */
 @media (max-width: 1080px) {
   .bottomRow {

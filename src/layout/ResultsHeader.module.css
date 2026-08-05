@@ -1,0 +1,172 @@
+/* Header das telas de resultado. Medidas do prototipo (Resultados.dc.html:22-64):
+   max-width 1560px, padding 11px 28px, breadcrumb numa segunda linha. */
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.inner {
+  max-width: 1560px;
+  margin: 0 auto;
+  padding: 11px 28px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
+  border-radius: 8px;
+}
+.brand:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 3px;
+}
+
+.brandText1 {
+  display: block;
+  font-weight: 800;
+  font-size: 13.5px;
+  color: var(--text-900);
+}
+.brandText2 {
+  display: block;
+  font-size: 10px;
+  color: var(--text-400);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.seletor {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 6px;
+}
+
+.rotulo {
+  font-size: 11px;
+  color: var(--text-400);
+}
+
+.select {
+  border-radius: 8px;
+  padding: 5px 9px;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1.5px solid #cbd5e1;
+  background: var(--surface);
+  color: var(--text-900);
+  font-family: inherit;
+  max-width: 320px;
+}
+
+.unidade {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-900);
+  background: #f1f5f9;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 5px 10px;
+}
+
+.chips {
+  margin-left: auto;
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.chip {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--text-600);
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px 10px;
+  white-space: nowrap;
+}
+.chipK {
+  color: var(--text-400);
+}
+
+.chipStatus {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--ok-text);
+  background: var(--ok-bg);
+  border: 1px solid var(--ok-border-2);
+  border-radius: 999px;
+  padding: 4px 10px;
+  white-space: nowrap;
+}
+
+/* ---- breadcrumb (segunda linha) ---- */
+.trilha {
+  max-width: 1560px;
+  margin: 0 auto;
+  padding: 0 28px 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.crumbItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.crumbLink {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--db-text-2);
+  text-decoration: none;
+  border-radius: 4px;
+}
+.crumbLink:hover {
+  text-decoration: underline;
+}
+.crumbLink:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+.crumbAtual {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-900);
+}
+
+.sep {
+  font-size: 11px;
+  color: #cbd5e1;
+}
+
+/* Abaixo de 900px os chips de parametro passariam a competir com o seletor de
+   rodada, que e o controle mais usado — eles descem para a linha do breadcrumb. */
+@media (max-width: 900px) {
+  .inner {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .chips {
+    margin-left: 0;
+    order: 3;
+    width: 100%;
+    justify-content: flex-start;
+  }
+}

@@ -79,4 +79,39 @@
   --z-panel: 30;
   --z-modal: 40;
   --z-toast: 50;
+
+  /* ================= TELAS DE RESULTADO =================
+     Semantica de cor do README do handoff de resultados. Aqui a cor NAO indica
+     origem do dado (como no cadastro) e sim o que o numero significa no plano:
+     entra valor, sai valor, ou nao ha obra. Nao misturar com a paleta acima. */
+
+  /* construida · entra valor · receita */
+  --res-teal: #0f9b8e;
+  --res-teal-fundo: #f0fdfa;
+  /* no que NAO fatura, e o VPL na cascata */
+  --res-ink: #0f2f2b;
+  /* nao construida · OPEX */
+  --res-laranja: #c2410c;
+  --res-laranja-fundo: #fff7ed;
+  /* consome valor · VPL negativo · vazao nao atendida */
+  --res-vermelho: #b91c1c;
+  --res-vermelho-fundo: #fef2f2;
+  /* obra de terceiro */
+  --res-cinza: #94a3b8;
+  /* no CTS (azul) e ETE (lilas) — os dois nos visualmente distintos */
+  --res-cts: #1d4ed8;
+  --res-cts-fundo: #eff6ff;
+  --res-ete: #7c3aed;
+  --res-ete-fundo: #f5f3ff;
+
+  /* Chip da tabela de origem (run_ano, run_obra...) no canto de cada quadro.
+     Reusa o cyan do "dado travado" do cadastro de proposito: nos dois casos ele
+     diz "este numero veio de fora, nao foi digitado aqui". */
+  --res-origem-bg: var(--db-bg);
+  --res-origem-borda: var(--db-border);
+  --res-origem-texto: var(--db-text-2);
+
+  /* Grid e eixos dos graficos */
+  --res-grid: #eef1f4;
+  --res-eixo: #94a3b8;
 }

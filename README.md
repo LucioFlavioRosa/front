@@ -1,9 +1,16 @@
-# Cadastro de Dados — Otimizador CAPEX de Esgoto
+# Otimizador CAPEX de Esgoto — Cadastro e Resultados
 
-Frontend das telas em que a Regional/Unidade confere e completa os dados que
-alimentam o **Otimizador de sequência de obras** (o MILP que escolhe quais obras
-entram no plano, em que ano). Este app **não roda a simulação**: ele prepara e
-grava o cadastro que ela consome.
+Frontend do **Otimizador de sequência de obras** (o MILP que escolhe quais obras
+entram no plano, em que ano). São dois produtos na mesma casca, ligados pelo hub
+da unidade:
+
+| Rota          | Produto        | O que faz                                                  |
+| ------------- | -------------- | ---------------------------------------------------------- |
+| `/`           | **Cadastro**   | confere e grava os dados que a simulação consome (escrita) |
+| `/resultados` | **Resultados** | lê as tabelas de uma rodada já executada (leitura pura)    |
+
+Este app **não roda a simulação** — ele prepara o cadastro que ela consome e lê o
+resultado que ela produziu. Quem executa é o job no Databricks.
 
 - **Para colocar em produção e ligar o backend:** [`DEPLOY.md`](DEPLOY.md) — é lá
   que está o contrato da API, o que cada campo significa e o que o backend
@@ -25,7 +32,7 @@ backend real, use `VITE_API_PROXY` (ver `.env.example`).
 | Comando                 | O que faz                                                |
 | ----------------------- | -------------------------------------------------------- |
 | `npm run dev`           | Sobe o app com mocks                                     |
-| `npm test`              | Suíte completa (171 testes)                              |
+| `npm test`              | Suíte completa (190 testes)                              |
 | `npm run test:watch`    | Testes em watch                                          |
 | `npm run lint`          | ESLint                                                   |
 | `npm run format`        | Prettier (escreve)                                       |
@@ -45,7 +52,36 @@ Uma unidade é escolhida na entrada; tudo depois é dela.
 | 05    | CTS                    | Coletor de Tempo Seco: irmã da sub-bacia, pareada 1:1 e **opcional**                                                                  |
 
 O **hub** da unidade mostra o estado de cada grupo e só libera a simulação com
-zero pendências.
+zero pendências. É dele que se chega ao histórico de simulações.
+
+## As telas de resultado (`/resultados`)
+
+Cascata de 6 níveis que lê as tabelas `run_*` de **uma rodada** (`run_id`) e
+nunca reexecuta o otimizador.
+
+| Nível | Rota                 | O que mostra                                           |
+| ----- | -------------------- | ------------------------------------------------------ |
+| 0     | `/resultados`        | histórico de simulações — a porta de entrada           |
+| 1     | `/resultados/:runId` | global: KPIs, 6 quadros do painel e a aba de EBITDA    |
+| 2     | `.../cidades/:id`    | cobertura vs metas, cascata do VPL, paridade e EBITDA  |
+| 3     | `.../sistemas/:id`   | topologia: sub-bacias, CTS e ETE ligadas até o destino |
+| 4     | `.../sub-bacias/:id` | por que entrou ou ficou de fora (explicabilidade)      |
+| 5     | `.../obras/:id`      | a ficha da obra e quem depende dela                    |
+
+Três decisões que explicam o código:
+
+- **Rotas planas** — a ancestralidade não vai no caminho. Bate com o contrato de
+  API, encurta a URL e faz o deep link funcionar. Quem sabe a que cidade um
+  sistema pertence é o payload, então o breadcrumb vem do `CrumbsProvider`.
+- **A unidade não entra na URL** — uma rodada pertence a exatamente uma unidade,
+  então o `run_id` já determina o recorte.
+- **Resultado é imutável** — um `run_id` publicado nunca muda, então as queries
+  usam `staleTime: Infinity` e a única mutação do pacote é excluir uma rodada.
+  Nada de reducer, rascunho ou guarda de saída: aqui não se edita.
+
+**Estado:** a casca está pronta (rotas, header com seletor de rodada e chips de
+parâmetro, breadcrumb, camada de dados com mocks). Os níveis 1 a 5 são
+marcadores — cada fatia seguinte troca um por tela de verdade.
 
 ## De onde vem o dado
 
@@ -82,6 +118,7 @@ numérico, está no [`DEPLOY.md`](DEPLOY.md) e no dicionário de dados do app.
 | `src/pages/`                    | Uma tela por grupo + hub + seleção de unidade                                                                                                                                   |
 | `src/components/`               | Peças compartilhadas (rail, ficha, tabela de obras, modal, toasts)                                                                                                              |
 | `src/mocks/`                    | MSW + fixtures — o backend de mentira do desenvolvimento                                                                                                                        |
+| **Resultado**                   | `domain/resultado.ts` (contrato), `api/resultados.ts` + `api/queriesResultado.ts`, `layout/ResultsShell` + `ResultsHeader`, `state/CrumbsResultado.tsx`, `pages/resultado/`     |
 | `src/testes/`                   | Ajudantes dos testes de tela (`renderApp`, api de mentira)                                                                                                                      |
 
 Stack: **Vite + React 18 + TypeScript**, React Router 6, TanStack Query, CSS

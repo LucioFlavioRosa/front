@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { GroupCard } from '../components/GroupCard'
 import { Carregando, ErroCarga } from '../components/Estado'
 import { chipConferir, chipPendencias, type ChipStatus } from '../lib/chip'
@@ -182,6 +182,13 @@ export function Hub() {
               ? 'Todos os campos da unidade estão preenchidos. A tela de simulação está liberada.'
               : `${nf.format(pendTotal)} pendências. A tela de simulação fica bloqueada até zerar — clique num grupo para completar.`}
           </div>
+          {/* O histórico NAO depende de completude: ele mostra rodadas que ja
+              existem. Travar o acesso a resultados antigos por causa de pendencia
+              no cadastro de hoje seria punir o usuario por um dado que nem entrou
+              naquelas rodadas. */}
+          <Link to="/resultados" className={styles.verResultados}>
+            Ver histórico de simulações →
+          </Link>
         </div>
       </div>
     </section>

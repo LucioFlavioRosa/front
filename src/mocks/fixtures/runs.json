@@ -1,0 +1,215 @@
+{
+  "_nota": "Historico de simulacoes. Numeros transcritos do prototipo do handoff (Resultados.dc.html) para a tela nascer com dado plausivel e reconciliado. run_infeasible existe de proposito: e o caso que a UI precisa tratar sem inventar zeros.",
+  "runs": [
+    {
+      "runId": "run_2026_0814",
+      "nome": "Litoral 1 — janela 8a, foco cobertura",
+      "unidadeId": "u1",
+      "unidadeNome": "Litoral 1",
+      "dataHora": "2026-08-04T14:32:00-03:00",
+      "autor": "lucio.rosa",
+      "duracaoS": 274,
+      "status": "OPTIMAL",
+      "favorita": true,
+      "parametros": {
+        "baseReceita": "arrecadada",
+        "usarCts": true,
+        "janelaCapex": 8,
+        "orcamento": 410000000,
+        "focoCobertura": 1.0,
+        "incluirIndustrial": true
+      },
+      "metricas": {
+        "vpl": 168069034,
+        "capex": 304182900,
+        "usoOrcamentoPct": 74.2,
+        "obrasConstruidas": 367,
+        "obrasTotal": 902,
+        "coberturaFimPct": 77.6,
+        "metasAtingidas": 2,
+        "metasTotal": 2,
+        "ebitdaTotal": 469377285
+      }
+    },
+    {
+      "runId": "run_2026_0811",
+      "nome": "Litoral 1 — sem CTS, base faturada",
+      "unidadeId": "u1",
+      "unidadeNome": "Litoral 1",
+      "dataHora": "2026-08-01T09:15:00-03:00",
+      "autor": "lucio.rosa",
+      "duracaoS": 188,
+      "status": "OPTIMAL",
+      "favorita": false,
+      "parametros": {
+        "baseReceita": "faturada",
+        "usarCts": false,
+        "janelaCapex": 8,
+        "orcamento": 410000000,
+        "focoCobertura": 1.0,
+        "incluirIndustrial": true
+      },
+      "metricas": {
+        "vpl": 181240117,
+        "capex": 281655400,
+        "usoOrcamentoPct": 68.7,
+        "obrasConstruidas": 341,
+        "obrasTotal": 846,
+        "coberturaFimPct": 77.6,
+        "metasAtingidas": 2,
+        "metasTotal": 2,
+        "ebitdaTotal": 471902118
+      }
+    },
+    {
+      "runId": "run_2026_0729",
+      "nome": "Litoral 1 — orçamento apertado (180 Mi)",
+      "unidadeId": "u1",
+      "unidadeNome": "Litoral 1",
+      "dataHora": "2026-07-29T17:48:00-03:00",
+      "autor": "ana.martins",
+      "duracaoS": 301,
+      "status": "FEASIBLE",
+      "favorita": false,
+      "parametros": {
+        "baseReceita": "arrecadada",
+        "usarCts": true,
+        "janelaCapex": 8,
+        "orcamento": 180000000,
+        "focoCobertura": 0.5,
+        "incluirIndustrial": true
+      },
+      "metricas": {
+        "vpl": 121447890,
+        "capex": 179433100,
+        "usoOrcamentoPct": 99.7,
+        "obrasConstruidas": 214,
+        "obrasTotal": 902,
+        "coberturaFimPct": 64.7,
+        "metasAtingidas": 0,
+        "metasTotal": 2,
+        "ebitdaTotal": 302118440
+      }
+    },
+    {
+      "runId": "run_2026_0722",
+      "nome": "Litoral 1 — obrigatórias em 2027",
+      "unidadeId": "u1",
+      "unidadeNome": "Litoral 1",
+      "dataHora": "2026-07-22T11:02:00-03:00",
+      "autor": "ana.martins",
+      "duracaoS": 62,
+      "status": "INFEASIBLE",
+      "favorita": false,
+      "parametros": {
+        "baseReceita": "arrecadada",
+        "usarCts": true,
+        "janelaCapex": 8,
+        "orcamento": 90000000,
+        "focoCobertura": 1.0,
+        "incluirIndustrial": true
+      }
+    }
+  ],
+  "meta": {
+    "run_2026_0814": {
+      "runId": "run_2026_0814",
+      "nome": "Litoral 1 — janela 8a, foco cobertura",
+      "unidadeId": "u1",
+      "unidadeNome": "Litoral 1",
+      "dataHora": "2026-08-04T14:32:00-03:00",
+      "autor": "lucio.rosa",
+      "status": "OPTIMAL",
+      "statusTexto": "OTIMO | OBRIG 3/3",
+      "parametros": {
+        "baseReceita": "arrecadada",
+        "usarCts": true,
+        "janelaCapex": 8,
+        "orcamento": 410000000,
+        "focoCobertura": 1.0,
+        "incluirIndustrial": true
+      },
+      "kpis": {
+        "vpl": 168069034,
+        "capexTotal": 304182900,
+        "opexTotal": 81440200,
+        "receitaTotal": 553692134,
+        "obrasConstruidas": 367,
+        "obrasTotal": 902,
+        "obrigatoriasConstruidas": 3,
+        "obrigatoriasTotal": 3,
+        "subbaciasFaturando": 218,
+        "subbaciasTotal": 902,
+        "coberturaFimPct": 77.6,
+        "metasAtingidas": 2,
+        "metasTotal": 2
+      }
+    },
+    "run_2026_0811": {
+      "runId": "run_2026_0811",
+      "nome": "Litoral 1 — sem CTS, base faturada",
+      "unidadeId": "u1",
+      "unidadeNome": "Litoral 1",
+      "dataHora": "2026-08-01T09:15:00-03:00",
+      "autor": "lucio.rosa",
+      "status": "OPTIMAL",
+      "statusTexto": "OTIMO",
+      "parametros": {
+        "baseReceita": "faturada",
+        "usarCts": false,
+        "janelaCapex": 8,
+        "orcamento": 410000000,
+        "focoCobertura": 1.0,
+        "incluirIndustrial": true
+      },
+      "kpis": {
+        "vpl": 181240117,
+        "capexTotal": 281655400,
+        "opexTotal": 78210500,
+        "receitaTotal": 541106017,
+        "obrasConstruidas": 341,
+        "obrasTotal": 846,
+        "obrigatoriasConstruidas": 3,
+        "obrigatoriasTotal": 3,
+        "subbaciasFaturando": 206,
+        "subbaciasTotal": 846,
+        "coberturaFimPct": 77.6,
+        "metasAtingidas": 2,
+        "metasTotal": 2
+      }
+    },
+    "run_2026_0729": {
+      "runId": "run_2026_0729",
+      "nome": "Litoral 1 — orçamento apertado (180 Mi)",
+      "unidadeId": "u1",
+      "unidadeNome": "Litoral 1",
+      "dataHora": "2026-07-29T17:48:00-03:00",
+      "autor": "ana.martins",
+      "status": "FEASIBLE",
+      "statusTexto": "VIAVEL(limite de tempo)",
+      "parametros": {
+        "baseReceita": "arrecadada",
+        "usarCts": true,
+        "janelaCapex": 8,
+        "orcamento": 180000000,
+        "focoCobertura": 0.5,
+        "incluirIndustrial": true
+      },
+      "kpis": {
+        "vpl": 121447890,
+        "capexTotal": 179433100,
+        "opexTotal": 52880300,
+        "receitaTotal": 353761290,
+        "obrasConstruidas": 214,
+        "obrasTotal": 902,
+        "obrigatoriasConstruidas": 3,
+        "obrigatoriasTotal": 3,
+        "subbaciasFaturando": 141,
+        "subbaciasTotal": 902,
+        "coberturaFimPct": 64.7,
+        "metasAtingidas": 0,
+        "metasTotal": 2
+      }
+    }
+  }
+}

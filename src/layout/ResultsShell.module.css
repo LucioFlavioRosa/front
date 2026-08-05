@@ -1,0 +1,42 @@
+.shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-app);
+}
+
+/* Primeiro tab-stop: pula o header (que tem seletor, chips e breadcrumb) e cai
+   direto no conteudo. Mesmo padrao do AppShell do cadastro. */
+.skip {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 60;
+  background: var(--surface);
+  color: var(--text-900);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 10px 16px;
+  border: 2px solid var(--brand);
+  border-radius: 0 0 10px 0;
+}
+.skip:focus {
+  left: 0;
+}
+
+.content {
+  flex: 1;
+  max-width: 1560px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 22px 28px 48px;
+}
+.content:focus {
+  outline: none;
+}
+
+@media (max-width: 700px) {
+  .content {
+    padding: 16px 14px 32px;
+  }
+}
