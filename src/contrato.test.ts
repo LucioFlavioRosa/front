@@ -19,8 +19,25 @@ const raiz = process.cwd()
 const ler = (p: string) => readFileSync(`${raiz}/${p}`, 'utf-8')
 
 const doc = ler('CONTRATO.md')
+const QUERIES = ler('src/api/queriesResultado.ts')
 const FONTES_API = ['src/api/resultados.ts', 'src/api/simulacao.ts']
 const FONTES_TIPOS = ['src/domain/resultado.ts', 'src/domain/simulacao.ts', 'src/api/simulacao.ts']
+
+/** O texto de uma seção, do título ate o proximo titulo de mesmo nivel ou acima. */
+function secao(titulo: string): string {
+  const i = doc.indexOf(titulo)
+  if (i < 0) throw new Error(`seção ausente no CONTRATO.md: ${titulo}`)
+  const resto = doc.slice(i + titulo.length)
+  const fim = resto.search(/\n#{1,3} /)
+  return fim < 0 ? resto : resto.slice(0, fim)
+}
+
+/** Cada `export function useX(...)` de `queriesResultado.ts`, com o corpo. */
+function hooksDeResultado(): { nome: string; corpo: string }[] {
+  return QUERIES.split('export function ')
+    .slice(1)
+    .map((p) => ({ nome: p.slice(0, p.indexOf('(')), corpo: p }))
+}
 
 /**
  * Reduz um caminho a sua FORMA: `/runs/{}/meta`. Assim `{run_id}` do documento e
@@ -101,5 +118,45 @@ describe('CONTRATO.md × código', () => {
     expect(doc).toMatch(/IMUTÁVEL/)
     expect(doc).toMatch(/reconciliad/i)
     expect(doc).toMatch(/nunca 0/i)
+  })
+})
+
+/**
+ * A §2.1 e a unica garantia que o front COBRA do backend em vez de so consumir:
+ * ela existe porque o cache aqui e eterno. Entao ela tem duas pontas para vigiar —
+ * o documento continuar afirmando a regra, e o codigo continuar dependendo dela.
+ * Se alguem afrouxar o cache, a garantia vira exigencia gratuita sobre o backend;
+ * se alguem reabrir a decisao no documento, o backend fica sem o que implementar
+ * enquanto o front segue cacheando para sempre.
+ */
+describe('§2.1 — imutabilidade do run_id', () => {
+  it('todo hook que lê dados de uma rodada cacheia para sempre', () => {
+    const semCache = hooksDeResultado()
+      .filter((h) => h.nome.startsWith('use'))
+      .filter((h) => /runId/.test(h.corpo)) // e de UMA rodada (fora a lista)
+      .filter((h) => !/useMutation/.test(h.corpo)) // a exclusao nao e leitura
+      .filter((h) => !h.corpo.includes('...IMUTAVEL'))
+      .map((h) => h.nome)
+    expect(semCache).toEqual([])
+  })
+
+  it('"para sempre" é literalmente Infinity', () => {
+    // Trocar por um numero grande seria pior que trocar por um pequeno: a tela
+    // continuaria parecendo correta e so divergiria depois do prazo.
+    expect(QUERIES).toMatch(/const IMUTAVEL = \{\s*staleTime: Infinity/)
+  })
+
+  it('a decisão está fechada, e o documento diz qual é a condição', () => {
+    const s = secao('### 2.1')
+    // `SUCESSO` e a condicao consultavel; `409` e o que o backend faz quando
+    // alguem tenta executar sobre rodada publicada. Sem os dois, o texto vira
+    // intencao e nao regra.
+    expect(s).toMatch(/SUCESSO/)
+    expect(s).toMatch(/409/)
+    expect(s).toMatch(/reprocessa_de/)
+  })
+
+  it('não voltou para a lista de decisões em aberto', () => {
+    expect(secao('## 6. Decisões em aberto')).not.toMatch(/imutabilidade/i)
   })
 })

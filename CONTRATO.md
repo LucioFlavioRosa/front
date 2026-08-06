@@ -62,22 +62,52 @@ modo de falha possível num app de decisão de investimento.
 
 ### 2.1 Um `run_id` publicado é IMUTÁVEL
 
-O frontend cacheia tudo que pertence a uma rodada com `staleTime: Infinity`: lido
-uma vez, nunca mais refetch. Isso torna a navegação pela cascata instantânea e
-poupa o backend, mas **assume que o dado daquele `run_id` não muda**.
+**Regra, decidida em 06/08/2026:** um `run_id` congela na primeira publicação
+bem-sucedida.
 
-Se o backend republicar o mesmo `run_id` com resultado diferente, quem já abriu a
-rodada continuará vendo o resultado antigo até fechar a aba.
+- Enquanto `run_status` **não** for `SUCESSO` — ou seja `PENDENTE`, `RODANDO`,
+  `ERRO`, `FALHOU_QUALIDADE`, `CANCELADA` — reexecutar **pode** reusar o mesmo
+  `run_id`. Nada foi publicado, ninguém viu resultado nenhum e o histórico não
+  ganha entrada-fantasma. É o retry de falha técnica, e ele continua barato.
+- Depois de `SUCESSO`, **qualquer** nova execução recebe um `run_id` novo, mesmo
+  com parâmetros idênticos. O backend deve **recusar** (`409`) um pedido de
+  execução sobre um `run_id` já publicado.
 
-Duas saídas aceitáveis:
+A condição é `run_status`, e não a intenção de quem dispara, porque a publicação
+do job é atômica: `public.otim_*` e `run_status = SUCESSO` entram na mesma
+transação. Então "já foi publicado" é um fato consultável, não um julgamento.
 
-- **honrar a imutabilidade** — reprocessar gera um `run_id` novo; ou
-- **versionar** — acrescentar `versao` (ou `ETag`) em `/runs/{id}/meta`, e a gente
-  passa a incluí-lo na chave de cache.
+**Por que não bastava republicar o mesmo id.** O motivo óbvio é o cache: o front
+lê tudo que pertence a uma rodada com `staleTime: Infinity`, e quem já tivesse a
+rodada aberta continuaria vendo o resultado antigo. Mas esse é o sintoma menor —
+dá para contornar com refresh. O motivo real é a **auditoria**: o job lê o
+cadastro no instante da execução, então a mesma rodada, com os mesmos parâmetros,
+depois de uma correção no cadastro, produz outro plano. Republicando sob o mesmo
+id, o `DELETE`+`INSERT` da publicação apaga o resultado anterior, e a pergunta
+"quais números a gente aprovou na reunião de setembro?" deixa de ter resposta.
+Rodada nova é rodada nova.
 
-A primeira é a preferida, e é a que o job de produção já pratica: ele republica
-apagando e regravando **o mesmo** `run_id`. Ou seja, hoje o backend violaria esta
-garantia num reprocessamento — vale decidir isto antes do go-live.
+**`reprocessa_de`.** Para o histórico não virar uma lista de rodadas soltas, a
+`run_request` da reexecução deve guardar o `run_id` de origem (campo novo, opcional,
+nulo na primeira rodada de uma unidade). Com ele a tela consegue rotular
+"reprocessamento de `run_2026_0814`" e o comparativo antes/depois sai de graça — que é
+exatamente o que o usuário quer ver depois de corrigir o cadastro. O front ainda
+não lê esse campo; ele está aqui para que o modelo de dados já nasça com ele, que
+é a parte cara de acrescentar depois.
+
+> **Atenção a quem implementar o retry:** no pacote de produção a publicação é
+> idempotente no Postgres (`DELETE` por `run_id`, depois `INSERT`), mas **não** na
+> cópia congelada em blob/Delta — lá a gravação é `mode("append")` particionada por
+> `run_id`, então reexecutar o mesmo id **duplica** as linhas do parquet. E o blob
+> é escrito **antes** da transação do Postgres, então até um retry de rodada que
+> falhou depois do blob já duplica. O retry permitido acima precisa apagar a
+> partição `run_id=<rid>` antes de gravar (ou usar `partitionOverwriteMode=dynamic`).
+
+**Descartado: versionar** (`versao`/`ETag` em `/runs/{id}/meta`, entrando na chave
+de cache). Custa mais e entrega menos: o front passaria a precisar de `/meta`
+antes de qualquer outra chamada só para montar a chave — o cache eterno vira cache
+condicional, uma ida ao servidor por navegação — e não resolve a auditoria, já que
+a versão anterior continua apagada. Versionar rotula a perda, não a evita.
 
 ### 2.2 Os totais já vêm reconciliados
 
@@ -586,6 +616,12 @@ Três detalhes que o front garante e o backend **não deve assumir**:
   escolha legítima do usuário, e a tela avisa que o resultado não serve para
   aferir cumprimento.
 
+**Quem cunha o `run_id`.** Este endpoint, sempre. No pacote de produção o `run_id`
+é de quem insere a `controle.run_request`, não do job (`docs/01-visao-geral.md`), e
+`novo_run_id()` já existe lá. Este `POST` nunca aceita `run_id` no corpo: o front
+não tem como escolher um, e permitir isso abriria a porta para sobrescrever rodada
+publicada. Reexecução é assunto de um endpoint separado, sujeito à regra da §2.1.
+
 ### 4.3 `GET /runs/{run_id}/status` — progresso
 
 ```jsonc
@@ -635,14 +671,12 @@ proposital, para que o dia em que a tela deixasse passar não ficasse escondido.
 Nenhuma bloqueia o desenho do backend, mas todas mudam o contrato se forem
 resolvidas de outro jeito:
 
-1. **Imutabilidade do `run_id`** (§2.1) — reprocessar gera id novo, ou o payload
-   ganha versão? É a decisão de maior impacto desta lista.
-2. **Paginação de `GET /runs`** (§3.1) — formato a definir.
-3. **Módulos da ETE sem ficha** (§3.8) — hoje mandamos `obraId: null`. Se eles
+1. **Paginação de `GET /runs`** (§3.1) — formato a definir.
+2. **Módulos da ETE sem ficha** (§3.8) — hoje mandamos `obraId: null`. Se eles
    ganharem ficha, é preciso um caminho de navegação para ela, porque a cascata
    não tem nível de ETE.
-4. **Escala da topologia** — o handoff fala em 902 sub-bacias. O payload de
+3. **Escala da topologia** — o handoff fala em 902 sub-bacias. O payload de
    `/topologia` é de um sistema, o que mantém o tamanho razoável; se algum
    sistema tiver dezenas de nós, o diagrama vai precisar de paginação ou filtro.
-5. **Escrita da hierarquia** — pendência antiga do cadastro (ver `DEPLOY.md` §6),
+4. **Escrita da hierarquia** — pendência antiga do cadastro (ver `DEPLOY.md` §6),
    citada aqui porque quem desenhar o backend vai encontrar a lacuna.

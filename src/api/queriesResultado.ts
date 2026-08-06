@@ -2,8 +2,9 @@
  * Queries das telas de resultado.
  *
  * A decisao que molda este arquivo: RESULTADO DE RODADA E IMUTAVEL. Um `run_id`
- * publicado nunca muda — o job republica apagando e regravando, mas isso e outro
- * estado da mesma rodada, nao uma edicao incremental que a tela precise perseguir.
+ * congela na primeira publicacao bem-sucedida; reexecutar depois disso gera id
+ * novo (CONTRATO.md 2.1). Nao e convencao — o backend recusa execucao sobre um
+ * `run_id` ja publicado, entao o cache eterno abaixo e correto por construcao.
  *
  * Consequencias praticas:
  *   - `staleTime: Infinity` em tudo que e de uma rodada: uma vez lido, nunca mais
