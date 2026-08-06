@@ -107,21 +107,12 @@
   border-bottom: none;
 }
 
-.compLink {
+.compLinha {
   display: grid;
   grid-template-columns: 10px 1fr auto;
   align-items: center;
   gap: 4px 7px;
   padding: 7px 11px;
-  text-decoration: none;
-  color: inherit;
-}
-a.compLink:hover {
-  background: #f8fafc;
-}
-a.compLink:focus-visible {
-  outline: 2px solid var(--brand);
-  outline-offset: -2px;
 }
 
 .quad {

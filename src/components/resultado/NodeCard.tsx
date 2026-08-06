@@ -60,20 +60,30 @@ export function NodeCard({
 
       <ul className={styles.componentes}>
         {no.componentes.map((c) => (
-          <LinhaComponente key={c.nome} c={c} runId={runId} />
+          <LinhaComponente key={c.nome} c={c} />
         ))}
       </ul>
 
+      {/* Unico caminho para frente a partir da topologia. Os componentes acima
+          nao sao clicaveis: o elemento se alcanca pela tabela da sub-bacia. */}
       <footer className={styles.rodapeNo}>
         <Link to={`/resultados/${runId}/sub-bacias/${no.id}`} className={styles.abrirNo}>
-          Ver {no.tipo === 'cts' ? 'a CTS' : 'a sub-bacia'} →
+          Ver {no.tipo === 'cts' ? 'a CTS' : 'a sub-bacia'} e seus elementos →
         </Link>
       </footer>
     </article>
   )
 }
 
-function LinhaComponente({ c, runId }: { c: ComponenteNo; runId: string }) {
+/**
+ * Uma linha de componente. NAO e link para a obra, de proposito.
+ *
+ * A cascata do handoff e sistema → sub-bacia → elemento, e pular a sub-bacia
+ * quebra a navegacao: o breadcrumb do elemento inclui a sub-bacia, entao quem
+ * chegasse direto veria um degrau que nunca visitou. O caminho para o elemento e
+ * a tabela de elementos da sub-bacia.
+ */
+function LinhaComponente({ c }: { c: ComponenteNo }) {
   const classe =
     c.situacao === 'construida'
       ? styles.quadConstruida
@@ -97,30 +107,20 @@ function LinhaComponente({ c, runId }: { c: ComponenteNo; runId: string }) {
       </span>
     )
 
-  const corpo = (
-    <>
-      <span className={`${styles.quad} ${classe}`} aria-hidden="true" />
-      <span className={styles.nomeComp}>{c.nome}</span>
-      <span className={styles.capex}>{brl(c.capex)}</span>
-      <span className={styles.subLinha}>{detalhe}</span>
-    </>
-  )
-
   return (
     <li className={styles.comp}>
-      {c.obraId ? (
-        <Link to={`/resultados/${runId}/obras/${c.obraId}`} className={styles.compLink}>
-          {corpo}
-        </Link>
-      ) : (
-        <span className={styles.compLink}>{corpo}</span>
-      )}
+      <span className={styles.compLinha}>
+        <span className={`${styles.quad} ${classe}`} aria-hidden="true" />
+        <span className={styles.nomeComp}>{c.nome}</span>
+        <span className={styles.capex}>{brl(c.capex)}</span>
+        <span className={styles.subLinha}>{detalhe}</span>
+      </span>
     </li>
   )
 }
 
 /** A ETE: destino da cadeia, cabecalho lilas e o rodape com a ocupacao. */
-export function EteCard({ ete, runId }: { ete: EteTopologia; runId: string }) {
+export function EteCard({ ete }: { ete: EteTopologia }) {
   return (
     <article className={`${styles.card} ${styles.cardEte}`} aria-labelledby="ete-t">
       <header className={`${styles.cabecalho} ${styles.cabEte}`}>
@@ -134,7 +134,7 @@ export function EteCard({ ete, runId }: { ete: EteTopologia; runId: string }) {
         {ete.modulos.length === 0 ? (
           <li className={styles.semModulos}>Nenhum módulo cadastrado.</li>
         ) : (
-          ete.modulos.map((m) => <LinhaComponente key={m.nome} c={m} runId={runId} />)
+          ete.modulos.map((m) => <LinhaComponente key={m.nome} c={m} />)
         )}
       </ul>
 

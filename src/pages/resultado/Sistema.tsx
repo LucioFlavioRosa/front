@@ -83,7 +83,7 @@ export function Sistema() {
               <div className={styles.colunaRotulo} aria-hidden="true">
                 destino
               </div>
-              <EteCard ete={t.ete} runId={runId as string} />
+              <EteCard ete={t.ete} />
             </div>
           </div>
           <LegendaTopologia />

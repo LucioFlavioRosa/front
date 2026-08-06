@@ -239,6 +239,32 @@ describe('nível sistema (topologia)', () => {
     expect(await screen.findByText('nó CTS (↔ sub-bacia pareada)')).toBeTruthy()
   })
 
+  it('NÃO permite pular a sub-bacia e ir direto ao elemento', async () => {
+    // A cascata e sistema -> sub-bacia -> elemento. Pular um degrau quebra o
+    // breadcrumb do elemento, que inclui a sub-bacia: quem chegasse direto veria
+    // um degrau que nunca visitou.
+    renderApp(`/resultados/${RUN}/sistemas/s38`)
+    await screen.findByLabelText('d1b38_1_1')
+
+    const paraObras = screen
+      .queryAllByRole('link')
+      .filter((a) => a.getAttribute('href')?.includes('/obras/'))
+    expect(paraObras).toEqual([])
+  })
+
+  it('o caminho para frente é a sub-bacia, e ela leva ao elemento', async () => {
+    renderApp(`/resultados/${RUN}/sistemas/s38`)
+    const bloco = await screen.findByLabelText('d1b38_1_1')
+
+    fireEvent.click(within(bloco).getByRole('link', { name: /Ver a sub-bacia e seus elementos/ }))
+    // Ja na sub-bacia, a tabela de elementos e que abre o nivel 5.
+    expect(await screen.findByRole('heading', { name: /Sub-bacia d1b38_1_1/ })).toBeTruthy()
+    const paraObras = screen
+      .queryAllByRole('link')
+      .filter((a) => a.getAttribute('href')?.includes('/obras/'))
+    expect(paraObras.length).toBeGreaterThan(0)
+  })
+
   it('o rail lista todos os nós do sistema', async () => {
     renderApp(`/resultados/${RUN}/sistemas/s38`)
     const rail = await screen.findByRole('navigation', { name: 'Nós do sistema' })
