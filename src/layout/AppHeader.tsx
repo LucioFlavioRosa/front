@@ -51,11 +51,15 @@ export function AppHeader() {
   return (
     <header className={styles.header}>
       <div className={styles.inner}>
+        {/* Sempre o inicio, com ou sem unidade no contexto — a mesma regra das
+            telas de resultado. Dentro de uma unidade ela levava ao hub, e ai nao
+            sobrava caminho nenhum de volta ao portal: "trocar unidade" vai para a
+            selecao e o nome da unidade ja vai para o hub. */}
         <button
           type="button"
           className={styles.brand}
-          onClick={unidadeId ? goHub : goInicio}
-          aria-label={unidadeId ? 'Ir para o hub da unidade' : 'Ir para a tela inicial'}
+          onClick={goInicio}
+          aria-label="Ir para a tela inicial"
         >
           <Logo size={32} />
           <span>

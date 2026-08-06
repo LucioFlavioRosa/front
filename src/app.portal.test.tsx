@@ -66,12 +66,29 @@ describe('navegação depois da reorganização', () => {
     expect(screen.getByRole('button', { name: /Iniciar cadastro/ })).toBeTruthy()
   })
 
-  it('a marca volta para o início quando não há unidade no contexto', async () => {
+  it('a marca volta para o início — inclusive de DENTRO de uma unidade', async () => {
+    // Era o unico buraco: dentro da unidade a marca ia para o hub, e nao sobrava
+    // caminho de volta ao portal ("trocar unidade" vai para a selecao).
+    renderApp('/unidade/u-jacarei/etes')
+    fireEvent.click(await screen.findByRole('button', { name: 'Ir para a tela inicial' }))
+    expect(
+      await screen.findByRole('heading', { name: /Otimizador de CAPEX de Esgoto/ }),
+    ).toBeTruthy()
+  })
+
+  it('a marca também volta na seleção de unidade', async () => {
     renderApp('/cadastro')
     fireEvent.click(await screen.findByRole('button', { name: 'Ir para a tela inicial' }))
     expect(
       await screen.findByRole('heading', { name: /Otimizador de CAPEX de Esgoto/ }),
     ).toBeTruthy()
+  })
+
+  it('o nome da unidade continua sendo o atalho para o hub', async () => {
+    // Nada se perdeu ao mudar a marca: o hub tem porta propria.
+    renderApp('/unidade/u-jacarei/etes')
+    fireEvent.click(await screen.findByRole('button', { name: 'Águas de Jacareí' }))
+    expect(await screen.findByRole('heading', { name: /Dados da/ })).toBeTruthy()
   })
 
   it('o cadastro NÃO oferece caminho para o histórico', async () => {
