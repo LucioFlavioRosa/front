@@ -23,12 +23,21 @@ const QUERIES = ler('src/api/queriesResultado.ts')
 const FONTES_API = ['src/api/resultados.ts', 'src/api/simulacao.ts']
 const FONTES_TIPOS = ['src/domain/resultado.ts', 'src/domain/simulacao.ts', 'src/api/simulacao.ts']
 
-/** O texto de uma seção, do título ate o proximo titulo de mesmo nivel ou acima. */
+/**
+ * O texto de uma seção, do titulo ate o proximo titulo de nivel IGUAL OU SUPERIOR.
+ *
+ * O nivel sai do proprio titulo procurado: `### 2.1` para numa `###`, `##` ou `#`,
+ * mas nao numa `####` dentro dela. Cortar num nivel fixo truncava a secao no
+ * primeiro subtitulo, e o teste passava a medir um pedaco do texto sem avisar.
+ */
 function secao(titulo: string): string {
-  const i = doc.indexOf(titulo)
+  const nivel = /^#+/.exec(titulo)?.[0].length
+  if (!nivel) throw new Error(`secao() espera um titulo com #: ${titulo}`)
+  // `\n` antes: evita casar com uma citacao do titulo no meio de um paragrafo.
+  const i = doc.indexOf(`\n${titulo}`)
   if (i < 0) throw new Error(`seção ausente no CONTRATO.md: ${titulo}`)
-  const resto = doc.slice(i + titulo.length)
-  const fim = resto.search(/\n#{1,3} /)
+  const resto = doc.slice(i + titulo.length + 1)
+  const fim = resto.search(new RegExp(`\\n#{1,${nivel}} `))
   return fim < 0 ? resto : resto.slice(0, fim)
 }
 
@@ -37,6 +46,17 @@ function hooksDeResultado(): { nome: string; corpo: string }[] {
   return QUERIES.split('export function ')
     .slice(1)
     .map((p) => ({ nome: p.slice(0, p.indexOf('(')), corpo: p }))
+}
+
+/**
+ * Os hooks que leem dados de UMA rodada — os que a garantia da §2.1 cobre.
+ * Fora: `useRuns` (a lista muda com exclusao) e a mutation de excluir.
+ */
+function hooksDeUmaRodada(): { nome: string; corpo: string }[] {
+  return hooksDeResultado()
+    .filter((h) => h.nome.startsWith('use'))
+    .filter((h) => /runId/.test(h.corpo))
+    .filter((h) => !/useMutation/.test(h.corpo))
 }
 
 /**
@@ -72,28 +92,59 @@ function chamadasDoCodigo(): Set<string> {
   return achadas
 }
 
-/** `GET /runs/{}/meta` — o que o documento promete. */
-function endpointsDoDocumento(): Set<string> {
-  const achados = new Set<string>()
-  for (const m of doc.matchAll(/`(GET|POST|PUT|DELETE) ([^`]+)`/g)) {
-    achados.add(`${m[1]} ${forma(m[2])}`)
+/**
+ * Marca de secao cujo endpoint o front NAO chama — ele existe porque uma garantia
+ * exige que o backend o tenha (hoje: o retry da §2.1). Sem a marca, o teste "todo
+ * endpoint documentado e chamado" reprovaria; sem o teste, alguem documentaria
+ * qualquer coisa e o backend implementaria a toa. A marca torna a excecao explicita
+ * e contavel, em vez de virar um `if` escondido.
+ */
+const MARCA_SO_BACKEND = '<!-- somente-backend -->'
+
+/** Divide o documento em blocos por heading, para saber onde cada endpoint mora. */
+function blocos(): string[] {
+  return doc.split(/\n(?=#{1,4} )/)
+}
+
+/** `GET /runs/{}/meta` — o que o documento promete, separado por quem chama. */
+function endpointsDoDocumento(): { todos: Set<string>; doFront: Set<string> } {
+  const todos = new Set<string>()
+  const doFront = new Set<string>()
+  for (const bloco of blocos()) {
+    const soBackend = bloco.includes(MARCA_SO_BACKEND)
+    for (const m of bloco.matchAll(/`(GET|POST|PUT|DELETE) ([^`]+)`/g)) {
+      const e = `${m[1]} ${forma(m[2])}`
+      todos.add(e)
+      if (!soBackend) doFront.add(e)
+    }
   }
-  return achados
+  return { todos, doFront }
 }
 
 describe('CONTRATO.md × código', () => {
   it('todo endpoint que o app chama está documentado', () => {
-    const documentados = endpointsDoDocumento()
-    const semDoc = [...chamadasDoCodigo()].filter((e) => !documentados.has(e)).sort()
+    const { todos } = endpointsDoDocumento()
+    const semDoc = [...chamadasDoCodigo()].filter((e) => !todos.has(e)).sort()
     expect(semDoc).toEqual([])
   })
 
-  it('todo endpoint documentado é realmente chamado pelo app', () => {
+  it('todo endpoint documentado é chamado pelo app, salvo os marcados', () => {
     // Pega o outro sentido da deriva: o documento descrevendo algo que foi
     // removido do codigo, e que o backend implementaria a toa.
     const chamados = chamadasDoCodigo()
-    const orfaos = [...endpointsDoDocumento()].filter((e) => !chamados.has(e)).sort()
+    const { doFront } = endpointsDoDocumento()
+    const orfaos = [...doFront].filter((e) => !chamados.has(e)).sort()
     expect(orfaos).toEqual([])
+  })
+
+  it('o que está marcado como só-backend realmente não é chamado', () => {
+    // A marca e uma dispensa; se o app passar a chamar o endpoint, ela vira
+    // mentira e some a cobertura dele. Este teste faz a marca se auto-expirar.
+    const chamados = chamadasDoCodigo()
+    const { todos, doFront } = endpointsDoDocumento()
+    const soBackend = [...todos].filter((e) => !doFront.has(e))
+    expect(soBackend.length).toBeGreaterThan(0) // a marca existe e foi lida
+    expect(soBackend.filter((e) => chamados.has(e))).toEqual([])
   })
 
   it('nenhum campo citado no documento foi inventado', () => {
@@ -130,11 +181,26 @@ describe('CONTRATO.md × código', () => {
  * enquanto o front segue cacheando para sempre.
  */
 describe('§2.1 — imutabilidade do run_id', () => {
+  it('o filtro de hooks não está medindo o vazio', () => {
+    // Sem isto, o teste seguinte passa por nao encontrar hook nenhum — que e
+    // exatamente o que acontece se alguem trocar `export function useX()` por
+    // `export const useX = () =>`, ou mover os hooks de arquivo. Falsa seguranca
+    // e pior que teste ausente, porque ninguem volta a olhar.
+    const nomes = hooksDeUmaRodada().map((h) => h.nome)
+    expect(nomes).toEqual([
+      'useRunMeta',
+      'usePainel',
+      'useEbitda',
+      'useCidades',
+      'useCidade',
+      'useTopologia',
+      'useSubBacia',
+      'useObra',
+    ])
+  })
+
   it('todo hook que lê dados de uma rodada cacheia para sempre', () => {
-    const semCache = hooksDeResultado()
-      .filter((h) => h.nome.startsWith('use'))
-      .filter((h) => /runId/.test(h.corpo)) // e de UMA rodada (fora a lista)
-      .filter((h) => !/useMutation/.test(h.corpo)) // a exclusao nao e leitura
+    const semCache = hooksDeUmaRodada()
       .filter((h) => !h.corpo.includes('...IMUTAVEL'))
       .map((h) => h.nome)
     expect(semCache).toEqual([])
@@ -157,6 +223,26 @@ describe('§2.1 — imutabilidade do run_id', () => {
   })
 
   it('não voltou para a lista de decisões em aberto', () => {
-    expect(secao('## 6. Decisões em aberto')).not.toMatch(/imutabilidade/i)
+    // Nao basta procurar a palavra "imutabilidade": a decisao pode ser reaberta
+    // com outro nome ("versionamento da rodada publicada"). Procura pelos TERMOS
+    // da decisao, e so nos itens da lista — mencionar a §2.1 de passagem, como o
+    // item da paginacao faz, nao conta.
+    const itens = secao('## 6. Decisões em aberto')
+      .split('\n')
+      .filter((l) => /^\d+\. /.test(l))
+    const reabertos = itens.filter((l) => /imutabilidade|versionar|versionamento/i.test(l))
+    expect(reabertos).toEqual([])
+    expect(itens.length).toBeGreaterThan(0) // a lista existe e foi encontrada
+  })
+
+  it('o endpoint de reexecução está especificado, e marcado como não chamado', () => {
+    // Foi a lacuna que a revisao pegou: a §2.1 mandava recusar com 409 "um pedido
+    // de execucao", sem dizer que pedido era esse. Sem isto, quem escreve o backend
+    // inventa o endpoint — e inventa diferente do que a tela vai chamar um dia.
+    const s = secao('### 4.5 `POST /runs/{run_id}/reexecutar` — retry')
+    expect(s).toContain(MARCA_SO_BACKEND)
+    for (const st of ['PENDENTE', 'RODANDO', 'ERRO', 'FALHOU_QUALIDADE', 'CANCELADA', 'SUCESSO'])
+      expect(s).toContain(st)
+    expect(s).toMatch(/409/)
   })
 })

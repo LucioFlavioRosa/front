@@ -3,7 +3,7 @@ import { useNavigate, useParams, Link } from 'react-router-dom'
 import { Logo } from './Logo'
 import { useRunMeta, useRuns } from '../api/queriesResultado'
 import { useCrumbsAtuais } from '../state/CrumbsResultado'
-import { brlMi } from '../lib/formato'
+import { brlMi, dataCurta } from '../lib/formato'
 import type { ParametrosRodada } from '../domain/resultado'
 import styles from './ResultsHeader.module.css'
 
@@ -68,7 +68,7 @@ export function ResultsHeader() {
             >
               {opcoes.map((r) => (
                 <option key={r.runId} value={r.runId}>
-                  {r.nome}
+                  {r.nome} · {dataCurta(r.dataHora)}
                 </option>
               ))}
             </select>

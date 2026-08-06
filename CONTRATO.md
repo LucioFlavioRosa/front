@@ -44,9 +44,14 @@ cada uma:
 | ------------- | ------------------------------------------------------------------------ |
 | `401` / `403` | Sessão inválida — dispara o fluxo de re-login                            |
 | `400` / `422` | Conteúdo recusado. **Mande `{ "erro": "mensagem" }`** — ela é exibida    |
-| `409`         | Conflito (usado no cadastro; ver `DEPLOY.md`)                            |
+| `409`         | Conflito. **Mande `{ "erro": "mensagem" }`** — ela é exibida             |
 | `404`         | Recurso inexistente. A tela mostra o estado de erro com "Tentar de novo" |
 | `5xx`         | Idem 404, sem detalhe técnico ao usuário                                 |
+
+O `409` aparece em dois lugares e o corpo é o mesmo nos dois: conflito de edição no
+cadastro (ver `DEPLOY.md`) e tentativa de reexecutar uma rodada já publicada (§4.5).
+Nos dois casos o usuário precisa entender **o que** conflitou, e a única fonte é o
+texto que vem no corpo.
 
 Uma resposta 2xx que **não** seja JSON válido é tratada como erro. Isso é
 proposital: proxy devolvendo HTML já quebrou este app antes, e falhar cedo é
@@ -89,19 +94,25 @@ Rodada nova é rodada nova.
 
 **`reprocessa_de`.** Para o histórico não virar uma lista de rodadas soltas, a
 `run_request` da reexecução deve guardar o `run_id` de origem (campo novo, opcional,
-nulo na primeira rodada de uma unidade). Com ele a tela consegue rotular
-"reprocessamento de `run_2026_0814`" e o comparativo antes/depois sai de graça — que é
-exatamente o que o usuário quer ver depois de corrigir o cadastro. O front ainda
-não lê esse campo; ele está aqui para que o modelo de dados já nasça com ele, que
-é a parte cara de acrescentar depois.
+nulo na primeira rodada de uma unidade).
 
-> **Atenção a quem implementar o retry:** no pacote de produção a publicação é
-> idempotente no Postgres (`DELETE` por `run_id`, depois `INSERT`), mas **não** na
-> cópia congelada em blob/Delta — lá a gravação é `mode("append")` particionada por
-> `run_id`, então reexecutar o mesmo id **duplica** as linhas do parquet. E o blob
-> é escrito **antes** da transação do Postgres, então até um retry de rodada que
-> falhou depois do blob já duplica. O retry permitido acima precisa apagar a
-> partição `run_id=<rid>` antes de gravar (ou usar `partitionOverwriteMode=dynamic`).
+**Hoje é só escrita.** Ele **não** aparece em `GET /runs` (§3.1) nem nos tipos do
+front, e isso é deliberado: nenhuma tela o consome ainda, e campo em resposta que
+ninguém lê é contrato que envelhece sozinho. O que se pede agora é que a **coluna
+exista desde o começo**, porque preencher o histórico retroativamente depois é a
+parte cara. Quando a tela for rotular "reprocessamento de `run_2026_0814`" e comparar
+antes/depois, `reprocessaDe: string | null` entra em §3.1 — está registrado na §6.
+
+> **Para quem implementar o retry:** no pacote de produção a rodada é idempotente
+> nos dois lados — Postgres (`DELETE` por `run_id`, depois `INSERT`) e cópia
+> congelada em blob (substitui a partição `run_id=<rid>`). O blob **não** era: a
+> gravação era `mode("append")` particionada por `run_id`, e reexecutar duplicava o
+> parquet. Corrigido em 06/08/2026, junto desta decisão.
+>
+> Duas exigências de lá que valem aqui: o `run_id` precisa obedecer
+> `^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$` — ele vira caminho de partição e literal SQL,
+> e o job recusa fora disso; e **não** dispare dois jobs no mesmo `run_id` em
+> paralelo, porque a idempotência protege repetição sequencial, não concorrência.
 
 **Descartado: versionar** (`versao`/`ETag` em `/runs/{id}/meta`, entrando na chave
 de cache). Custa mais e entrega menos: o front passaria a precisar de `/meta`
@@ -646,6 +657,31 @@ a diferença ao usuário — mande o motivo da reprovação aqui.
 
 Responde `204`. O front chama quando o usuário cancela no modal.
 
+### 4.5 `POST /runs/{run_id}/reexecutar` — retry
+
+<!-- somente-backend -->
+
+**Não é chamado pelo front.** Está aqui porque a §2.1 exige que ele exista e define
+o comportamento dele; sem isso, quem escrever o backend teria de inventar como
+"reexecutar" se distingue de "criar". O dia em que a tela ganhar um botão "rodar de
+novo", este é o endpoint — e aí ele sai desta marcação.
+
+Reexecuta a rodada com **os mesmos parâmetros da `run_request` original**, sem corpo.
+A resposta depende do `run_status` no momento da chamada:
+
+| `run_status`                            | resposta                           | efeito                                                                          |
+| --------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------- |
+| `PENDENTE`, `RODANDO`                   | `409`                              | já está em voo; não há o que reexecutar                                         |
+| `ERRO`, `FALHOU_QUALIDADE`, `CANCELADA` | `202` + `{ "runId": "<o mesmo>" }` | retry: **reusa** o `run_id`, porque nada foi publicado                          |
+| `SUCESSO`                               | `409`                              | a rodada congelou (§2.1); para rodar de novo, `POST /runs` com um `run_id` novo |
+
+O `409` do `SUCESSO` **não** é erro de sistema — é a garantia funcionando. Mande no
+corpo uma mensagem que explique isso ao usuário, algo como "esta rodada já foi
+publicada; crie uma nova simulação".
+
+Quando o backend cria a rodada nova depois de um `SUCESSO`, ele grava
+`reprocessa_de = <run_id anterior>` na `run_request`. Ver §2.1.
+
 ---
 
 ## 5. O que o backend precisa validar por conta própria
@@ -671,12 +707,16 @@ proposital, para que o dia em que a tela deixasse passar não ficasse escondido.
 Nenhuma bloqueia o desenho do backend, mas todas mudam o contrato se forem
 resolvidas de outro jeito:
 
-1. **Paginação de `GET /runs`** (§3.1) — formato a definir.
-2. **Módulos da ETE sem ficha** (§3.8) — hoje mandamos `obraId: null`. Se eles
+1. **Paginação de `GET /runs`** (§3.1) — formato a definir. A decisão da §2.1 aumenta a
+   cardinalidade natural do histórico (reexecução vira rodada nova), então isto deixou de
+   ser só uma questão de volume futuro.
+2. **Expor `reprocessa_de` na resposta** (§2.1) — a coluna nasce agora, mas o campo só
+   entra em `GET /runs` quando a tela for rotular a relação entre a rodada e sua origem.
+3. **Módulos da ETE sem ficha** (§3.8) — hoje mandamos `obraId: null`. Se eles
    ganharem ficha, é preciso um caminho de navegação para ela, porque a cascata
    não tem nível de ETE.
-3. **Escala da topologia** — o handoff fala em 902 sub-bacias. O payload de
+4. **Escala da topologia** — o handoff fala em 902 sub-bacias. O payload de
    `/topologia` é de um sistema, o que mantém o tamanho razoável; se algum
    sistema tiver dezenas de nós, o diagrama vai precisar de paginação ou filtro.
-4. **Escrita da hierarquia** — pendência antiga do cadastro (ver `DEPLOY.md` §6),
+5. **Escrita da hierarquia** — pendência antiga do cadastro (ver `DEPLOY.md` §6),
    citada aqui porque quem desenhar o backend vai encontrar a lacuna.

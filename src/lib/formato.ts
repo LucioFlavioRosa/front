@@ -85,6 +85,26 @@ export function dataHora(iso: string | null | undefined): string {
   }).format(d)
 }
 
+/**
+ * 05/08 14:32 — data curta, para desempatar rodadas na mesma linha.
+ *
+ * Existe por causa da regra da §2.1 do CONTRATO: reexecutar gera rodada NOVA, entao
+ * o historico passa a ter entradas com o mesmo nome e parametros quase iguais. Num
+ * seletor que mostra so o nome, elas ficam indistinguiveis — e trocar de rodada as
+ * cegas num app de decisao de investimento e pior que nao poder trocar.
+ */
+export function dataCurta(iso: string | null | undefined): string {
+  if (!iso) return VAZIO
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return VAZIO
+  return new Intl.DateTimeFormat('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(d)
+}
+
 /** "1m 40s" — tempo de solver; segundos crus ficam ilegiveis acima de 2 minutos. */
 export function duracao(segundos: number | null | undefined): string {
   if (ausente(segundos)) return VAZIO

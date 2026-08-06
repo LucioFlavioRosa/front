@@ -3,8 +3,10 @@
  *
  * A decisao que molda este arquivo: RESULTADO DE RODADA E IMUTAVEL. Um `run_id`
  * congela na primeira publicacao bem-sucedida; reexecutar depois disso gera id
- * novo (CONTRATO.md 2.1). Nao e convencao — o backend recusa execucao sobre um
- * `run_id` ja publicado, entao o cache eterno abaixo e correto por construcao.
+ * novo (CONTRATO.md 2.1). Nao e convencao: o contrato EXIGE que o backend recuse
+ * (409) execucao sobre um `run_id` ja publicado, e e isso que torna o cache eterno
+ * abaixo correto por construcao. Enquanto o backend nao existe, e uma promessa —
+ * `src/contrato.test.ts` guarda os dois lados dela.
  *
  * Consequencias praticas:
  *   - `staleTime: Infinity` em tudo que e de uma rodada: uma vez lido, nunca mais
