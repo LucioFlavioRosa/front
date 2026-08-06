@@ -11,7 +11,7 @@ contrato descrito abaixo.
 
 A config real vem de **`/config.js`**, resolvida em runtime — não de variável de
 build. Isso é o que permite **uma imagem só** rodar em todos os ambientes: cada
-um monta o seu `/config.js` por ConfigMap. Precedência em `src/config.ts`:
+um monta o seu `/config.js` por ConfigMap. Precedência em `src/comum/config.ts`:
 `/config.js` > `VITE_*` > padrão.
 
 Como mexer nisso no dia a dia: **[`deploy/README.md`](deploy/README.md)**.
@@ -180,15 +180,15 @@ Quatro consequências para o backend:
   população depois do cadastro pronto.
 - **`populacao_novas_obras` não existe no payload**: a tela calcula
   (`popU − popA`) e mostra como campo ƒ, sem input. Se um dia vier do
-  Databricks, o ponto de troca é `popNovas()` em `src/domain/subbacia.ts`.
+  Databricks, o ponto de troca é `popNovas()` em `src/cadastro/domain/subbacia.ts`.
 
-A lista de campos das duas telas vive em `src/domain/baseComercial.ts` — campo
+A lista de campos das duas telas vive em `src/cadastro/domain/baseComercial.ts` — campo
 novo entra ali e aparece na sub-bacia e na CTS.
 
 ### Obras (`obrasOverride`)
 
 Cada componente tem estas colunas. A ficha manda **só o que difere da obra-base**
-(`BASE_OBRAS` / `BASE_OBRAS_CTS` em `src/domain/`), por índice:
+(`BASE_OBRAS` / `BASE_OBRAS_CTS` em `src/cadastro/domain/`), por índice:
 
 | Coluna               | Chave      | Obrigatória?                                      |
 | -------------------- | ---------- | ------------------------------------------------- |
@@ -227,13 +227,13 @@ preço zerados) **com `tempo_execucao` maior que zero** significa que a obra
 acontece e ocupa prazo na sequência — as obras que dependem dela esperam — mas o
 investimento é de outro (loteador, prefeitura, contrapartida). Sem CAPEX **e**
 sem prazo, a obra simplesmente não entra no plano. A tela marca essas linhas com
-o selo "de terceiros" (`deTerceiros()` em `src/domain/subbacia.ts`); se um dia
+o selo "de terceiros" (`deTerceiros()` em `src/cadastro/domain/subbacia.ts`); se um dia
 virar coluna própria no Databricks, é ali que a regra muda.
 
 ### Escrita
 
-Tipos e regras em `src/api/escrita.ts`; o corpo de cada ficha é montado num
-lugar só (`src/state/fichas.ts`); handlers de exemplo em `src/mocks/handlers.ts`.
+Tipos e regras em `src/cadastro/api/escrita.ts`; o corpo de cada ficha é montado num
+lugar só (`src/cadastro/state/fichas.ts`); handlers de exemplo em `src/mocks/handlers.ts`.
 **Granularidade: uma ficha por vez** — o corpo carrega a ficha inteira
 (idempotente), não um patch.
 
@@ -265,7 +265,7 @@ Duas expectativas do lado da resposta:
   travessão em vez de calcular por cima de dado sujo. **Não mande unidade nem
   símbolo dentro do valor** — a unidade é da tela.
 
-Códigos que a UI já distingue (`src/api/client.ts`, `mensagemDeErro`):
+Códigos que a UI já distingue (`src/comum/api/client.ts`, `mensagemDeErro`):
 
 | Código    | O que a tela faz                                                                                     |
 | --------- | ---------------------------------------------------------------------------------------------------- |
@@ -280,11 +280,11 @@ Códigos que a UI já distingue (`src/api/client.ts`, `mensagemDeErro`):
 
 O client já manda `Authorization: Bearer <token>` **quando um provedor de token
 está registrado**, e chama um callback em 401/403. A biblioteca do IdP ainda não
-foi escolhida, então o encaixe está isolado em `src/auth/sessao.ts` e nada mais
+foi escolhida, então o encaixe está isolado em `src/comum/auth/sessao.ts` e nada mais
 no app depende dela.
 
 Os parâmetros (`authority`, `clientId`, `escopos`) vêm do `/config.js`, então
-mudam por ambiente sem rebuild — leia `config` de `src/config.ts` e use
+mudam por ambiente sem rebuild — leia `config` de `src/comum/config.ts` e use
 `temSso()` para decidir se inicializa a lib.
 
 Para ligar, no bootstrap (`src/main.tsx`), depois de inicializar a lib do SSO:
@@ -309,7 +309,7 @@ Falta decidir (precisa vir de quem administra o SSO):
 - se o backend valida **token Bearer** ou **cookie de sessão** — se for cookie,
   troque o provedor de token por `credentials: 'include'` no `client.ts`;
 - **de onde sai o autor do override**: hoje é a constante `AUTOR` em
-  `src/state/cadastroReducer.ts`. Com SSO, passa a ser o usuário logado.
+  `src/cadastro/state/cadastroReducer.ts`. Com SSO, passa a ser o usuário logado.
 
 Enquanto nada é registrado, o app funciona sem header — que é o modo de dev com
 MSW.
@@ -322,13 +322,13 @@ O Salvar é por ficha e manual, então entre a digitação e o PUT existe um est
 que só o navegador conhece. Duas coisas cuidam dele:
 
 - **O app sabe o que ainda não foi enviado.** Cada ficha guarda a assinatura do
-  último corpo que o servidor aceitou (`src/state/fichas.ts`); enquanto o
+  último corpo que o servidor aceitou (`src/cadastro/state/fichas.ts`); enquanto o
   conteúdo atual difere dela, o Salvar fica ativo, o selo ao lado dele diz
   "Alterações não salvas", o header conta quantas fichas estão nesse estado e
   sair da unidade (ou fechar a aba) pede confirmação. Sem diferença, o botão
   fica apagado — **o servidor não recebe PUT sem mudança**.
 - **A edição sobrevive a um F5.** O estado é espelhado no `sessionStorage` por
-  unidade (`src/state/rascunho.ts`) e volta quando a tela remonta, com um aviso.
+  unidade (`src/cadastro/state/rascunho.ts`) e volta quando a tela remonta, com um aviso.
   O rascunho é apagado quando tudo está salvo. É rede de segurança da aba, não
   persistência: fechar a aba descarta (aí vale o aviso do navegador).
 - **Rascunho velho não passa despercebido.** Cada fatia semeada guarda a
@@ -339,7 +339,7 @@ que só o navegador conhece. Duas coisas cuidam dele:
 Consequência para o backend: **um Salvar = uma mudança real**. Se chegarem dois
 PUT idênticos seguidos, é retry, não duplo clique.
 
-**Como o app abandona o estado local** (`src/state/recarregar.ts`): apaga o
+**Como o app abandona o estado local** (`src/cadastro/state/recarregar.ts`): apaga o
 rascunho → zera o cache das 5 fatias → remonta o store, que semeia do servidor.
 Um refetch sozinho não bastaria: o seed só preenche fatia vazia, de propósito —
 senão um refetch de fundo apagaria o que a pessoa está digitando.
@@ -357,7 +357,7 @@ senão um refetch de fundo apagaria o que a pessoa está digitando.
   isso — a tela avisa o usuário, e as correções ficam só no rascunho da aba.
   Quando existir um `PUT /unidades/:uid/hierarquia` (corpo: a hierarquia inteira
   - `overrides`), ela entra como as outras: vira uma ficha em
-    `src/state/fichas.ts`, entra em `sujas` e ganha o botão Salvar.
+    `src/cadastro/state/fichas.ts`, entra em `sujas` e ganha o botão Salvar.
 - **Importar planilha** é um stub: o botão no hub só mostra um aviso.
 - **O rascunho é da aba**: fechar a aba (não recarregar) descarta o que não foi
   salvo. O aviso do navegador ao fechar é o que existe hoje contra isso.

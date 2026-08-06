@@ -74,11 +74,11 @@ export interface OpcoesDados {
  */
 export async function dadosDaUnidade(opcoes: OpcoesDados = {}): Promise<Record<string, unknown>> {
   const { id = 'u-jacarei', nome = 'Águas de Jacareí', vazio = false, arvore } = opcoes
-  const subbacias = (await import('../mocks/fixtures/subbacias.json')).default
-  const contrato = (await import('../mocks/fixtures/contrato.json')).default
-  const etes = (await import('../mocks/fixtures/etes.json')).default
-  const estrutura = (await import('../mocks/fixtures/estrutura.json')).default
-  const cts = (await import('../mocks/fixtures/cts.json')).default
+  const subbacias = (await import('@/mocks/fixtures/subbacias.json')).default
+  const contrato = (await import('@/mocks/fixtures/contrato.json')).default
+  const etes = (await import('@/mocks/fixtures/etes.json')).default
+  const estrutura = (await import('@/mocks/fixtures/estrutura.json')).default
+  const cts = (await import('@/mocks/fixtures/cts.json')).default
 
   const unidade = {
     id,

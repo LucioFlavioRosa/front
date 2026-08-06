@@ -2,9 +2,9 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { RouterProvider } from 'react-router-dom'
-import { router } from './routes'
-import { AppProvider } from './state/AppContext'
-import './styles/global.css'
+import { router } from '@/app/routes'
+import { AppProvider } from '@/comum/state/AppContext'
+import '@/comum/styles/global.css'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -15,7 +15,7 @@ const queryClient = new QueryClient({
 async function bootstrap() {
   // Em dev, sobe o mock server (MSW) antes de renderizar.
   if (import.meta.env.DEV) {
-    const { worker } = await import('./mocks/browser')
+    const { worker } = await import('@/mocks/browser')
     await worker.start({ onUnhandledRequest: 'bypass' })
   }
 

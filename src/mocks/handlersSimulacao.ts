@@ -9,8 +9,8 @@
  * ninguem descobriria que o polling nao funciona.
  */
 import { http, HttpResponse } from 'msw'
-import unidadesRaw from './fixtures/unidades.json'
-import type { CorpoNovaRodada } from '../domain/simulacao'
+import unidadesRaw from '@/mocks/fixtures/unidades.json'
+import type { CorpoNovaRodada } from '@/simulacao/domain/simulacao'
 
 const BASE = '/api'
 

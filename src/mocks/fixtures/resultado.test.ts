@@ -13,8 +13,8 @@
  * coletora. A CTS nao tem — ela tem coletor de tempo seco.
  */
 import { describe, expect, it } from 'vitest'
-import fx from './resultado.json'
-import type { ObraDetalhe, SubBaciaDetalhe, Topologia } from '../../domain/resultado'
+import fx from '@/mocks/fixtures/resultado.json'
+import type { ObraDetalhe, SubBaciaDetalhe, Topologia } from '@/resultado/domain/resultado'
 
 const topologias = fx.topologias as unknown as Record<string, Topologia>
 const subbacias = fx.subbacias as unknown as Record<string, SubBaciaDetalhe>

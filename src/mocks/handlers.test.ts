@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import regionais from './fixtures/regionais.json'
-import unidades from './fixtures/unidades.json'
-import subbacias from './fixtures/subbacias.json'
-import contrato from './fixtures/contrato.json'
-import etes from './fixtures/etes.json'
-import estrutura from './fixtures/estrutura.json'
-import cts from './fixtures/cts.json'
-import { CHAVES_DB } from '../domain/baseComercial'
-import { CHAVES_PARAMS } from '../domain/subbacia'
+import regionais from '@/mocks/fixtures/regionais.json'
+import unidades from '@/mocks/fixtures/unidades.json'
+import subbacias from '@/mocks/fixtures/subbacias.json'
+import contrato from '@/mocks/fixtures/contrato.json'
+import etes from '@/mocks/fixtures/etes.json'
+import estrutura from '@/mocks/fixtures/estrutura.json'
+import cts from '@/mocks/fixtures/cts.json'
+import { CHAVES_DB } from '@/cadastro/domain/baseComercial'
+import { CHAVES_PARAMS } from '@/cadastro/domain/subbacia'
 
 /**
  * Contrato de dados da API: valida o SHAPE dos payloads que o backend real terá

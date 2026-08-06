@@ -136,29 +136,62 @@ numérico, está no [`DEPLOY.md`](DEPLOY.md) e no dicionário de dados do app.
 
 ## Mapa do código
 
-| Onde                            | O que é                                                                                                                                                                         |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/domain/`                   | Regras e tipos, sem React. `subbacia.ts` (obras, CAPEX, pendências), `cts.ts`, `contrato.ts`, `ete.ts`, `baseComercial.ts` (campos das fichas), `dict.ts` (dicionário de dados) |
-| `src/state/cadastroReducer.ts`  | Reducer puro: **única** forma de mutar o cadastro. Também deriva contadores e completude                                                                                        |
-| `src/state/CadastroContext.tsx` | Liga o reducer às queries, ao rascunho local e expõe tudo às telas                                                                                                              |
-| `src/state/fichas.ts`           | Monta o corpo de cada PUT e diz o que ainda não foi salvo                                                                                                                       |
-| `src/state/rascunho.ts`         | Rascunho da sessão no `sessionStorage`                                                                                                                                          |
-| `src/api/`                      | `client.ts` (HTTP), `queries.ts` (leitura), `mutations.ts` (escrita), `escrita.ts` (**contrato**)                                                                               |
-| `src/pages/`                    | Uma tela por grupo + hub + seleção de unidade                                                                                                                                   |
-| `src/components/`               | Peças compartilhadas (rail, ficha, tabela de obras, modal, toasts)                                                                                                              |
-| `src/mocks/`                    | MSW + fixtures — o backend de mentira do desenvolvimento                                                                                                                        |
-| **Resultado**                   | `domain/resultado.ts` (contrato), `api/resultados.ts` + `api/queriesResultado.ts`, `layout/ResultsShell` + `ResultsHeader`, `state/CrumbsResultado.tsx`, `pages/resultado/`     |
-| `src/testes/`                   | Ajudantes dos testes de tela (`renderApp`, api de mentira)                                                                                                                      |
+O primeiro nível de `src/` é a **área do produto**, não a camada técnica. Abrir a
+pasta já responde "quais são as telas"; dentro de cada uma, as camadas se repetem
+com os mesmos nomes, então saber navegar uma é saber navegar as três.
+
+```
+src/
+  app/          rotas e as duas cascas — a raiz de composição, e a única
+                parte que pode depender de todas as áreas
+  cadastro/     escrever o cadastro da unidade  (/, /cadastro, /unidade/:id)
+  resultado/    ler uma rodada publicada        (/resultados)
+  simulacao/    disparar uma rodada             (/simular)
+  comum/        o que não pertence a nenhuma área: client HTTP, sessão,
+                header, modal, toasts, tokens de estilo, o portal
+  mocks/        MSW + fixtures — o backend de mentira do desenvolvimento
+  testes/       ajudantes dos testes de tela (renderApp, api de mentira)
+```
+
+Cada área tem as subpastas de que precisa, sempre com o mesmo significado:
+
+| Subpasta      | O que mora ali                                            |
+| ------------- | --------------------------------------------------------- |
+| `domain/`     | Regras e tipos, **sem React** — testável sem montar tela  |
+| `api/`        | `endpoints.ts` (o que se chama) e `queries.ts` (os hooks) |
+| `state/`      | Contexto e reducers da área                               |
+| `pages/`      | Uma tela por rota                                         |
+| `components/` | Peças usadas **só** por aquela área                       |
+| `lib/`        | Funções puras de apoio da área                            |
+| `layout/`     | Casca/header próprios, quando a área tem                  |
+
+Um arquivo mora na área de que ele **depende**, não na que o chama. `GuardaSaida`
+está em `cadastro/` porque lê o `CadastroContext`, mesmo sendo montado pela casca;
+`formato.ts` está em `resultado/` porque hoje só o resultado formata dinheiro. Se
+um segundo consumidor aparecer, aí sim ele sobe para `comum/` — e não antes, senão
+`comum/` vira o depósito de tudo.
+
+**Imports usam `@/`** (`@/cadastro/domain/subbacia`), nunca `../../..`. É o que
+faz mover arquivo de pasta custar barato. O ESLint recusa import relativo que
+atravesse pasta, e recusa uma área importar outra.
+
+Os pontos de entrada de cada área, para quem chegou agora:
+
+| Área        | Comece por                                                                     |
+| ----------- | ------------------------------------------------------------------------------ |
+| `cadastro`  | `domain/subbacia.ts` (obras, CAPEX, pendências) → `state/cadastroReducer.ts`   |
+| `resultado` | `domain/resultado.ts` (o contrato inteiro) → `pages/Historico.tsx`             |
+| `simulacao` | `domain/simulacao.ts` (parser, validação, corpo do POST) → `pages/Simular.tsx` |
 
 Stack: **Vite + React 18 + TypeScript**, React Router 6, TanStack Query, CSS
-Modules com tokens em `src/styles/tokens.css`. Sem biblioteca de componentes: o
-visual segue o protótipo do handoff.
+Modules com tokens em `src/comum/styles/tokens.css`. Sem biblioteca de
+componentes: o visual segue o protótipo do handoff.
 
 ## O que ainda não está pronto
 
 Nada aqui é surpresa escondida — está tudo detalhado no `DEPLOY.md`:
 
-- **Autenticação**: só o encaixe (`src/auth/sessao.ts`). Falta escolher IdP/lib
+- **Autenticação**: só o encaixe (`src/comum/auth/sessao.ts`). Falta escolher IdP/lib
   (provável Entra ID) e ligar no bootstrap.
 - **Concorrência**: sem versão/ETag por ficha. A UI já trata 409 (oferece
   recarregar do servidor), mas quem detecta o conflito é o backend.

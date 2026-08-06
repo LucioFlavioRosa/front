@@ -19,9 +19,13 @@ const raiz = process.cwd()
 const ler = (p: string) => readFileSync(`${raiz}/${p}`, 'utf-8')
 
 const doc = ler('CONTRATO.md')
-const QUERIES = ler('src/api/queriesResultado.ts')
-const FONTES_API = ['src/api/resultados.ts', 'src/api/simulacao.ts']
-const FONTES_TIPOS = ['src/domain/resultado.ts', 'src/domain/simulacao.ts', 'src/api/simulacao.ts']
+const QUERIES = ler('src/resultado/api/queries.ts')
+const FONTES_API = ['src/resultado/api/endpoints.ts', 'src/simulacao/api/endpoints.ts']
+const FONTES_TIPOS = [
+  'src/resultado/domain/resultado.ts',
+  'src/simulacao/domain/simulacao.ts',
+  'src/simulacao/api/endpoints.ts',
+]
 
 /**
  * O texto de uma seção, do titulo ate o proximo titulo de nivel IGUAL OU SUPERIOR.

@@ -37,7 +37,7 @@ uma dúvida sobrar depois de ler aqui, o mock responde.
 
 ### 1.1 Erros
 
-O client (`src/api/client.ts`) distingue três famílias, e a UI reage diferente em
+O client (`src/comum/api/client.ts`) distingue três famílias, e a UI reage diferente em
 cada uma:
 
 | Status        | Significado para a tela                                                  |

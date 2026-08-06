@@ -11,9 +11,9 @@
  * nao se atualizar.
  */
 import { http, HttpResponse } from 'msw'
-import runsFx from './fixtures/runs.json'
-import dadosFx from './fixtures/resultado.json'
-import type { RunMeta, RunResumo } from '../domain/resultado'
+import runsFx from '@/mocks/fixtures/runs.json'
+import dadosFx from '@/mocks/fixtures/resultado.json'
+import type { RunMeta, RunResumo } from '@/resultado/domain/resultado'
 
 const BASE = '/api'
 

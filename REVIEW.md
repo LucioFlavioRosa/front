@@ -9,7 +9,7 @@ Antes de tudo:
 
 ```bash
 npm install
-npm run verificar    # lint + formatação + build + 171 testes
+npm run verificar    # lint + formatação + build + 299 testes
 npm run dev          # a tela, com dados de mentira
 ```
 
@@ -20,26 +20,46 @@ lógica.
 
 ## Ordem de leitura sugerida (~1h)
 
+O `src/` está organizado por **área de produto** — `cadastro/`, `resultado/`,
+`simulacao/` — com `comum/` para o que não é de nenhuma e `app/` para as rotas e
+as cascas. Dá para ler uma área inteira sem abrir as outras: o ESLint recusa uma
+importar a outra, então não há fio escondido.
+
+Se você tem uma hora, leia **o cadastro**, que é a área mais densa e a única que
+escreve:
+
 1. **`README.md`** — o que é o app e de onde vem o dado.
-2. **`src/domain/`** — as regras, sem React. Comece por `subbacia.ts`: obras,
-   CAPEX, o que conta pendência. Depois `baseComercial.ts` (quais campos existem
-   em cada ficha) e `cts.ts` (a irmã da sub-bacia).
-3. **`src/state/cadastroReducer.ts`** — o coração. Toda mutação passa por aqui.
-   Leia `State`, as actions e `derive()` (contadores e completude).
-4. **`src/state/fichas.ts`** — o que é uma "ficha", como o corpo do PUT é montado
-   e como o app sabe o que ainda não foi salvo.
-5. **`src/state/CadastroContext.tsx`** — a costura: queries, seed, rascunho e a
-   superfície que as telas consomem. É o arquivo mais denso do projeto.
-6. **Uma tela inteira**: `src/pages/GrupoSubBacias.tsx` (a de referência). As
-   outras quatro seguem o mesmo formato.
-7. **`src/api/escrita.ts` + `DEPLOY.md`** — o contrato que o backend terá de
-   honrar. É o documento que sai daqui para outra equipe.
-8. **Testes**, na ordem: `domain/pendencias.test.ts` →
-   `state/cadastroReducer.test.ts` → `app.escrita.test.tsx` →
-   `app.rascunho.test.tsx`.
+2. **`src/cadastro/domain/`** — as regras, sem React. Comece por `subbacia.ts`:
+   obras, CAPEX, o que conta pendência. Depois `baseComercial.ts` (quais campos
+   existem em cada ficha) e `cts.ts` (a irmã da sub-bacia).
+3. **`src/cadastro/state/cadastroReducer.ts`** — o coração. Toda mutação passa
+   por aqui. Leia `State`, as actions e `derive()` (contadores e completude).
+4. **`src/cadastro/state/fichas.ts`** — o que é uma "ficha", como o corpo do PUT
+   é montado e como o app sabe o que ainda não foi salvo.
+5. **`src/cadastro/state/CadastroContext.tsx`** — a costura: queries, seed,
+   rascunho e a superfície que as telas consomem. É o arquivo mais denso do
+   projeto.
+6. **Uma tela inteira**: `src/cadastro/pages/GrupoSubBacias.tsx` (a de
+   referência). As outras quatro seguem o mesmo formato.
+7. **`src/cadastro/api/escrita.ts` + `DEPLOY.md`** — o contrato que o backend
+   terá de honrar. É o documento que sai daqui para outra equipe.
+8. **Testes**, na ordem: `cadastro/domain/pendencias.test.ts` →
+   `cadastro/state/cadastroReducer.test.ts` → `cadastro/escrita.test.tsx` →
+   `cadastro/rascunho.test.tsx`.
+
+As outras duas áreas são de **leitura** e cabem em bem menos tempo:
+
+| Área        | Ordem                                                                                                                                                               |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `resultado` | `domain/resultado.ts` (o contrato inteiro, comentado) → `api/queries.ts` (por que o cache é eterno) → `pages/Historico.tsx` → uma página funda, `pages/Sistema.tsx` |
+| `simulacao` | `domain/simulacao.ts` (parser pt-BR, validação, corpo do POST) → `pages/Simular.tsx`                                                                                |
+
+E o `CONTRATO.md`, que é o que essas duas áreas pedem do backend — vale mais que
+qualquer código delas se você for escrever o servidor.
 
 O que **não** precisa ler linha a linha: `src/mocks/` (backend de mentira),
-`src/components/CascadeTree.tsx` e os `.module.css` (fidelidade ao protótipo).
+`src/cadastro/components/CascadeTree.tsx`, `src/resultado/components/graficos.tsx`
+(SVG na mão) e os `.module.css` (fidelidade ao protótipo).
 
 ---
 
