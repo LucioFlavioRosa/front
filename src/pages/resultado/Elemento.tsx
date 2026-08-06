@@ -37,7 +37,6 @@ export function Elemento() {
     return <ErroCarga alvo="esta obra" onRetry={() => void q.refetch()} tentando={q.isFetching} />
 
   const o = q.data
-  const somaFracoes = o.dependencias.reduce((s, d) => s + d.fracaoRateio, 0)
 
   return (
     <section aria-labelledby="titulo-obra">
@@ -201,9 +200,14 @@ export function Elemento() {
               },
             ]}
           />
+          {/* Nao somamos as fracoes aqui de proposito. A reconciliacao (somam 1
+              por obra, desvio < 1e-6) e checagem do PORTAO DE QUALIDADE da
+              rodada, e refaze-la no front criaria uma segunda opiniao sobre o
+              mesmo numero — que discordaria da primeira por arredondamento e
+              apareceria como "99,9%" numa tela que promete nao recomputar. */}
           <p className={styles.somaFracoes}>
-            Soma das frações: <strong>{pct(somaFracoes * 100)}</strong> — a reconciliação é
-            garantida pelo portão de qualidade da rodada, não recalculada aqui.
+            As frações somam 100% por construção: é uma das 14 checagens críticas do portão de
+            qualidade, feita sobre os dados materializados antes de publicar.
           </p>
         </Painel>
       </div>

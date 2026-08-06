@@ -298,10 +298,14 @@ describe('nível elemento', () => {
     expect(await screen.findByText(/da unidade|própria da obra|próprio da obra/)).toBeTruthy()
   })
 
-  it('mostra o rateio e diz que a soma é garantida pelo portão', async () => {
+  it('mostra o rateio sem RECOMPUTAR a soma das frações', async () => {
+    // Somar aqui criaria uma segunda opiniao sobre o mesmo numero, que
+    // discordaria da primeira por arredondamento — num app que promete nao
+    // recomputar totais. A garantia e do portao de qualidade da rodada.
     renderApp(`/resultados/${RUN}/obras/tro_d1b38_1_1`)
     expect(await screen.findByText('Quem depende deste elemento')).toBeTruthy()
-    expect(await screen.findByText(/portão de qualidade da rodada/)).toBeTruthy()
+    expect(await screen.findByText(/14 checagens críticas do portão/)).toBeTruthy()
+    expect(screen.queryByText(/Soma das frações/)).toBeNull()
   })
 
   it('traz a base comercial que torna o CAPEX comparável', async () => {

@@ -141,16 +141,42 @@ export function Sistema() {
 // eslint-disable-next-line react-refresh/only-export-components
 export function porDistanciaAteEte(nos: NoTopologia[]): NoTopologia[][] {
   const porId = new Map(nos.map((n) => [n.id, n]))
+  const memo = new Map<string, number>()
 
-  const distancia = (id: string, visitados: Set<string>): number => {
-    if (visitados.has(id)) return 0
-    visitados.add(id)
-    const no = porId.get(id)
-    if (!no || !no.jusante || !porId.has(no.jusante)) return 0
-    return 1 + distancia(no.jusante, visitados)
+  /**
+   * Iterativa, e nao recursiva: uma cadeia longa estourava a pilha (medido: 10
+   * mil nos em fila). O memo tambem evita refazer o mesmo sufixo para cada no —
+   * sem ele, uma cadeia de N nos custa O(N²).
+   */
+  const distancia = (inicio: string): number => {
+    const caminho: string[] = []
+    const visitados = new Set<string>()
+    let id: string | null = inicio
+    let base = 0
+
+    while (id && !visitados.has(id)) {
+      const emCache = memo.get(id)
+      if (emCache !== undefined) {
+        base = emCache
+        break
+      }
+      visitados.add(id)
+      const no = porId.get(id)
+      const proximo: string | null = no?.jusante ?? null
+      if (!no || !proximo || !porId.has(proximo)) break
+      caminho.push(id)
+      id = proximo
+    }
+
+    // Preenche o memo de tras para frente, com o caminho ja percorrido.
+    for (let i = caminho.length - 1; i >= 0; i--) {
+      base += 1
+      memo.set(caminho[i], base)
+    }
+    return memo.get(inicio) ?? 0
   }
 
-  const dist = new Map(nos.map((n) => [n.id, distancia(n.id, new Set())]))
+  const dist = new Map(nos.map((n) => [n.id, distancia(n.id)]))
   const maior = Math.max(0, ...dist.values())
 
   const colunas: NoTopologia[][] = Array.from({ length: maior + 1 }, () => [])

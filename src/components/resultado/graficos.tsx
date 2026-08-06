@@ -23,6 +23,7 @@ import {
 } from '../../lib/svg'
 import { brl, brlMi, inteiro, pct, VAZIO } from '../../lib/formato'
 import { ChartFrame } from './ChartFrame'
+import frame from './ChartFrame.module.css'
 import type {
   AnoFinanceiro,
   CapexPorComponente,
@@ -93,9 +94,9 @@ function Eixos({
           </text>
         </g>
       ))}
-      {rotulosX.map((r) => (
+      {rotulosX.map((r, i) => (
         <text
-          key={r.texto}
+          key={`${i}-${r.texto}`}
           x={r.x}
           y={cx.y + cx.altura + 20}
           textAnchor="middle"
@@ -121,6 +122,30 @@ function rotulosDeAno(anos: number[], x: (a: number) => number) {
 }
 
 const milhoes = (v: number) => (v === 0 ? '0' : `${Math.round(v / 1_000_000)}`)
+
+/**
+ * Estado vazio de um quadro.
+ *
+ * Existe porque varios graficos leem `serie[0]` e `serie[serie.length - 1]` para
+ * montar a escala do eixo X — com serie vazia isso e um TypeError que derruba a
+ * pagina inteira, nao um grafico feio. A fixture nunca traz vazio; o backend
+ * real pode, e uma cidade sem nenhum ano de cobertura e um caso legitimo.
+ */
+function QuadroVazio({
+  titulo,
+  origem,
+  motivo,
+}: {
+  titulo: string
+  origem: string
+  motivo: string
+}) {
+  return (
+    <ChartFrame titulo={titulo} origem={origem} tabela={{ colunas: [], linhas: [] }}>
+      {() => <p className={frame.vazio}>{motivo}</p>}
+    </ChartFrame>
+  )
+}
 
 /** Quebra um rotulo em ate 2 linhas, sem cortar palavra no meio. */
 function quebra(texto: string, largura: number): string[] {
@@ -195,6 +220,8 @@ export function GraficoCascata({
   origem: string
   nota?: ReactNode
 }) {
+  if (parcelas.length === 0)
+    return <QuadroVazio titulo={titulo} origem={origem} motivo="Sem parcelas para decompor." />
   const passos = passosCascata(parcelas)
   const dominio = limites(passos.flatMap((p) => [p.de, p.ate]))
   const cx = areaUtil(W, H)
@@ -294,6 +321,14 @@ export function GraficoCascata({
 //  2 · DESEMBOLSO E RECEITA POR ANO vs TETO
 // ===========================================================================
 export function GraficoDesembolso({ anos }: { anos: AnoFinanceiro[] }) {
+  if (anos.length === 0)
+    return (
+      <QuadroVazio
+        titulo="Desembolso e receita por ano, contra o teto"
+        origem="run_ano"
+        motivo="Esta rodada não tem nenhum ano de desembolso materializado."
+      />
+    )
   const cx = areaUtil(W, H)
   const dominio = limites([
     ...anos.map((a) => a.capex),
@@ -414,6 +449,14 @@ export function GraficoDesembolso({ anos }: { anos: AnoFinanceiro[] }) {
 //  3 · CURVA S — CAPEX ACUMULADO
 // ===========================================================================
 export function GraficoCurvaS({ pontos }: { pontos: PontoCurvaS[] }) {
+  if (pontos.length === 0)
+    return (
+      <QuadroVazio
+        titulo="Curva S — CAPEX acumulado"
+        origem="run_mes"
+        motivo="Esta rodada não tem curva mensal de CAPEX."
+      />
+    )
   const cx = areaUtil(W, H)
   const dominio = limites(pontos.map((p) => p.capexAcumulado))
   const y = escala(dominio, [cx.y + cx.altura, cx.y])
@@ -478,6 +521,14 @@ export function GraficoCurvaS({ pontos }: { pontos: PontoCurvaS[] }) {
 //  4 · CAPEX POR ELEMENTO DE OBRA (barras horizontais)
 // ===========================================================================
 export function GraficoCapexComponente({ itens }: { itens: CapexPorComponente[] }) {
+  if (itens.length === 0)
+    return (
+      <QuadroVazio
+        titulo="CAPEX por elemento de obra"
+        origem="run_obra"
+        motivo="Nenhum CAPEX por componente nesta rodada."
+      />
+    )
   const alturaLinha = 38
   const alt = itens.length * alturaLinha + 26
   // A esquerda cabe "Coletor de tempo seco"; a direita, "R$ 137,0 Mi · 45,1%".
@@ -567,6 +618,14 @@ export function GraficoHistograma({
   positivas: number
   negativas: number
 }) {
+  if (faixas.length === 0)
+    return (
+      <QuadroVazio
+        titulo="Quantidade de sub-bacias por faixa de VPL"
+        origem="run_subbacia"
+        motivo="Sem distribuição de VPL materializada."
+      />
+    )
   const cx = areaUtil(W, H)
   const dominio = limites(faixas.map((f) => f.quantidade))
   const y = escala(dominio, [cx.y + cx.altura, cx.y])
@@ -641,6 +700,14 @@ const CORES_COMPONENTE: Record<string, string> = {
 }
 
 export function GraficoObrasPorAno({ anos }: { anos: ObrasDoAno[] }) {
+  if (anos.length === 0)
+    return (
+      <QuadroVazio
+        titulo="Quantidade de obras por ano de início"
+        origem="run_obra"
+        motivo="Nenhuma obra com ano de início nesta rodada."
+      />
+    )
   const cx = areaUtil(W, H)
   const totais = anos.map((a) => a.porComponente.reduce((s, c) => s + c.quantidade, 0))
   const dominio = limites(totais)
@@ -732,6 +799,14 @@ export function GraficoEbitda({
   fimCapex: number
   escopo: string
 }) {
+  if (anos.length === 0)
+    return (
+      <QuadroVazio
+        titulo={`EBITDA por ano — ${escopo}`}
+        origem="run_ano"
+        motivo="Sem anos de EBITDA materializados para este escopo."
+      />
+    )
   const cx = areaUtil(W, H, { topo: 38, direita: 58, baixo: 34, esquerda: 60 })
   const dominio = limites(anos.map((a) => a.ebitda))
   const y = escala(dominio, [cx.y + cx.altura, cx.y])
@@ -855,6 +930,14 @@ export function GraficoCobertura({
   fimConcessao: number
   regua: string
 }) {
+  if (pontos.length === 0)
+    return (
+      <QuadroVazio
+        titulo="Cobertura até o fim da concessão"
+        origem="run_cobertura + run_meta_cobertura"
+        motivo="Sem curva de cobertura materializada para esta cidade."
+      />
+    )
   const cx = areaUtil(W, H)
   const dominio: [number, number] = [0, 100]
   const y = escala(dominio, [cx.y + cx.altura, cx.y])
@@ -962,6 +1045,14 @@ export function GraficoCobertura({
 //  9 · RECEITA DA SUB-BACIA NO TEMPO
 // ===========================================================================
 export function GraficoReceitaSubBacia({ receita }: { receita: ReceitaAno[] }) {
+  if (receita.length === 0)
+    return (
+      <QuadroVazio
+        titulo="Receita ao longo do tempo"
+        origem="run_subbacia_ano"
+        motivo="Sem série de receita para esta sub-bacia."
+      />
+    )
   const cx = areaUtil(W, H)
   const dominio = limites([...receita.map((r) => r.direta), ...receita.map((r) => r.indireta)])
   const y = escala(dominio, [cx.y + cx.altura, cx.y])

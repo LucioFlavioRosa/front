@@ -174,6 +174,33 @@ describe('disparo', () => {
   })
 })
 
+describe('rodada que falha', () => {
+  it('status ERRO fecha o "em andamento" e oferece ajustar, não cancelar', async () => {
+    // Antes so CANCELADA terminava: uma rodada que falhou ficava "em andamento"
+    // para sempre, oferecendo cancelar algo que ja tinha parado.
+    estado.respostas['/runs'] = { runId: 'run_x', status: 'RODANDO' }
+    dados['/runs/run_x/status'] = {
+      runId: 'run_x',
+      status: 'ERRO',
+      progresso: 40,
+      erro: 'sem teto anual de CAPEX',
+    }
+    renderApp('/simular')
+    await escolherUnidade()
+    await waitFor(() => {
+      const b = screen.getByRole('button', { name: 'Iniciar simulação' }) as HTMLButtonElement
+      expect(b.disabled).toBe(false)
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Iniciar simulação' }))
+
+    const modal = await screen.findByRole('dialog')
+    expect(await within(modal).findByText('A rodada não terminou')).toBeTruthy()
+    expect(within(modal).getByText('sem teto anual de CAPEX')).toBeTruthy()
+    expect(within(modal).getByRole('button', { name: 'Ajustar parâmetros' })).toBeTruthy()
+    expect(within(modal).queryByRole('button', { name: 'Cancelar rodada' })).toBeNull()
+  })
+})
+
 describe('resumo', () => {
   it('lista os parâmetros na ordem em que serão enviados', async () => {
     renderApp('/simular')

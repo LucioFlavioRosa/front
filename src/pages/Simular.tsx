@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useRegionais, useUnidades } from '../api/queries'
 import {
@@ -89,7 +89,9 @@ export function Simular() {
     })
   }
 
-  const emVoo = !!runId && status.data?.status !== 'CANCELADA'
+  const st = status.data?.status
+  const terminal = st === 'SUCESSO' || st === 'ERRO' || st === 'FALHOU_QUALIDADE'
+  const emVoo = !!runId && st !== 'CANCELADA'
   const progresso = status.data?.progresso ?? 0
 
   return (
@@ -680,11 +682,14 @@ export function Simular() {
       {emVoo && (
         <ModalProgresso
           progresso={progresso}
-          concluida={status.data?.status === 'SUCESSO'}
+          terminal={terminal}
+          falhou={st === 'ERRO' || st === 'FALHOU_QUALIDADE'}
+          erro={status.data?.erro ?? undefined}
           onCancelar={() => {
             if (runId) cancelar.mutate(runId)
             setRunId(undefined)
           }}
+          onFechar={() => setRunId(undefined)}
           onHistorico={() => navigate('/resultados')}
         />
       )}
@@ -753,23 +758,66 @@ function FaixaProntidao({
  */
 function ModalProgresso({
   progresso,
-  concluida,
+  terminal,
+  falhou,
+  erro,
   onCancelar,
+  onFechar,
   onHistorico,
 }: {
   progresso: number
-  concluida: boolean
+  terminal: boolean
+  falhou: boolean
+  erro?: string
   onCancelar: () => void
+  onFechar: () => void
   onHistorico: () => void
 }) {
+  const caixa = useRef<HTMLDivElement>(null)
+
+  // Foco preso enquanto o modal esta aberto — mesmo padrao do ConfirmModal do
+  // cadastro. Sem isto, quem navega por teclado continua tabulando pelos
+  // controles ATRAS do overlay, editando parametros de uma rodada ja disparada.
+  useEffect(() => {
+    const anterior = document.activeElement as HTMLElement | null
+    caixa.current?.focus()
+    const naTecla = (ev: KeyboardEvent) => {
+      if (ev.key !== 'Tab') return
+      const focaveis = caixa.current?.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, [tabindex]:not([tabindex="-1"])',
+      )
+      if (!focaveis || focaveis.length === 0) return
+      const primeiro = focaveis[0]
+      const ultimo = focaveis[focaveis.length - 1]
+      if (ev.shiftKey && document.activeElement === primeiro) {
+        ev.preventDefault()
+        ultimo.focus()
+      } else if (!ev.shiftKey && document.activeElement === ultimo) {
+        ev.preventDefault()
+        primeiro.focus()
+      }
+    }
+    document.addEventListener('keydown', naTecla)
+    return () => {
+      document.removeEventListener('keydown', naTecla)
+      anterior?.focus()
+    }
+  }, [])
+
+  const titulo = falhou
+    ? 'A rodada não terminou'
+    : terminal
+      ? 'Simulação concluída'
+      : 'Simulação em andamento'
+
   return (
     <div className={styles.overlay} role="dialog" aria-modal="true" aria-labelledby="prog-t">
-      <div className={styles.modal}>
+      <div className={styles.modal} ref={caixa} tabIndex={-1}>
         <h2 className={styles.modalTitulo} id="prog-t">
-          {concluida ? 'Simulação concluída' : 'Simulação em andamento'}
+          {titulo}
         </h2>
         <p className={styles.modalEtapa} aria-live="polite">
-          {etapaDe(progresso)}
+          {falhou ? (erro ?? 'O servidor não conseguiu concluir esta rodada.') : etapaDe(progresso)}
         </p>
         <div
           className={styles.progresso}
@@ -780,14 +828,23 @@ function ModalProgresso({
         >
           <div className={styles.progressoFill} style={{ width: `${progresso}%` }} />
         </div>
-        <p className={styles.modalNota}>
-          A rodada continua no servidor mesmo se você fechar esta tela. Ao terminar, ela aparece no
-          histórico de simulações.
-        </p>
+        {!terminal && (
+          <p className={styles.modalNota}>
+            A rodada continua no servidor mesmo se você fechar esta tela. Ao terminar, ela aparece
+            no histórico de simulações.
+          </p>
+        )}
         <div className={styles.modalAcoes}>
-          {!concluida && (
+          {/* Cancelar so faz sentido enquanto ela roda: oferecer "cancelar" uma
+              rodada que ja terminou (bem ou mal) e um botao que mente. */}
+          {!terminal && (
             <button type="button" className={styles.modalCancelar} onClick={onCancelar}>
               Cancelar rodada
+            </button>
+          )}
+          {falhou && (
+            <button type="button" className={styles.modalCancelar} onClick={onFechar}>
+              Ajustar parâmetros
             </button>
           )}
           <button type="button" className={styles.modalIr} onClick={onHistorico}>

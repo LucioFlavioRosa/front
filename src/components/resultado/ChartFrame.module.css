@@ -150,7 +150,9 @@
   border-radius: 0 6px 6px 0;
 }
 
-/* Visualmente oculta, mas lida por leitor de tela e alcancavel pelo Tab. */
+/* Visualmente oculta e lida por leitor de tela (fica no fluxo do documento, com
+   <caption>). NAO e alcancavel pelo Tab — tabela nao e focavel; quem navega so
+   por teclado, enxergando, nao tem acesso a ela hoje. */
 .tabelaOculta {
   position: absolute;
   width: 1px;
@@ -159,4 +161,17 @@
   clip: rect(0 0 0 0);
   clip-path: inset(50%);
   white-space: nowrap;
+}
+
+/* Estado vazio de um quadro: o backend pode devolver serie vazia, e ler
+   `serie[0]` nesse caso derrubaria a pagina inteira em vez de um grafico. */
+.vazio {
+  margin: 0;
+  padding: 26px 12px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-400);
+  background: #fbfcfd;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
 }

@@ -53,7 +53,7 @@ backend real, use `VITE_API_PROXY` (ver `.env.example`).
 | Comando                 | O que faz                                                |
 | ----------------------- | -------------------------------------------------------- |
 | `npm run dev`           | Sobe o app com mocks                                     |
-| `npm test`              | Suíte completa (274 testes)                              |
+| `npm test`              | Suíte completa (278 testes)                              |
 | `npm run test:watch`    | Testes em watch                                          |
 | `npm run lint`          | ESLint                                                   |
 | `npm run format`        | Prettier (escreve)                                       |

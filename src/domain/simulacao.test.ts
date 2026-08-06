@@ -12,6 +12,7 @@ import {
   etapaDe,
   MILHAO,
   num,
+  numOuNulo,
   rotuloFoco,
   validar,
   type Prontidao,
@@ -37,10 +38,49 @@ describe('num — parsing pt-BR com a notação do notebook', () => {
     expect(num('0,35')).toBe(0.35)
   })
 
-  it('vazio e lixo viram 0 em vez de NaN', () => {
-    expect(num('')).toBe(0)
-    expect(num('abc')).toBe(0)
-    expect(num('12abc')).toBe(12)
+  it('lixo é RECUSADO, não parcialmente aceito', () => {
+    // O projeto de cadastro ja pagou por um parser tolerante: parseFloat('123abc')
+    // devolvia 123 e o lixo contaminava CAPEX em silencio. Aqui seria pior — um
+    // "12abc" num ano do orcamento viraria verba que ninguem digitou.
+    expect(numOuNulo('12abc')).toBeNull()
+    expect(numOuNulo('abc')).toBeNull()
+    expect(numOuNulo('1.2.3')).toBeNull()
+    expect(numOuNulo('')).toBeNull()
+    // Para somas e derivacoes, invalido conta como 0.
+    expect(num('12abc')).toBe(0)
+  })
+})
+
+describe('cronograma inválido bloqueia em vez de enviar outra coisa', () => {
+  it('ano repetido bloqueia — o rodapé somaria os dois, o payload manda um', () => {
+    const e = { ...estadoInicial(), unidadeId: 'u1' }
+    e.orcamento = [
+      { ano: '2026', valor: '10' },
+      { ano: '2026', valor: '20' },
+    ]
+    // O total mostra 30...
+    expect(derivarOrcamento(e).total).toBe(30)
+    // ...mas o payload so leva um dos dois. Por isso bloqueia.
+    expect(Object.keys(corpoDaRodada(e).orcamento ?? {})).toEqual(['2026'])
+    const c = validar(e, PRONTA)
+    expect(bloqueado(c)).toBe(true)
+    expect(c.some((x) => x.texto.includes('repetido'))).toBe(true)
+  })
+
+  it('ano ou valor inválido bloqueia', () => {
+    const e = { ...estadoInicial(), unidadeId: 'u1' }
+    e.orcamento = [{ ano: 'abcd', valor: '10' }]
+    expect(bloqueado(validar(e, PRONTA))).toBe(true)
+
+    const e2 = { ...estadoInicial(), unidadeId: 'u1' }
+    e2.orcamento = [{ ano: '2026', valor: '12abc' }]
+    expect(bloqueado(validar(e2, PRONTA))).toBe(true)
+  })
+
+  it('verba negativa bloqueia', () => {
+    const e = { ...estadoInicial(), unidadeId: 'u1' }
+    e.orcamento = [{ ano: '2026', valor: '-5' }]
+    expect(bloqueado(validar(e, PRONTA))).toBe(true)
   })
 })
 

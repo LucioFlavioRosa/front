@@ -115,13 +115,36 @@ export function estadoInicial(): EstadoSimulacao {
  * Sem isso, `0.35` copiado do notebook viraria 35, e `1.234` digitado por um
  * brasileiro viraria 1.234 em vez de 1234.
  */
-export function num(v: string | number): number {
-  if (typeof v === 'number') return Number.isFinite(v) ? v : 0
+/** pt-BR: milhar com ponto, decimal com virgula. `1.234,5` · `1234,5` · `1234`. */
+const PT_BR = /^-?(\d{1,3}(\.\d{3})+|\d+)(,\d+)?$/
+/** Notacao do notebook: ponto decimal. `0.35` · `60.5` · `1234`. */
+const NOTEBOOK = /^-?\d+(\.\d+)?$/
+
+/**
+ * Numero, ou `null` quando o texto NAO e um numero valido.
+ *
+ * Estrito de proposito. O projeto de cadastro ja pagou por um parser tolerante:
+ * `parseFloat('123abc')` devolvia 123, e o lixo contaminava CAPEX em silencio.
+ * Aqui o estrago seria pior — um `12abc` num ano de orcamento viraria verba de
+ * R$ 12 milhoes que ninguem digitou.
+ *
+ * Aceita as DUAS notacoes porque o handoff exige: quem copia do notebook escreve
+ * `0.35`, quem digita escreve `0,35`. A regra que desempata o ponto: com virgula
+ * no texto, ponto e separador de milhar; sem virgula, ponto e decimal.
+ */
+export function numOuNulo(v: string | number): number | null {
+  if (typeof v === 'number') return Number.isFinite(v) ? v : null
   const s = String(v).trim()
-  if (s === '') return 0
-  const norm = s.includes(',') ? s.replace(/\./g, '').replace(',', '.') : s
-  const n = parseFloat(norm)
-  return Number.isNaN(n) ? 0 : n
+  if (s === '') return null
+  const ok = s.includes(',') ? PT_BR.test(s) : NOTEBOOK.test(s) || PT_BR.test(s)
+  if (!ok) return null
+  const n = Number(s.includes(',') ? s.replace(/\./g, '').replace(',', '.') : s)
+  return Number.isFinite(n) ? n : null
+}
+
+/** O mesmo parser, com 0 no lugar de `null` — para somas e derivacoes. */
+export function num(v: string | number): number {
+  return numOuNulo(v) ?? 0
 }
 
 /**
@@ -234,6 +257,31 @@ export function validar(e: EstadoSimulacao, prontidao: Prontidao | undefined): I
       severidade: 'ok',
       texto: `Cadastro de ${prontidao.unidadeNome} completo, sem pendências.`,
     })
+  }
+
+  // Linhas que o cronograma nao consegue enviar. BLOQUEIAM porque a alternativa
+  // e pior: o rodape somaria um total que o payload nao contem, e o resumo — que
+  // existe justamente para ser a conferencia final — estaria mentindo.
+  if (e.modoOrcamento === 'ano') {
+    const invalidas = e.orcamento.filter(
+      (l) => numOuNulo(l.ano) === null || numOuNulo(l.valor) === null || num(l.valor) < 0,
+    )
+    if (invalidas.length > 0) {
+      itens.push({
+        severidade: 'bloqueia',
+        texto: `${invalidas.length} linha(s) do cronograma com ano ou valor inválido — corrija antes de rodar.`,
+      })
+    }
+    const anos = e.orcamento.map((l) => num(l.ano))
+    const repetidos = [...new Set(anos.filter((a, i) => anos.indexOf(a) !== i))]
+    if (repetidos.length > 0) {
+      // Sem este bloqueio, dois cards de 2026 somariam no rodape mas so o ultimo
+      // iria no payload — e a diferenca so apareceria no resultado da rodada.
+      itens.push({
+        severidade: 'bloqueia',
+        texto: `Ano repetido no cronograma (${repetidos.join(', ')}) — só o último seria enviado.`,
+      })
+    }
   }
 
   if (total <= 0) {
