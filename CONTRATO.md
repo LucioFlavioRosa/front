@@ -14,6 +14,11 @@ handler em `src/mocks/handlersResultado.ts` e `src/mocks/handlersSimulacao.ts` �
 eles são a referência executável deste documento, e os testes os exercitam. Se
 uma dúvida sobrar depois de ler aqui, o mock responde.
 
+> **Este documento é verificado por teste** (`src/contrato.test.ts`, no portão do
+> repositório). Quebra o build se um endpoint chamado pelo app não estiver aqui,
+> se um endpoint daqui não for mais chamado, ou se algum campo citado não existir
+> nos tipos. Contrato que diverge do código é pior que contrato nenhum.
+
 ---
 
 ## 1. Convenções
