@@ -90,6 +90,10 @@ CORS no backend para a origem do frontend, com `Authorization` nos
 
 ## 3. Contrato da API
 
+> Esta seção cobre o **cadastro**. O contrato das duas áreas novas — resultados
+> (leitura de uma rodada) e nova simulação (o disparo) — está em
+> [`CONTRATO.md`](CONTRATO.md), com as garantias que o backend precisa honrar.
+
 ### Leitura
 
 Formato fixado por teste em `src/mocks/handlers.test.ts` — as fixtures em

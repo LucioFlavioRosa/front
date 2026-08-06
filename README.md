@@ -33,9 +33,10 @@ merecem atenção de quem for mexer:
 Este app **não roda a simulação** — ele prepara o cadastro que ela consome e lê o
 resultado que ela produziu. Quem executa é o job no Databricks.
 
-- **Para colocar em produção e ligar o backend:** [`DEPLOY.md`](DEPLOY.md) — é lá
-  que está o contrato da API, o que cada campo significa e o que o backend
-  precisa honrar.
+- **Para colocar em produção e ligar o backend:** [`DEPLOY.md`](DEPLOY.md)
+  (configuração, servidor de arquivos, SSO e o contrato do **cadastro**) e
+  [`CONTRATO.md`](CONTRATO.md) (contrato de **resultados** e **simulação**, com
+  as garantias que o backend precisa honrar).
 - **Para revisar o código:** [`REVIEW.md`](REVIEW.md) — ordem de leitura e as
   decisões que parecem estranhas até você saber o porquê.
 
