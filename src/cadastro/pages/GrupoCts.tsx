@@ -11,10 +11,10 @@ import { chipPendencias } from '@/cadastro/lib/chip'
 import { useApp } from '@/comum/state/AppContext'
 import { useCadastro } from '@/cadastro/state/CadastroContext'
 import { useSubBacias } from '@/cadastro/api/queries'
-import { useCriarCts, useRemoverCts, useSalvarCts } from '@/cadastro/api/mutations'
+import { useSalvarCts } from '@/cadastro/api/mutations'
 import { useErroAoSalvar } from '@/cadastro/state/erroAoSalvar'
 import { chaveCts } from '@/cadastro/state/fichas'
-import { mkObrasCts, novaCts } from '@/cadastro/domain/cts'
+import { mkObrasCts } from '@/cadastro/domain/cts'
 import type { Obra, SubBaciaDb, SubBaciaParams } from '@/cadastro/domain/subbacia'
 import { CAMPOS_DB, camposParametros } from '@/cadastro/domain/baseComercial'
 import { NotaDaRegua } from '@/cadastro/components/NotaDaRegua'
@@ -69,8 +69,6 @@ export function GrupoCts() {
     setCtsParam,
     setCtsObraField,
     editCtsDbField,
-    addCts,
-    removeCts,
     carregando,
     erro,
     recarregar,
@@ -86,9 +84,6 @@ export function GrupoCts() {
   const [busca, setBusca] = useState('')
   const [soPend, setSoPend] = useState(false)
   const [override, setOverride] = useState(false)
-  // Busca da CRIACAO de CTS — separada da `busca` do rail, que filtra as CTS que
-  // ja existem. Sao duas perguntas diferentes na mesma tela.
-  const [buscaSub, setBuscaSub] = useState('')
 
   // Caminho [sup, cid, sis] de cada sub-bacia + ordem linear das CTS existentes.
   const { path, ordered, orfas } = useMemo(() => {
@@ -115,34 +110,25 @@ export function GrupoCts() {
     return { path, ordered: [...naArvore, ...orfas], orfas }
   }, [data, pares])
 
-  // Criacao PESSIMISTA: a CTS so entra no cadastro quando o servidor aceita.
-  // Otimista era pior de duas formas — se o POST falhasse com a tela ja
-  // desmontada o rollback nao rodava, e se o usuario editasse a CTS nova durante
-  // o voo o rollback apagava o que ele tinha digitado.
-  // Entra no cadastro a CTS QUE O SERVIDOR DEVOLVEU (nao uma copia local): se
-  // ele normalizar campos ou gerar outro id, e a versao dele que vale — inclusive
-  // para a selecao, que segue `cts.id` e nao o id que mandamos.
-  const criarM = useCriarCts(unidadeId, {
-    onSuccess: (cts, { subId }) => {
-      addCts(subId, cts)
-      setSelCts(cts.id)
-      setOverride(false)
-      setExpanded((e) => new Set([...e, ...(path[subId] ?? [RAMO_ORFAS])]))
-      toast('CTS criada. Preencha a base comercial e as 4 obras dela.')
-    },
-    onError: erroAoSalvar,
-  })
-
-  // Remocao tambem so mexe no store depois do 204 — e pelo callback do hook,
-  // para o 204 nao se perder se o usuario ja tiver saido da tela.
-  const removerM = useRemoverCts(unidadeId, {
-    onSuccess: (_dado, ctsId) => {
-      removeCts(ctsId)
-      setSelCts('')
-      toast('CTS removida.')
-    },
-    onError: erroAoSalvar,
-  })
+  // NAO HA "criar CTS" NEM "remover CTS" nesta tela, e isso e deliberado.
+  //
+  // A CTS e um NO DO SISTEMA, como a sub-bacia: a posicao dela ja esta na
+  // topologia (`sistema_topologia`), com jusante proprio — 337 das 339 no cadastro
+  // real. O motor monta os nos percorrendo a topologia e faz
+  // `cts_ids = fichas ∩ nos`: so e CTS efetiva a ficha que TAMBEM e no.
+  //
+  // Criar uma CTS aqui gravava ficha e par sem tocar na topologia — ela aparecia
+  // no cadastro e NAO existia para a simulacao. Remover era pior: apagava a ficha
+  // e deixava o no, que virava um no de demanda ZERO; e como o par sumia junto,
+  // com `USAR_CTS` desligado a demanda dela deixava de ser somada a sub-bacia
+  // irma. Duas perdas ao mesmo tempo, nenhuma com erro visivel.
+  //
+  // `subbacia_cts` e SOBREPOSICAO de area, e nao pertencimento: e ela que permite
+  // ao `USAR_CTS` escolher entre tratar a CTS como estrutura propria ou somar
+  // ligacoes, receita e vazao dela na sub-bacia pareada.
+  //
+  // Criar ou remover CTS e mudanca de TOPOLOGIA, e topologia vem do cadastro
+  // estrutural (Grupo 01). Aqui se le e se edita a ficha de uma CTS que existe.
 
   // Seleciona a primeira CTS quando a lista muda (inclui a CTS recem-criada).
   // Espera a arvore: a ordem das CTS vem da geografia das sub-bacias, e sem ela
@@ -184,92 +170,8 @@ export function GrupoCts() {
 
   const g5Chip = chipPendencias(derivado.g5)
 
-  // Sub-bacias que ainda nao tem CTS (a relacao e 1:1).
-  const pareadas = new Set(pares.map((p) => p.sub))
-  const semCts = Object.values(subs).filter((s) => !pareadas.has(s.id))
-
   /** Ramos a abrir para revelar uma CTS no rail (ou o ramo das orfas). */
   const caminhoDaCts = (ctsId: string) => path[ctss[ctsId]?.subId ?? ''] ?? [RAMO_ORFAS]
-
-  const adicionar = (subId: string) => criarM.mutate({ subId, cts: novaCts(subs[subId]) })
-
-  // Criar CTS: a sub-bacia se ESCOLHE por busca, e nao se garimpa numa lista.
-  //
-  // Antes isto renderizava um botao por sub-bacia sem CTS. Com o cadastro de
-  // teste (5 sub-bacias) parecia um atalho; com dado real e um paredao — numa
-  // unidade de 722 sub-bacias, 721 botoes que ninguem le, escondendo o unico que
-  // interessa. E a acao aqui e pontual por natureza: a CTS e excecao, nao regra.
-  //
-  // A lista so aparece depois de digitar, e limitada. O contador continua visivel
-  // porque ele responde "quantas ainda nao tem CTS?", que e informacao util.
-  // Ate este tamanho a lista inteira APARECE: com poucas candidatas ela e um
-  // atalho legitimo, e foi assim que a tela nasceu. Acima disso vira ruido — numa
-  // unidade de 722 sub-bacias eram 721 botoes escondendo o unico que interessa —,
-  // e a sub-bacia passa a se escolher por busca.
-  const LISTAR_ATE = 12
-  const LIMITE_SUGESTOES = 8
-  const alvoBusca = buscaSub.trim().toLowerCase()
-  const precisaBuscar = semCts.length > LISTAR_ATE
-  const sugestoes = !precisaBuscar
-    ? semCts
-    : alvoBusca
-      ? semCts.filter((s) => s.id.toLowerCase().includes(alvoBusca))
-      : []
-
-  const cardSemCts =
-    semCts.length > 0 ? (
-      <div className={ctsStyles.semCts}>
-        <div className={ctsStyles.semCtsTitulo}>
-          Criar CTS ({semCts.length} de {Object.keys(subs).length} sub-bacias ainda não têm)
-        </div>
-        <div className={ctsStyles.semCtsSub}>
-          A CTS é opcional — só crie onde existe coleta de tempo seco a orçar à parte. Cada
-          sub-bacia aceita <strong>uma</strong> CTS.
-        </div>
-        {precisaBuscar && (
-          <input
-            className={ctsStyles.buscaSub}
-            type="search"
-            value={buscaSub}
-            onChange={(e) => setBuscaSub(e.target.value)}
-            placeholder="Digite o id da sub-bacia que vai receber a CTS"
-            aria-label="Buscar sub-bacia para criar CTS"
-          />
-        )}
-        {(!precisaBuscar || alvoBusca) && (
-          <div className={ctsStyles.semCtsLista}>
-            {sugestoes.slice(0, LIMITE_SUGESTOES).map((s) => (
-              <button
-                key={s.id}
-                type="button"
-                className={ctsStyles.addBtn}
-                onClick={() => {
-                  adicionar(s.id)
-                  setBuscaSub('')
-                }}
-                disabled={criarM.isPending}
-              >
-                {criarM.isPending && criarM.variables?.subId === s.id ? (
-                  'Criando…'
-                ) : (
-                  <>
-                    + CTS em <span className={ctsStyles.addBtnId}>{s.id}</span>
-                  </>
-                )}
-              </button>
-            ))}
-            {precisaBuscar && sugestoes.length === 0 && (
-              <span className={ctsStyles.semCtsSub}>Nenhuma sub-bacia sem CTS com esse id.</span>
-            )}
-            {sugestoes.length > LIMITE_SUGESTOES && (
-              <span className={ctsStyles.semCtsSub}>
-                e mais {sugestoes.length - LIMITE_SUGESTOES} — refine a busca
-              </span>
-            )}
-          </div>
-        )}
-      </div>
-    ) : null
 
   // Nenhuma CTS cadastrada: a tela vira o convite a criar a primeira.
   if (!selCts || !ctss[selCts])
@@ -280,12 +182,11 @@ export function GrupoCts() {
           <div className={ctsStyles.vazioTitulo}>Nenhuma CTS cadastrada nesta unidade</div>
           <p className={ctsStyles.vazioTexto}>
             O coletor de tempo seco capta o esgoto que escorre em dias sem chuva e o leva até a ETE.
-            Vale cadastrar uma CTS quando a área já tem coleta de tempo seco e o negócio precisa
-            comparar, em reais, construir essa estrutura dedicada contra atender a mesma área pela
-            rede da sub-bacia.
+            As CTS desta unidade vêm do cadastro estrutural, junto da topologia do sistema — elas
+            não se criam por aqui. Se esta unidade deveria ter CTS, é no Grupo 01 que a topologia é
+            corrigida.
           </p>
         </div>
-        {cardSemCts}
       </section>
     )
 
@@ -328,13 +229,6 @@ export function GrupoCts() {
         onError: erroAoSalvar,
       },
     )
-
-  const remover = () =>
-    askConfirm({
-      titulo: 'Remover esta CTS?',
-      texto: `A CTS ${cur.id} e as 4 obras dela saem do cadastro. A sub-bacia ${cur.subId} continua intacta — a área dela passa a ser atendida só pela rede da própria sub-bacia.`,
-      onConfirm: () => removerM.mutate(selCts),
-    })
 
   const proximaPendente = () => {
     const start = ordered.indexOf(selCts)
@@ -503,24 +397,12 @@ export function GrupoCts() {
           salvarLabel="Salvar CTS"
           salvando={salvarM.isPending}
           sujo={estaSuja(chaveCts(selCts))}
-          impedimento={removerM.isPending ? 'Esta CTS está sendo removida.' : undefined}
         >
           {/* Vinculo com a sub-bacia pareada — a area das duas se sobrepoe. */}
           <div className={styles.sheetFoot}>
             <span className={ctsStyles.parChip}>
               {`CTS ↔ sub-bacia ${cur.subId}${subPar ? ` · ${subPar.nome}` : ''}`}
             </span>
-            {/* Nunca DELETE com um PUT da mesma CTS em voo: a ordem de chegada
-                no servidor decidiria se a ficha volta a existir. */}
-            <button
-              type="button"
-              className={ctsStyles.remover}
-              onClick={remover}
-              disabled={removerM.isPending || salvarM.isPending}
-              title={salvarM.isPending ? 'Aguarde o salvamento terminar.' : undefined}
-            >
-              {removerM.isPending ? 'Removendo…' : 'Remover CTS'}
-            </button>
           </div>
 
           {/* O que a escolha "Usar CTS?" muda — e onde ela e feita. */}
@@ -642,8 +524,6 @@ export function GrupoCts() {
           </div>
         </RecordSheet>
       </div>
-
-      {cardSemCts}
     </section>
   )
 }

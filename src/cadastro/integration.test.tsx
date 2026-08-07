@@ -16,6 +16,20 @@ vi.mock('@/comum/api/client', async (importOriginal) => {
 
 import { renderApp } from '@/testes/renderApp'
 
+/**
+ * NAO ha mais teste de CRIAR nem de REMOVER CTS, e a ausencia e deliberada.
+ *
+ * A CTS e um NO DO SISTEMA: a posicao dela vem da topologia (`sistema_topologia`),
+ * como a da sub-bacia. Criar uma pela tela gravava ficha sem no — visivel no
+ * cadastro, invisivel para a simulacao, porque o motor faz `cts_ids = fichas ∩ nos`.
+ * Remover era pior: apagava a ficha e deixava o no, que virava demanda ZERO.
+ *
+ * Os testes que sairam eram bons — cobriam criacao pessimista, rollback e a corrida
+ * entre DELETE e PUT. Eles nao falharam: a funcionalidade que testavam foi retirada
+ * do produto. Ficam registrados aqui para ninguem os "restaurar" achando que sumiram
+ * por descuido.
+ */
+
 afterEach(cleanup)
 
 describe('Contrato & Metas (integração)', () => {
@@ -41,44 +55,5 @@ describe('Contrato & Metas (integração)', () => {
     // arredondamento (o denominador inclui obras e CTS), mas o valor continua
     // sendo derivado do store.
     expect(screen.getByRole('progressbar').getAttribute('aria-valuenow')).toBe('95')
-  })
-})
-
-describe('CTS (integração)', () => {
-  it('mostra o pareamento e propaga a edição para o chip do grupo', async () => {
-    renderApp('/unidade/u-jacarei/cts')
-
-    // A primeira CTS da árvore (Búzios vem antes de Rio das Ostras) abre
-    // selecionada, com o vínculo 1:1 visível.
-    expect(await screen.findByText(/CTS ↔ sub-bacia b3_1_1/)).toBeTruthy()
-    // Chip do grupo: as 3 CTS do mock somam 7 pendências.
-    expect(await screen.findByText('7 pendências')).toBeTruthy()
-
-    // "Próxima pendente" pula a CTS completa (cts_b2_1_1) e para na incompleta.
-    fireEvent.click(screen.getByRole('button', { name: 'Próxima pendente →' }))
-    expect(await screen.findByText(/CTS ↔ sub-bacia b2_1_4/)).toBeTruthy()
-
-    // Preencher o potencial de crescimento (pendente nessa CTS) tira 1 do grupo.
-    fireEvent.change(screen.getByLabelText('Potencial de crescimento'), {
-      target: { value: '1,0' },
-    })
-    expect(await screen.findByText('6 pendências')).toBeTruthy()
-  })
-
-  it('adicionar CTS a uma sub-bacia livre cria as 4 obras dela', async () => {
-    renderApp('/unidade/u-jacarei/cts')
-
-    // b1_1_1 não tem CTS no mock — aparece na lista de "sub-bacias sem CTS".
-    const botao = await screen.findByRole('button', { name: /\+ CTS em b1_1_1/ })
-    fireEvent.click(botao)
-
-    // A CTS nova abre selecionada, com a âncora de coleta própria da CTS.
-    expect(await screen.findByText(/CTS ↔ sub-bacia b1_1_1/)).toBeTruthy()
-    expect(screen.getByText('Coletor de tempo seco')).toBeTruthy()
-    // Não existe "Ligação de esgoto"/"Rede coletora" aqui: a CTS tem 4 componentes.
-    expect(screen.queryByText('Rede coletora')).toBeNull()
-
-    // Os 6 params entram vazios: 7 + 6 pendências no grupo.
-    expect(await screen.findByText('13 pendências')).toBeTruthy()
   })
 })

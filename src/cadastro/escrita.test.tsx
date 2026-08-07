@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { act, cleanup, fireEvent, screen, waitFor } from '@testing-library/react'
+import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react'
 
 /**
  * Caminho de ESCRITA ponta a ponta: editar → Salvar → PUT com a ficha inteira.
@@ -17,6 +17,20 @@ vi.mock('@/comum/api/client', async (importOriginal) => {
 import { api, limparApi } from '@/testes/apiFake'
 import { renderApp } from '@/testes/renderApp'
 import { ApiError } from '@/comum/api/client'
+
+/**
+ * NAO ha mais teste de CRIAR nem de REMOVER CTS, e a ausencia e deliberada.
+ *
+ * A CTS e um NO DO SISTEMA: a posicao dela vem da topologia (`sistema_topologia`),
+ * como a da sub-bacia. Criar uma pela tela gravava ficha sem no — visivel no
+ * cadastro, invisivel para a simulacao, porque o motor faz `cts_ids = fichas ∩ nos`.
+ * Remover era pior: apagava a ficha e deixava o no, que virava demanda ZERO.
+ *
+ * Os testes que sairam eram bons — cobriam criacao pessimista, rollback e a corrida
+ * entre DELETE e PUT. Eles nao falharam: a funcionalidade que testavam foi retirada
+ * do produto. Ficam registrados aqui para ninguem os "restaurar" achando que sumiram
+ * por descuido.
+ */
 
 beforeEach(() => limparApi(api))
 afterEach(cleanup)
@@ -130,89 +144,5 @@ describe('salvar ETE', () => {
     expect(caminho).toBe('/unidades/u-jacarei/etes/e2')
     expect(corpo.ete.id).toBe('e2')
     expect(corpo.overrides).toEqual([])
-  })
-})
-
-describe('criar CTS', () => {
-  it('só entra no cadastro depois que o servidor aceita', async () => {
-    renderApp('/unidade/u-jacarei/cts')
-    const botao = await screen.findByRole('button', { name: /\+ CTS em b1_1_1/ })
-
-    fireEvent.click(botao)
-
-    await waitFor(() => expect(api.posts).toHaveLength(1))
-    expect(api.posts[0][0]).toBe('/unidades/u-jacarei/cts')
-    expect(api.posts[0][1]).toMatchObject({ subId: 'b1_1_1', cts: { id: 'cts_b1_1_1' } })
-
-    // Aceita: a CTS aparece e o grupo passa a contar as 5 pendências dela.
-    expect(await screen.findByText(/CTS ↔ sub-bacia b1_1_1/)).toBeTruthy()
-    expect(await screen.findByText('13 pendências')).toBeTruthy()
-  })
-
-  it('POST recusado não deixa CTS fantasma no cadastro', async () => {
-    // Era o buraco da criação otimista: a CTS entrava antes da resposta e o
-    // rollback dependia de a tela ainda estar montada.
-    api.erroPost = new ApiError(409, 'Conflict', '/x', 'sub-bacia já tem CTS')
-    renderApp('/unidade/u-jacarei/cts')
-    const botao = await screen.findByRole('button', { name: /\+ CTS em b1_1_1/ })
-
-    fireEvent.click(botao)
-
-    expect(await screen.findByText(/Outra pessoa salvou esta ficha antes/)).toBeTruthy()
-    // Nada entrou: nem a ficha, nem as pendências, e a sub-bacia segue ofertada.
-    expect(screen.queryByText(/CTS ↔ sub-bacia b1_1_1/)).toBeNull()
-    expect(screen.getByText('7 pendências')).toBeTruthy()
-    expect(screen.getByRole('button', { name: /\+ CTS em b1_1_1/ })).toBeTruthy()
-  })
-
-  it('nada entra no cadastro enquanto o servidor não responde', async () => {
-    // Este é o invariante que fecha o buraco do review: com criação otimista a
-    // CTS já estava no store durante o voo, e desfazer dependia de a tela ainda
-    // estar montada (callback por chamada de `mutate`) e de o usuário não ter
-    // digitado nada. Sendo pessimista, não há o que desfazer.
-    api.segurarPost = true
-    renderApp('/unidade/u-jacarei/cts')
-    fireEvent.click(await screen.findByRole('button', { name: /\+ CTS em b1_1_1/ }))
-    await waitFor(() => expect(api.posts).toHaveLength(1))
-
-    // Em voo: o cadastro está intocado e o botão mostra o andamento.
-    expect(screen.getByText('7 pendências')).toBeTruthy()
-    expect(screen.queryByText(/CTS ↔ sub-bacia b1_1_1/)).toBeNull()
-    expect(screen.getByRole('button', { name: 'Criando…' })).toBeTruthy()
-
-    // Servidor recusa: segue sem CTS fantasma e a sub-bacia continua ofertada.
-    await act(async () => {
-      api.liberarPost?.(new ApiError(500, 'Server Error', '/x', 'boom'))
-      await Promise.resolve()
-    })
-    expect(await screen.findByText(/Não foi possível salvar \(erro 500\)/)).toBeTruthy()
-    expect(screen.getByText('7 pendências')).toBeTruthy()
-    expect(await screen.findByRole('button', { name: /\+ CTS em b1_1_1/ })).toBeTruthy()
-  })
-})
-
-describe('salvar e remover a mesma CTS', () => {
-  it('não deixa disparar DELETE com o PUT da mesma ficha em voo', async () => {
-    // A ordem de chegada no servidor decidiria se a ficha volta a existir: o
-    // DELETE apaga e o PUT recria. Nenhum dos dois pode sair enquanto o outro voa.
-    api.segurarPut = true
-    renderApp('/unidade/u-jacarei/cts')
-    await screen.findByRole('button', { name: 'Salvar CTS' })
-
-    const remover = () => screen.getByRole('button', { name: 'Remover CTS' }) as HTMLButtonElement
-    expect(remover().disabled).toBe(false)
-
-    fireEvent.change(screen.getByLabelText('Vazão nova'), { target: { value: '3,5' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Salvar CTS' }))
-    await waitFor(() => expect(api.puts).toHaveLength(1))
-
-    expect(remover().disabled).toBe(true)
-    expect(remover().title).toBe('Aguarde o salvamento terminar.')
-
-    await act(async () => {
-      api.liberarPut?.()
-      await Promise.resolve()
-    })
-    await waitFor(() => expect(remover().disabled).toBe(false))
   })
 })

@@ -9,14 +9,7 @@
  */
 import { useMutation } from '@tanstack/react-query'
 import { api, ApiError } from '@/comum/api/client'
-import type {
-  FichaCidade,
-  FichaCts,
-  FichaEte,
-  FichaSubBacia,
-  NovaCts,
-} from '@/cadastro/api/escrita'
-import type { Cts } from '@/cadastro/domain/cts'
+import type { FichaCidade, FichaCts, FichaEte, FichaSubBacia } from '@/cadastro/api/escrita'
 
 /** Mensagem curta, em português, para o toast de falha ao salvar. */
 export function mensagemDeErro(e: unknown): string {
@@ -81,37 +74,5 @@ export function useSalvarCts(unidadeId: string | undefined, opcoes?: OpcoesSalva
     mutationFn: ({ ctsId, ficha }: VarsCts) =>
       api.put<FichaCts>(`/unidades/${unidadeId}/cts/${ctsId}`, ficha),
     onSuccess: (_dado, vars) => opcoes?.onSalva?.(vars),
-  })
-}
-
-/**
- * Callbacks que mexem no STORE precisam ficar aqui, no nivel do hook, e nao no
- * `mutate(vars, {onSuccess})` da pagina: os callbacks por chamada so disparam se
- * o observer ainda tiver listeners, entao sair da tela antes da resposta os
- * engole. Os do hook rodam na propria mutation e sobrevivem a desmontagem.
- */
-interface OpcoesCriar {
-  onSuccess?: (cts: Cts, vars: NovaCts) => void
-  onError?: (erro: unknown) => void
-}
-
-export function useCriarCts(unidadeId: string | undefined, opcoes?: OpcoesCriar) {
-  return useMutation({
-    mutationFn: (corpo: NovaCts) => api.post<Cts>(`/unidades/${unidadeId}/cts`, corpo),
-    onSuccess: opcoes?.onSuccess,
-    onError: opcoes?.onError,
-  })
-}
-
-interface OpcoesRemover {
-  onSuccess?: (dado: void, ctsId: string) => void
-  onError?: (erro: unknown) => void
-}
-
-export function useRemoverCts(unidadeId: string | undefined, opcoes?: OpcoesRemover) {
-  return useMutation({
-    mutationFn: (ctsId: string) => api.del<void>(`/unidades/${unidadeId}/cts/${ctsId}`),
-    onSuccess: opcoes?.onSuccess,
-    onError: opcoes?.onError,
   })
 }

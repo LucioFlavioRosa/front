@@ -242,9 +242,22 @@ PUT    /unidades/:uid/sub-bacias/:subId   { params, db, obrasOverride, overrides
 PUT    /unidades/:uid/contrato/:cidId     { cidade, metas, fator, overrides }
 PUT    /unidades/:uid/etes/:eteId         { ete, overrides }
 PUT    /unidades/:uid/cts/:ctsId          { params, db, obrasOverride, overrides }
-POST   /unidades/:uid/cts                 { subId, cts }   -> 201 com a CTS
-DELETE /unidades/:uid/cts/:ctsId          -> 204
 ```
+
+> **Não há criar nem remover CTS.** A CTS é um **nó do sistema**, como a sub-bacia:
+> a posição dela vem da topologia (`sistema_topologia`), com jusante próprio. O motor
+> monta os nós percorrendo a topologia e faz `cts_ids = fichas ∩ nós` — só é CTS
+> efetiva a ficha que **também** é nó.
+>
+> Um `POST` que gravasse ficha e par sem tocar na topologia criaria uma CTS visível
+> no cadastro e invisível para a simulação. Um `DELETE` que apagasse a ficha e
+> deixasse o nó seria pior: a CTS viraria um nó de demanda **zero** e, sem o par, a
+> demanda dela deixaria de ser somada à sub-bacia irmã com `USAR_CTS` desligado.
+>
+> `subbacia_cts` é **sobreposição de área**, não pertencimento — é o que permite ao
+> `USAR_CTS` escolher entre CTS como estrutura própria ou demanda somada à
+> sub-bacia pareada. Criar ou remover CTS é mudança de topologia, e topologia vem do
+> cadastro estrutural (Grupo 01).
 
 **`overrides` viaja junto com a ficha de propósito**: é a trilha de auditoria de
 cada dado do Databricks sobrescrito (campo, valor antigo, valor novo, autor,
@@ -254,9 +267,6 @@ ao valor original apaga o registro, então "X virou X" não chega até vocês.
 
 Duas expectativas do lado da resposta:
 
-- **O `POST /cts` devolve a CTS criada, e é essa versão que entra no cadastro.**
-  Se o backend normalizar campos ou gerar outro id, mande no corpo do 201 — o
-  front adota o que voltou, não a cópia que enviou.
 - **Corpo de 2xx é JSON ou vazio.** `204` e corpo vazio viram `undefined`;
   `Content-Type` não-JSON (o HTML de login de um proxy, por exemplo) vira erro
   de API na hora, com a tela de erro — não um estouro tardio dentro da tela.
