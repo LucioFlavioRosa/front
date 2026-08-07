@@ -86,6 +86,9 @@ export function GrupoCts() {
   const [busca, setBusca] = useState('')
   const [soPend, setSoPend] = useState(false)
   const [override, setOverride] = useState(false)
+  // Busca da CRIACAO de CTS — separada da `busca` do rail, que filtra as CTS que
+  // ja existem. Sao duas perguntas diferentes na mesma tela.
+  const [buscaSub, setBuscaSub] = useState('')
 
   // Caminho [sup, cid, sis] de cada sub-bacia + ordem linear das CTS existentes.
   const { path, ordered, orfas } = useMemo(() => {
@@ -190,35 +193,81 @@ export function GrupoCts() {
 
   const adicionar = (subId: string) => criarM.mutate({ subId, cts: novaCts(subs[subId]) })
 
+  // Criar CTS: a sub-bacia se ESCOLHE por busca, e nao se garimpa numa lista.
+  //
+  // Antes isto renderizava um botao por sub-bacia sem CTS. Com o cadastro de
+  // teste (5 sub-bacias) parecia um atalho; com dado real e um paredao — numa
+  // unidade de 722 sub-bacias, 721 botoes que ninguem le, escondendo o unico que
+  // interessa. E a acao aqui e pontual por natureza: a CTS e excecao, nao regra.
+  //
+  // A lista so aparece depois de digitar, e limitada. O contador continua visivel
+  // porque ele responde "quantas ainda nao tem CTS?", que e informacao util.
+  // Ate este tamanho a lista inteira APARECE: com poucas candidatas ela e um
+  // atalho legitimo, e foi assim que a tela nasceu. Acima disso vira ruido — numa
+  // unidade de 722 sub-bacias eram 721 botoes escondendo o unico que interessa —,
+  // e a sub-bacia passa a se escolher por busca.
+  const LISTAR_ATE = 12
+  const LIMITE_SUGESTOES = 8
+  const alvoBusca = buscaSub.trim().toLowerCase()
+  const precisaBuscar = semCts.length > LISTAR_ATE
+  const sugestoes = !precisaBuscar
+    ? semCts
+    : alvoBusca
+      ? semCts.filter((s) => s.id.toLowerCase().includes(alvoBusca))
+      : []
+
   const cardSemCts =
     semCts.length > 0 ? (
       <div className={ctsStyles.semCts}>
         <div className={ctsStyles.semCtsTitulo}>
-          Sub-bacias sem CTS ({semCts.length} de {Object.keys(subs).length})
+          Criar CTS ({semCts.length} de {Object.keys(subs).length} sub-bacias ainda não têm)
         </div>
         <div className={ctsStyles.semCtsSub}>
           A CTS é opcional — só crie onde existe coleta de tempo seco a orçar à parte. Cada
           sub-bacia aceita <strong>uma</strong> CTS.
         </div>
-        <div className={ctsStyles.semCtsLista}>
-          {semCts.map((s) => (
-            <button
-              key={s.id}
-              type="button"
-              className={ctsStyles.addBtn}
-              onClick={() => adicionar(s.id)}
-              disabled={criarM.isPending}
-            >
-              {criarM.isPending && criarM.variables?.subId === s.id ? (
-                'Criando…'
-              ) : (
-                <>
-                  + CTS em <span className={ctsStyles.addBtnId}>{s.id}</span>
-                </>
-              )}
-            </button>
-          ))}
-        </div>
+        {precisaBuscar && (
+          <input
+            className={ctsStyles.buscaSub}
+            type="search"
+            value={buscaSub}
+            onChange={(e) => setBuscaSub(e.target.value)}
+            placeholder="Digite o id da sub-bacia que vai receber a CTS"
+            aria-label="Buscar sub-bacia para criar CTS"
+          />
+        )}
+        {(!precisaBuscar || alvoBusca) && (
+          <div className={ctsStyles.semCtsLista}>
+            {sugestoes.slice(0, LIMITE_SUGESTOES).map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                className={ctsStyles.addBtn}
+                onClick={() => {
+                  adicionar(s.id)
+                  setBuscaSub('')
+                }}
+                disabled={criarM.isPending}
+              >
+                {criarM.isPending && criarM.variables?.subId === s.id ? (
+                  'Criando…'
+                ) : (
+                  <>
+                    + CTS em <span className={ctsStyles.addBtnId}>{s.id}</span>
+                  </>
+                )}
+              </button>
+            ))}
+            {precisaBuscar && sugestoes.length === 0 && (
+              <span className={ctsStyles.semCtsSub}>Nenhuma sub-bacia sem CTS com esse id.</span>
+            )}
+            {sugestoes.length > LIMITE_SUGESTOES && (
+              <span className={ctsStyles.semCtsSub}>
+                e mais {sugestoes.length - LIMITE_SUGESTOES} — refine a busca
+              </span>
+            )}
+          </div>
+        )}
       </div>
     ) : null
 
