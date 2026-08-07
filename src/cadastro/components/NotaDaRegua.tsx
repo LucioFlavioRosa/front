@@ -7,8 +7,15 @@ import { NOME_DA_REGUA, reguaDe } from '@/cadastro/domain/baseComercial'
  *
  * As três réguas não moram no mesmo lugar: ligações e economias vêm do
  * Databricks e estão neste card; população é preenchida pela Regional e fica no
- * bloco de baixo. Uma nota que dissesse "é o trio destacado" no caso da
+ * bloco LOGO ACIMA. Uma nota que dissesse "é o trio destacado" no caso da
  * população mandaria o usuário procurar aqui um campo que não está aqui.
+ *
+ * A nota já disse "os campos estão logo abaixo" quando o bloco de população
+ * vinha depois deste card — e este card tem 13 campos. Era verdade no DOM e
+ * mentira no olho: o usuário rolou, não achou, e reportou campo faltando. O
+ * bloco subiu para antes do card e o texto passou a apontar para cima. Se o
+ * bloco mudar de lugar de novo, ESTE TEXTO muda junto — é a única coisa que diz
+ * ao usuário onde procurar.
  */
 export function NotaDaRegua({
   cidade,
@@ -40,7 +47,7 @@ export function NotaDaRegua({
     return (
       <>
         A meta de <strong>{cidade.nome}</strong> é medida em <strong>população</strong>, que não vem
-        do Databricks — os campos estão logo abaixo, no bloco{' '}
+        do Databricks — os campos ficam <strong>logo acima</strong>, no bloco{' '}
         <strong>“População {escopo} — você preenche”</strong>. Ligações e economias continuam aqui
         porque a régua muda por aditivo de contrato.
         {extra ? <> {extra}</> : null}
@@ -51,7 +58,9 @@ export function NotaDaRegua({
     <>
       A meta de <strong>{cidade.nome}</strong> é medida em <strong>{NOME_DA_REGUA[regua]}</strong> —
       é o trio destacado aqui. O outro continua na tela de propósito: a régua muda por aditivo de
-      contrato, e dado escondido é dado que ninguém confere.
+      contrato, e dado escondido é dado que ninguém confere. Pelo mesmo motivo os campos de
+      população ficam <strong>logo acima</strong>, bloqueados: existem, guardam o que já foi
+      preenchido, e não entram na conta enquanto a régua for esta.
       {extra ? <> {extra}</> : null}
     </>
   )

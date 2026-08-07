@@ -1,0 +1,60 @@
+{
+ "cidades": [
+  {
+   "id": "e1c3",
+   "nome": "Araruama Interior1",
+   "fim": "2041",
+   "cob": "populacao",
+   "versao": "03c10de3c3c1369a"
+  }
+ ],
+ "metas": [
+  {
+   "cid": "e1c3",
+   "ano": "2029",
+   "pct": "53"
+  },
+  {
+   "cid": "e1c3",
+   "ano": "2034",
+   "pct": "60"
+  },
+  {
+   "cid": "e1c3",
+   "ano": "2036",
+   "pct": "67"
+  },
+  {
+   "cid": "e1c3",
+   "ano": "2038",
+   "pct": "74"
+  }
+ ],
+ "fator": [
+  {
+   "cid": "e1c3",
+   "cob": "0",
+   "par": "0,8"
+  },
+  {
+   "cid": "e1c3",
+   "cob": "40",
+   "par": "0,85"
+  },
+  {
+   "cid": "e1c3",
+   "cob": "60",
+   "par": "0,9"
+  },
+  {
+   "cid": "e1c3",
+   "cob": "80",
+   "par": "0,95"
+  },
+  {
+   "cid": "e1c3",
+   "cob": "90",
+   "par": "1"
+  }
+ ]
+}

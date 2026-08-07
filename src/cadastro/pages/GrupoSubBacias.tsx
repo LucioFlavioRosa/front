@@ -134,7 +134,6 @@ export function GrupoSubBacias() {
   // cidade: os três trios continuam na tela, sem destaque em nenhum.
   const cidadeDaSub = cidadeSub(selSub)
   const regua = reguaDaSub(selSub)
-  const porPopulacao = regua === 'populacao'
 
   // ---- edicoes: apenas disparam actions de dominio (override e recalculo
   //      ficam no reducer do CadastroContext). Salvar so mostra toast. ----
@@ -313,6 +312,20 @@ export function GrupoSubBacias() {
           salvando={salvarM.isPending}
           sujo={estaSuja(chaveSub(selSub))}
         >
+          {/* Populacao ANTES da base comercial. Ficava depois, e o card do
+              Databricks tem 13 campos entre a nota e ele: a nota dizia "logo
+              abaixo" e o usuario nao achava — reportou como campo faltando.
+              Vem antes tambem porque e o unico bloco daqui que ele PREENCHE;
+              o resto e leitura do Databricks. */}
+          <CamposPopulacao
+            params={cur.params}
+            cidade={cidadeDaSub?.nome ?? 'Esta cidade'}
+            escopo="desta sub-bacia"
+            regua={regua}
+            onChange={setParam}
+            onHelp={openDict}
+          />
+
           {/* Base comercial (Databricks) */}
           <DbCard
             titulo="Base comercial — veio do Databricks 🔒"
@@ -349,18 +362,6 @@ export function GrupoSubBacias() {
               ))}
             </DbFieldGrid>
           </DbCard>
-
-          {/* Populacao — logo depois da base, porque e a terceira regua e a
-              nota do card acima aponta para ca. */}
-          {porPopulacao && (
-            <CamposPopulacao
-              params={cur.params}
-              cidade={cidadeDaSub?.nome ?? 'Esta cidade'}
-              escopo="desta sub-bacia"
-              onChange={setParam}
-              onHelp={openDict}
-            />
-          )}
 
           {/* Parametros do usuario */}
           <div className={styles.userCard}>

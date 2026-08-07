@@ -230,7 +230,6 @@ export function GrupoCts() {
   // tela, sem destaque em nenhum.
   const cidadeDaCts = cidadeCts(selCts)
   const regua = reguaDaCts(selCts)
-  const porPopulacao = regua === 'populacao'
 
   const setParam = (k: keyof SubBaciaParams, v: string) => setCtsParam(selCts, k, v)
   const setDb = (k: keyof SubBaciaDb, v: string) => editCtsDbField(selCts, k, v)
@@ -450,6 +449,20 @@ export function GrupoCts() {
             </p>
           </div>
 
+          {/* Populacao ANTES da base comercial. Ficava depois, e o card do
+              Databricks tem 13 campos entre a nota e ele: a nota dizia "logo
+              abaixo" e o usuario nao achava — reportou como campo faltando.
+              Vem antes tambem porque e o unico bloco daqui que ele PREENCHE;
+              o resto e leitura do Databricks. */}
+          <CamposPopulacao
+            params={cur.params}
+            cidade={cidadeDaCts?.nome ?? 'Esta cidade'}
+            escopo="desta CTS"
+            regua={regua}
+            onChange={setParam}
+            onHelp={openDict}
+          />
+
           {/* Base comercial (Databricks) */}
           <DbCard
             titulo="Base comercial da CTS — veio do Databricks 🔒"
@@ -492,17 +505,6 @@ export function GrupoCts() {
               ))}
             </DbFieldGrid>
           </DbCard>
-
-          {/* Populacao — logo depois da base, como na sub-bacia */}
-          {porPopulacao && (
-            <CamposPopulacao
-              params={cur.params}
-              cidade={cidadeDaCts?.nome ?? 'Esta cidade'}
-              escopo="desta CTS"
-              onChange={setParam}
-              onHelp={openDict}
-            />
-          )}
 
           {/* Parametros do usuario */}
           <div className={styles.userCard}>
