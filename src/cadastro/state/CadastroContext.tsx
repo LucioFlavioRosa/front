@@ -20,7 +20,7 @@ import {
 import { cidadePend, type Cidade, type Fator, type Meta } from '@/cadastro/domain/contrato'
 import { etePend, type Ete } from '@/cadastro/domain/ete'
 import type { UnidReg } from '@/cadastro/domain/hierarquia'
-import { ctsPend, type Cts, type ParCts } from '@/cadastro/domain/cts'
+import { ctsPend, type Cts, type CtsInconsistente, type ParCts } from '@/cadastro/domain/cts'
 import type { Regua } from '@/cadastro/domain/baseComercial'
 import {
   derive,
@@ -71,6 +71,8 @@ interface CadastroValue {
   hier: Hier | null
   ctss: Record<string, Cts>
   pares: ParCts[]
+  /** CTS incompletas denunciadas pelo servidor. Vem da query, nao do reducer. */
+  ctsInconsistentes: CtsInconsistente[]
   overrides: Record<string, Override>
   derivado: Derivado
   /** Chaves das fichas com edicao que o servidor ainda nao recebeu. */
@@ -419,6 +421,7 @@ export function CadastroProvider({
       hier: state.hier,
       ctss: state.ctss ?? {},
       pares: state.pares ?? [],
+      ctsInconsistentes: ctsQ.data?.inconsistencias ?? [],
       overrides: state.overrides,
       derivado,
       sujas,
@@ -448,6 +451,7 @@ export function CadastroProvider({
       recarregando,
       recarregar,
       state,
+      ctsQ.data,
       derivado,
       sujas,
       temSujas,

@@ -66,6 +66,8 @@ export interface OpcoesDados {
   vazio?: boolean
   /** Troca a árvore de sub-bacias (ex.: esconder as pareadas com CTS). */
   arvore?: unknown
+  /** Troca o payload de CTS inteiro (ex.: injetar `inconsistencias`). */
+  cts?: unknown
 }
 
 /**
@@ -73,7 +75,13 @@ export interface OpcoesDados {
  * desenvolvimento, para o teste não inventar um formato próprio.
  */
 export async function dadosDaUnidade(opcoes: OpcoesDados = {}): Promise<Record<string, unknown>> {
-  const { id = 'u-jacarei', nome = 'Águas de Jacareí', vazio = false, arvore } = opcoes
+  const {
+    id = 'u-jacarei',
+    nome = 'Águas de Jacareí',
+    vazio = false,
+    arvore,
+    cts: ctsFora,
+  } = opcoes
   const subbacias = (await import('@/mocks/fixtures/subbacias.json')).default
   const contrato = (await import('@/mocks/fixtures/contrato.json')).default
   const etes = (await import('@/mocks/fixtures/etes.json')).default
@@ -105,7 +113,8 @@ export async function dadosDaUnidade(opcoes: OpcoesDados = {}): Promise<Record<s
       : { ...subbacias, ...(arvore ? { arvore } : {}) },
     [`/unidades/${id}/contrato`]: vazio ? { cidades: [], metas: [], fator: [] } : contrato,
     [`/unidades/${id}/etes`]: vazio ? { etes: [] } : etes,
-    [`/unidades/${id}/cts`]: vazio ? { pares: [], ctss: {} } : cts,
+    [`/unidades/${id}/cts`]:
+      ctsFora ?? (vazio ? { pares: [], ctss: {}, inconsistencias: [] } : cts),
     [`/unidades/${id}/hierarquia`]: hierarquia,
   }
 }

@@ -58,6 +58,7 @@ export function GrupoCts() {
     subs,
     ctss,
     pares,
+    ctsInconsistentes,
     cidadeDaCts: cidadeCts,
     reguaDaCts,
     fichaDaCts,
@@ -173,11 +174,40 @@ export function GrupoCts() {
   /** Ramos a abrir para revelar uma CTS no rail (ou o ramo das orfas). */
   const caminhoDaCts = (ctsId: string) => path[ctss[ctsId]?.subId ?? ''] ?? [RAMO_ORFAS]
 
-  // Nenhuma CTS cadastrada: a tela vira o convite a criar a primeira.
+  // O servidor denuncia as CTS que existem pela metade. Isto NAO e erro de
+  // carregamento: a leitura funcionou, o cadastro e que esta incompleto. Fica
+  // acima de tudo e nos DOIS caminhos de render — inclusive no vazio, que e
+  // justamente onde um no sem ficha ficaria invisivel (a unidade nao tem ficha
+  // nenhuma para listar, e e por isso que ha um no orfao para denunciar).
+  const aviso = ctsInconsistentes.length > 0 && (
+    <div className={ctsStyles.incons} role="status">
+      <div className={ctsStyles.inconsTitulo}>
+        {ctsInconsistentes.length === 1
+          ? '1 CTS com cadastro incompleto'
+          : `${ctsInconsistentes.length} CTS com cadastro incompleto`}
+      </div>
+      <ul className={ctsStyles.inconsLista}>
+        {ctsInconsistentes.map((x) => (
+          <li key={`${x.tipo}:${x.id}`}>
+            <span className={ctsStyles.inconsId}>{x.id}</span>
+            {x.subId ? ` (par de ${x.subId})` : ''} — {x.detalhe}
+          </li>
+        ))}
+      </ul>
+      <p className={ctsStyles.inconsNota}>
+        A posição da CTS na rede vem da topologia do sistema, e a demanda vem da ficha. Faltando uma
+        das duas, a simulação roda mesmo assim e o resultado sai errado sem avisar. A correção é no
+        cadastro estrutural (Grupo 01), não aqui.
+      </p>
+    </div>
+  )
+
+  // Nenhuma CTS cadastrada: a tela nao tem ficha para mostrar.
   if (!selCts || !ctss[selCts])
     return (
       <section>
         <GrupoHeader titulo={TITULO} sub={SUB} />
+        {aviso}
         <div className={ctsStyles.vazio}>
           <div className={ctsStyles.vazioTitulo}>Nenhuma CTS cadastrada nesta unidade</div>
           <p className={ctsStyles.vazioTexto}>
@@ -344,6 +374,8 @@ export function GrupoCts() {
           {g5Chip.label}
         </span>
       </GrupoHeader>
+
+      {aviso}
 
       <div className={styles.board}>
         <CascadeTree

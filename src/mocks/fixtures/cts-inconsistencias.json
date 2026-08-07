@@ -1,0 +1,14 @@
+[
+  {
+    "tipo": "ficha-sem-no",
+    "id": "cts_b2b80_1_3",
+    "subId": "b2b80_1_3",
+    "detalhe": "Tem ficha e par, mas nao esta na topologia do sistema. A simulacao nao a enxerga."
+  },
+  {
+    "tipo": "no-sem-ficha",
+    "id": "cts_c2b12_3_1",
+    "subId": null,
+    "detalhe": "Esta na topologia e nao tem ficha em cts_operacional. Entra na simulacao com demanda zero."
+  }
+]

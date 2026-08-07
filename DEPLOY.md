@@ -107,7 +107,7 @@ GET /unidades/:id/sub-bacias        -> { arvore, subs }   # db: ver nota abaixo
 GET /unidades/:id/contrato          -> { cidades, metas, fator }
 GET /unidades/:id/etes              -> { etes }
 GET /unidades/:id/hierarquia        -> { unidReg, superintendencias, cidades, sistemas, topo }
-GET /unidades/:id/cts               -> { pares, ctss }
+GET /unidades/:id/cts               -> { pares, ctss, inconsistencias }
 ```
 
 A ficha de coleta (sub-bacia e CTS, que são iguais) tem **dois blocos de origem
@@ -258,6 +258,23 @@ PUT    /unidades/:uid/cts/:ctsId          { params, db, obrasOverride, overrides
 > `USAR_CTS` escolher entre CTS como estrutura própria ou demanda somada à
 > sub-bacia pareada. Criar ou remover CTS é mudança de topologia, e topologia vem do
 > cadastro estrutural (Grupo 01).
+
+**`inconsistencias`** é o outro lado dessa modelagem. Como a CTS precisa de três
+coisas para existir — nó na topologia, ficha em `cts_operacional` e par em
+`subbacia_cts` — faltando qualquer uma delas o efeito é silencioso: a rodada
+roda, o plano sai, e o número está errado sem nenhum erro em lugar nenhum. O pior
+caso é o nó sem ficha, que **entra** na simulação com demanda zero.
+
+```
+inconsistencias: [{ tipo, id, subId, detalhe }]
+tipo: 'ficha-sem-no' | 'no-sem-ficha' | 'sem-par'
+```
+
+Elas cruzam com `ctss`, não o substituem: uma CTS com ficha mas sem nó aparece
+nos dois (continua editável, e agora se sabe que a simulação não a vê), enquanto
+um nó sem ficha só existe aqui, porque não há ficha para editar. Servir a lista
+sem isso era o comportamento anterior — e foi assim que duas CTS ficaram meio
+existindo no cadastro real sem ninguém notar.
 
 **`overrides` viaja junto com a ficha de propósito**: é a trilha de auditoria de
 cada dado do Databricks sobrescrito (campo, valor antigo, valor novo, autor,

@@ -39,9 +39,30 @@ export interface ParCts {
   cts: string
 }
 
+/**
+ * Uma CTS que existe pela metade — o servidor a denuncia em vez de servi-la
+ * calada. Ver `_cts_inconsistentes` no back para o porque de cada tipo.
+ *
+ * `ficha-sem-no`   tem ficha e par, nao esta na topologia: a simulacao nao a ve.
+ * `no-sem-ficha`   esta na topologia sem ficha: ENTRA na conta com demanda zero.
+ * `sem-par`        sem sub-bacia pareada: com USAR_CTS desligado a demanda some.
+ */
+export interface CtsInconsistente {
+  tipo: 'ficha-sem-no' | 'no-sem-ficha' | 'sem-par'
+  id: string
+  subId: string | null
+  detalhe: string
+}
+
 export interface CtsPayload {
   pares: ParCts[]
   ctss: Record<string, Cts>
+  /**
+   * Diagnostico, e nao ficha. Nao passa pelo reducer de propósito: e verdade do
+   * servidor sobre a estrutura, e nenhuma edicao local a muda. Sai da query
+   * direto para a tela.
+   */
+  inconsistencias: CtsInconsistente[]
 }
 
 /**
