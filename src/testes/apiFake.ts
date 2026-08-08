@@ -19,6 +19,8 @@
 export interface EstadoApi {
   /** Registro das chamadas: `vi.fn` com promise rejeitada vira unhandled rejection. */
   puts: Array<[string, any]>
+  /** Contador da versao devolvida pelo PUT (o servidor real muda a cada gravacao). */
+  versaoSeq: number
   posts: Array<[string, any]>
   dels: string[]
   /** Respostas que sobrescrevem as fixtures — simula dado que mudou no servidor. */
@@ -40,6 +42,7 @@ export const api: EstadoApi = estadoApi()
 export function estadoApi(): EstadoApi {
   return {
     puts: [],
+    versaoSeq: 0,
     posts: [],
     dels: [],
     respostas: {},
@@ -132,7 +135,11 @@ export function apiFake(estado: EstadoApi, dados: Record<string, unknown>) {
       estado.puts.push([path, body])
       if (estado.segurarPut) await new Promise<void>((ok) => (estado.liberarPut = ok))
       if (estado.erroPut) throw estado.erroPut
-      return {}
+      // O servidor real devolve a versao NOVA. Devolver `{}` aqui — como este
+      // mock fazia — escondia que o front descartava a resposta e continuava
+      // mandando a versao velha no salvamento seguinte.
+      estado.versaoSeq += 1
+      return { id: path.split('/').pop(), overridesGravados: 0, versao: `v${estado.versaoSeq}` }
     },
     post: async (path: string, body?: unknown) => {
       estado.posts.push([path, body])

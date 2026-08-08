@@ -655,6 +655,12 @@ a diferença ao usuário — mande o motivo da reprovação aqui.
 
 ### 4.4 `POST /runs/{run_id}/cancelar`
 
+<!-- somente-backend -->
+
+**Não é chamado pelo front hoje** — e a marcação acima diz isso ao
+`contrato.test.ts`, que exige que todo endpoint documentado tenha chamador. Sai
+da marcação no dia em que o botão voltar.
+
 > **Ainda não disponível — responde `501`.** `controle.run_status` tem
 > `CHECK (status IN ('PENDENTE','RODANDO','SUCESSO','FALHOU_QUALIDADE','ERRO'))`,
 > e `CANCELADA` viola o CHECK: o UPDATE falharia. Responder `204` sem cancelar
@@ -666,7 +672,31 @@ a diferença ao usuário — mande o motivo da reprovação aqui.
 > entrar no CHECK e o job souber interromper a execução, o endpoint passa a
 > responder `204` e o botão volta — os dois na mesma entrega, nunca um sem o outro.
 
-Quando disponível: responde `204`, e o front chama ao cancelar no modal.
+**Quando a migração entrar**, o endpoint responde `204` e o front religa em três
+pontos. Os três na mesma entrega: cada um sozinho mente.
+
+```ts
+// simulacao/api/endpoints.ts
+cancelar: (runId: string) => api.post<void>(`/runs/${runId}/cancelar`),
+
+// simulacao/api/queries.ts — invalidar o status é a parte que se esquece: sem
+// isso o modal segue exibindo RODANDO depois do cancelamento aceito.
+export function useCancelarRodada() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (runId: string) => simulacao.cancelar(runId),
+    onSuccess: (_d, runId) =>
+      void qc.invalidateQueries({ queryKey: chavesSimulacao.status(runId) }),
+  })
+}
+
+// simulacao/pages/Simular.tsx — o botão volta sob `!terminal`: cancelar uma
+// rodada que já terminou também é um botão que mente.
+```
+
+Está aqui em texto, e não como código sem chamador no repositório, porque função
+que ninguém usa envelhece sem que ninguém perceba — e o `knip` a acusa a cada
+execução até alguém a apagar sem saber por que existia.
 
 ### 4.5 `POST /runs/{run_id}/reexecutar` — retry
 

@@ -86,7 +86,7 @@ interface CadastroValue {
   hierEditada: boolean
   estaSuja: (chave: ChaveFicha) => boolean
   /** Chamado quando o servidor aceita uma ficha, com o corpo que foi enviado. */
-  marcarSalva: (chave: ChaveFicha, ficha: unknown) => void
+  marcarSalva: (chave: ChaveFicha, ficha: unknown, versao?: string) => void
   // Corpo do PUT de cada tela. Vem daqui (e nao montado na pagina) para o que
   // o botao envia ser exatamente o que o controle de "tem mudanca?" compara.
   fichaDaSub: (subId: string) => FichaSubBacia | null
@@ -395,8 +395,8 @@ export function CadastroProvider({
       // A assinatura vem do corpo QUE FOI ENVIADO, nao do estado atual: se o
       // usuario continuou digitando enquanto o PUT voava, essas teclas seguem
       // como nao salvas — que e a verdade.
-      marcarSalva: (chave: ChaveFicha, ficha: unknown) =>
-        dispatch({ type: 'FICHA_SALVA', chave, assinatura: assinatura(ficha) }),
+      marcarSalva: (chave: ChaveFicha, ficha: unknown, versao?: string) =>
+        dispatch({ type: 'FICHA_SALVA', chave, assinatura: assinatura(ficha), versao }),
     }),
     [],
   )

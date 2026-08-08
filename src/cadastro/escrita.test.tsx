@@ -124,6 +124,50 @@ describe('salvar sub-bacia', () => {
   })
 })
 
+describe('o ciclo da versao', () => {
+  it('o SEGUNDO salvamento manda a versao que o PRIMEIRO devolveu', async () => {
+    renderApp('/unidade/u-jacarei/sub-bacias')
+    await screen.findByRole('button', { name: 'Salvar sub-bacia' })
+
+    // Este e o teste que faltava, e a falta dele deixou passar o bug inteiro.
+    // O backend recusa gravacao com versao obsoleta (409). O front lia a versao
+    // no GET, mandava no PUT — e DESCARTAVA a resposta, que traz a versao nova.
+    // Resultado: a segunda edicao da mesma ficha mandaria de novo a versao do
+    // GET, ja obsoleta, e tomaria 409 contra a propria alteracao anterior.
+    //
+    // O smoke do backend (`dev/smoke_versao.py`) provava o ciclo da API. So um
+    // teste de TELA prova que o front fecha o ciclo do lado dele.
+    fireEvent.change(screen.getByLabelText('Taxa de ligação'), { target: { value: '1.000,00' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Salvar sub-bacia' }))
+    await waitFor(() => expect(api.puts).toHaveLength(1))
+    const [, primeiro] = api.puts[0]
+    expect(primeiro.versao).toBe('v-b2_1_4') // a que veio do GET
+
+    fireEvent.change(screen.getByLabelText('Taxa de ligação'), { target: { value: '2.000,00' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Salvar sub-bacia' }))
+    await waitFor(() => expect(api.puts).toHaveLength(2))
+    const [, segundo] = api.puts[1]
+    expect(segundo.versao).toBe('v1') // a que o PRIMEIRO PUT devolveu
+  })
+
+  it('gravar nao deixa a ficha suja: a versao nova nao conta como edicao', async () => {
+    renderApp('/unidade/u-jacarei/sub-bacias')
+    const salvar = () =>
+      screen.getByRole('button', { name: 'Salvar sub-bacia' }) as HTMLButtonElement
+    await waitFor(() => expect(salvar()).toBeTruthy())
+
+    fireEvent.change(screen.getByLabelText('Taxa de ligação'), { target: { value: '1.000,00' } })
+    expect(salvar().disabled).toBe(false)
+    fireEvent.click(salvar())
+    await waitFor(() => expect(api.puts).toHaveLength(1))
+
+    // A versao mudou no state, mas ela nao e edicao do usuario: `assinatura()`
+    // a ignora. Se contasse, o Salvar nunca mais apagaria e a guarda de saida
+    // perguntaria "descartar alteracoes?" em toda navegacao.
+    await waitFor(() => expect(salvar().disabled).toBe(true))
+  })
+})
+
 describe('salvar cidade (contrato & metas)', () => {
   it('manda a cidade com as metas e as faixas de paridade dela', async () => {
     renderApp('/unidade/u-jacarei/contrato-metas')

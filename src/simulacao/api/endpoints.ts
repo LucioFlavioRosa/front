@@ -35,5 +35,8 @@ export const simulacao = {
 
   status: (runId: string) => api.get<StatusRodada>(`/runs/${runId}/status`),
 
-  cancelar: (runId: string) => api.post<void>(`/runs/${runId}/cancelar`),
+  // NAO ha `cancelar` aqui: o endpoint responde 501 enquanto `CANCELADA` nao
+  // entra no CHECK de `controle.run_status`, e o botao saiu da tela. O codigo
+  // exato para religar os tres pontos esta no CONTRATO.md §4.4 — em texto, e nao
+  // como funcao sem chamador que o `knip` acusa e ninguem sabe se ainda vale.
 }

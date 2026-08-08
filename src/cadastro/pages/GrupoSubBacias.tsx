@@ -54,7 +54,7 @@ export function GrupoSubBacias() {
   } = useCadastro()
   const erroAoSalvar = useErroAoSalvar(unidadeId)
   const salvarM = useSalvarSubBacia(unidadeId, {
-    onSalva: ({ subId, ficha }) => marcarSalva(chaveSub(subId), ficha),
+    onSalva: ({ subId, ficha }, r) => marcarSalva(chaveSub(subId), ficha, r?.versao),
   })
 
   const [selSub, setSelSub] = useState('')

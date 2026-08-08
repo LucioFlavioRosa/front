@@ -149,7 +149,7 @@ export type Action =
   | { type: 'SET_HIER_SIS_NOME'; sisId: string; value: string; at: string }
   | { type: 'SET_HIER_TOPO_JUSANTE'; index: number; value: string; at: string }
   // o servidor aceitou uma ficha: ela passa a ser o novo "sem mudancas"
-  | { type: 'FICHA_SALVA'; chave: ChaveFicha; assinatura: string }
+  | { type: 'FICHA_SALVA'; chave: ChaveFicha; assinatura: string; versao?: string }
 
 /**
  * Acrescenta/atualiza um override, sempre preservando o valor ORIGINAL.
@@ -271,8 +271,14 @@ export function reducer(state: State, action: Action): State {
         Object.keys(action.ctss).map(chaveCts),
       )
 
-    case 'FICHA_SALVA':
-      return { ...state, salvas: { ...state.salvas, [action.chave]: action.assinatura } }
+    case 'FICHA_SALVA': {
+      const salvas = { ...state.salvas, [action.chave]: action.assinatura }
+      // A versao NOVA volta para a entidade. Sem isto o proximo PUT da mesma
+      // ficha mandaria a versao lida no GET, que a gravacao anterior tornou
+      // obsoleta — 409 contra a propria alteracao.
+      if (!action.versao) return { ...state, salvas }
+      return { ...state, salvas, ...comVersao(state, action.chave, action.versao) }
+    }
 
     case 'SET_SUB_PARAM': {
       const sub = state.subs![action.subId]
@@ -533,6 +539,26 @@ export interface Derivado {
  * de-para da arvore. Sub-bacia fora da arvore, ou cidade sem cobertura
  * escolhida, devolve null — e null nao acrescenta campo nem pendencia.
  */
+/**
+ * Grava a versao nova na entidade que a `chave` aponta.
+ *
+ * Devolve so a fatia mudada, para o `case` acima ficar legivel. Chave
+ * desconhecida devolve `{}`: perder a versao e ruim, mas quebrar o salvamento
+ * por causa de um tipo de ficha novo seria pior.
+ */
+function comVersao(state: State, chave: ChaveFicha, versao: string): Partial<State> {
+  const [tipo, id] = chave.split(':')
+  if (tipo === 'sub' && state.subs?.[id])
+    return { subs: { ...state.subs, [id]: { ...state.subs[id], versao } } }
+  if (tipo === 'cts' && state.ctss?.[id])
+    return { ctss: { ...state.ctss, [id]: { ...state.ctss[id], versao } } }
+  if (tipo === 'ete' && state.etes)
+    return { etes: state.etes.map((e) => (e.id === id ? { ...e, versao } : e)) }
+  if (tipo === 'cid' && state.cidades)
+    return { cidades: state.cidades.map((c) => (c.id === id ? { ...c, versao } : c)) }
+  return {}
+}
+
 export function reguaDaSub(state: State, subId: string): Regua | null {
   const cidId = state.cidadeDaSub?.[subId]
   if (!cidId) return null

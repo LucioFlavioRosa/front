@@ -66,6 +66,20 @@ export interface FichaCts extends ComOverrides {
   obrasOverride: Record<string, Partial<Obra>>
 }
 
+/**
+ * O que o servidor devolve em qualquer PUT de ficha.
+ *
+ * `versao` e a NOVA impressao do conteudo, ja com a gravacao aplicada. Ela tem de
+ * voltar para o state: sem isso o cliente continuaria mandando a versao lida no
+ * GET, e o salvamento SEGUINTE tomaria 409 contra a alteracao que ele mesmo
+ * acabou de fazer.
+ */
+export interface RespostaSalvar {
+  id: string
+  overridesGravados: number
+  versao: string
+}
+
 /** Recorta do mapa global de overrides os que pertencem a uma ficha. */
 export function overridesDaFicha(overrides: Record<string, Override>, prefixo: string): Override[] {
   return Object.entries(overrides)

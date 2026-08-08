@@ -9,7 +9,13 @@
  */
 import { useMutation } from '@tanstack/react-query'
 import { api, ApiError } from '@/comum/api/client'
-import type { FichaCidade, FichaCts, FichaEte, FichaSubBacia } from '@/cadastro/api/escrita'
+import type {
+  FichaCidade,
+  FichaCts,
+  FichaEte,
+  FichaSubBacia,
+  RespostaSalvar,
+} from '@/cadastro/api/escrita'
 
 /** Mensagem curta, em português, para o toast de falha ao salvar. */
 export function mensagemDeErro(e: unknown): string {
@@ -25,13 +31,15 @@ export function mensagemDeErro(e: unknown): string {
 }
 
 /**
- * `onSalva` recebe as variaveis da chamada que o servidor aceitou. E por ele
+ * `onSalva` recebe as variaveis da chamada que o servidor aceitou E a resposta
+ * dele — a resposta traz a `versao` nova, que precisa voltar para o state ou o
+ * proximo salvamento da mesma ficha conflita consigo mesmo. E por ele
  * que a ficha vira "sem mudancas" no store — no nivel do hook, pela mesma razao
  * dos callbacks de CTS abaixo: sair da tela antes da resposta nao pode fazer o
  * app achar que a ficha continua nao salva.
  */
 interface OpcoesSalvar<V> {
-  onSalva?: (vars: V) => void
+  onSalva?: (vars: V, resposta: RespostaSalvar) => void
 }
 
 type VarsSubBacia = { subId: string; ficha: FichaSubBacia }
@@ -42,8 +50,8 @@ export function useSalvarSubBacia(
 ) {
   return useMutation({
     mutationFn: ({ subId, ficha }: VarsSubBacia) =>
-      api.put<FichaSubBacia>(`/unidades/${unidadeId}/sub-bacias/${subId}`, ficha),
-    onSuccess: (_dado, vars) => opcoes?.onSalva?.(vars),
+      api.put<RespostaSalvar>(`/unidades/${unidadeId}/sub-bacias/${subId}`, ficha),
+    onSuccess: (dado, vars) => opcoes?.onSalva?.(vars, dado),
   })
 }
 
@@ -52,8 +60,8 @@ type VarsCidade = { cidId: string; ficha: FichaCidade }
 export function useSalvarCidade(unidadeId: string | undefined, opcoes?: OpcoesSalvar<VarsCidade>) {
   return useMutation({
     mutationFn: ({ cidId, ficha }: VarsCidade) =>
-      api.put<FichaCidade>(`/unidades/${unidadeId}/contrato/${cidId}`, ficha),
-    onSuccess: (_dado, vars) => opcoes?.onSalva?.(vars),
+      api.put<RespostaSalvar>(`/unidades/${unidadeId}/contrato/${cidId}`, ficha),
+    onSuccess: (dado, vars) => opcoes?.onSalva?.(vars, dado),
   })
 }
 
@@ -62,8 +70,8 @@ type VarsEte = { eteId: string; ficha: FichaEte }
 export function useSalvarEte(unidadeId: string | undefined, opcoes?: OpcoesSalvar<VarsEte>) {
   return useMutation({
     mutationFn: ({ eteId, ficha }: VarsEte) =>
-      api.put<FichaEte>(`/unidades/${unidadeId}/etes/${eteId}`, ficha),
-    onSuccess: (_dado, vars) => opcoes?.onSalva?.(vars),
+      api.put<RespostaSalvar>(`/unidades/${unidadeId}/etes/${eteId}`, ficha),
+    onSuccess: (dado, vars) => opcoes?.onSalva?.(vars, dado),
   })
 }
 
@@ -72,7 +80,7 @@ type VarsCts = { ctsId: string; ficha: FichaCts }
 export function useSalvarCts(unidadeId: string | undefined, opcoes?: OpcoesSalvar<VarsCts>) {
   return useMutation({
     mutationFn: ({ ctsId, ficha }: VarsCts) =>
-      api.put<FichaCts>(`/unidades/${unidadeId}/cts/${ctsId}`, ficha),
-    onSuccess: (_dado, vars) => opcoes?.onSalva?.(vars),
+      api.put<RespostaSalvar>(`/unidades/${unidadeId}/cts/${ctsId}`, ficha),
+    onSuccess: (dado, vars) => opcoes?.onSalva?.(vars, dado),
   })
 }

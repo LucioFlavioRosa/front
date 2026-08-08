@@ -39,7 +39,7 @@ export function GrupoEtes() {
   } = useCadastro()
   const erroAoSalvar = useErroAoSalvar(unidadeId)
   const salvarM = useSalvarEte(unidadeId, {
-    onSalva: ({ eteId, ficha }) => marcarSalva(chaveEte(eteId), ficha),
+    onSalva: ({ eteId, ficha }, r) => marcarSalva(chaveEte(eteId), ficha, r?.versao),
   })
 
   const [selEte, setSelEte] = useState('')

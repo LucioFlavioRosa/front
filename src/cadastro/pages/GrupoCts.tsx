@@ -77,7 +77,7 @@ export function GrupoCts() {
   } = useCadastro()
   const erroAoSalvar = useErroAoSalvar(unidadeId)
   const salvarM = useSalvarCts(unidadeId, {
-    onSalva: ({ ctsId, ficha }) => marcarSalva(chaveCts(ctsId), ficha),
+    onSalva: ({ ctsId, ficha }, r) => marcarSalva(chaveCts(ctsId), ficha, r?.versao),
   })
 
   const [selCts, setSelCts] = useState('')
@@ -114,8 +114,8 @@ export function GrupoCts() {
   // NAO HA "criar CTS" NEM "remover CTS" nesta tela, e isso e deliberado.
   //
   // A CTS e um NO DO SISTEMA, como a sub-bacia: a posicao dela ja esta na
-  // topologia (`sistema_topologia`), com jusante proprio — 337 das 339 no cadastro
-  // real. O motor monta os nos percorrendo a topologia e faz
+  // topologia (`sistema_topologia`), com jusante proprio: no cadastro carregado
+  // da planilha, TODAS estao la. O motor monta os nos percorrendo a topologia e faz
   // `cts_ids = fichas ∩ nos`: so e CTS efetiva a ficha que TAMBEM e no.
   //
   // Criar uma CTS aqui gravava ficha e par sem tocar na topologia — ela aparecia
@@ -131,7 +131,7 @@ export function GrupoCts() {
   // Criar ou remover CTS e mudanca de TOPOLOGIA, e topologia vem do cadastro
   // estrutural (Grupo 01). Aqui se le e se edita a ficha de uma CTS que existe.
 
-  // Seleciona a primeira CTS quando a lista muda (inclui a CTS recem-criada).
+  // Seleciona a primeira CTS quando a lista muda.
   // Espera a arvore: a ordem das CTS vem da geografia das sub-bacias, e sem ela
   // toda CTS parece orfa — a primeira escolhida seria outra, e a escolha fica.
   // (Com rascunho recuperado o estado ja chega pronto, antes da arvore.)

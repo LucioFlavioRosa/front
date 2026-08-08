@@ -47,7 +47,7 @@ export function GrupoContrato() {
   } = useCadastro()
   const erroAoSalvar = useErroAoSalvar(unidadeId)
   const salvarM = useSalvarCidade(unidadeId, {
-    onSalva: ({ cidId, ficha }) => marcarSalva(chaveCidade(cidId), ficha),
+    onSalva: ({ cidId, ficha }, r) => marcarSalva(chaveCidade(cidId), ficha, r?.versao),
   })
 
   const [selCid, setSelCid] = useState('')
