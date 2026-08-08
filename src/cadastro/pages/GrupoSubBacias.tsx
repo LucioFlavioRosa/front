@@ -317,14 +317,15 @@ export function GrupoSubBacias() {
               abaixo" e o usuario nao achava — reportou como campo faltando.
               Vem antes tambem porque e o unico bloco daqui que ele PREENCHE;
               o resto e leitura do Databricks. */}
-          <CamposPopulacao
-            params={cur.params}
-            cidade={cidadeDaSub?.nome ?? 'Esta cidade'}
-            escopo="desta sub-bacia"
-            regua={regua}
-            onChange={setParam}
-            onHelp={openDict}
-          />
+          {regua === 'populacao' && (
+            <CamposPopulacao
+              params={cur.params}
+              cidade={cidadeDaSub?.nome ?? 'Esta cidade'}
+              escopo="desta sub-bacia"
+              onChange={setParam}
+              onHelp={openDict}
+            />
+          )}
 
           {/* Base comercial (Databricks) */}
           <DbCard

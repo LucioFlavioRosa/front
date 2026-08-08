@@ -81,10 +81,10 @@ describe('derive() — totais de referência do dataset mock', () => {
   it('bate com g2=4, g3=15, g4=2, g5=7', () => {
     const d = derive(seededState())
     // `vazInd` saiu da regua (a planilha nao tem a coluna para sub-bacia, e a
-// simulacao de hoje nao usa o valor) e o `wacc` da ETE tambem (vazio significa
-// "usa o WACC medio da unidade"). Por isso cada contagem abaixo caiu 1 por
-// ficha. Os numeros nao foram "ajustados ate passar": cada um e o anterior
-// menos exatamente o campo que deixou de ser cobrado.
+    // simulacao de hoje nao usa o valor) e o `wacc` da ETE tambem (vazio significa
+    // "usa o WACC medio da unidade"). Por isso cada contagem abaixo caiu 1 por
+    // ficha. Os numeros nao foram "ajustados ate passar": cada um e o anterior
+    // menos exatamente o campo que deixou de ser cobrado.
     expect(d).toMatchObject({ g2: 4, g3: 13, g4: 2, g5: 6, pendTotal: 25 })
     expect(d.counts).toMatchObject({
       cidades: 8,

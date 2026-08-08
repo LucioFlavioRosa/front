@@ -54,12 +54,8 @@ describe('CTS órfã da árvore de sub-bacias', () => {
     // aparece inteira, sem destaque em nenhum trio, e a tela diz o porquê.
     expect(screen.getByText('Economias novas (obras)')).toBeTruthy()
     expect(screen.getByText(/não está na árvore/)).toBeTruthy()
-    // Sem régua conhecida os campos de população ficam BLOQUEADOS, não ausentes:
-    // preenchê-los sem saber se contam seria trabalho no escuro, mas escondê-los
-    // faria a CTS órfã parecer uma ficha diferente das outras — e o problema
-    // dela é o de-para, não o formulário.
-    const universo = screen.getByLabelText('População — universo') as HTMLInputElement
-    expect(universo.disabled).toBe(true)
-    expect(screen.getByText(/ainda não foi escolhida/)).toBeTruthy()
+    // Os campos de população dependem da régua, então ficam de fora — preenchê-los
+    // sem saber se contam seria trabalho no escuro.
+    expect(screen.queryByLabelText('População — universo')).toBeNull()
   })
 })

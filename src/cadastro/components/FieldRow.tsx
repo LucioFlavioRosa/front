@@ -24,14 +24,6 @@ export interface FieldRowProps {
   variant?: 'input' | 'select' | 'calc'
   /** Opcoes para variant="select". */
   options?: FieldOption[]
-  /**
-   * Campo que EXISTE mas nao se preenche agora (ex.: populacao numa cidade que
-   * mede a meta por ligacoes). Diferente de `calc`: aquele nunca e digitavel;
-   * este volta a ser quando a regra mudar.
-   */
-  bloqueado?: boolean
-  /** Por que esta bloqueado — vira `title` e entra no aria-describedby. */
-  motivoBloqueio?: string
 }
 
 /**
@@ -43,11 +35,6 @@ export interface FieldRowProps {
  * entram no aria-describedby — um leitor de tela anuncia "Vazão nova, L/s" em
  * vez de um campo sem nome. O "?" e botao de verdade (alcancavel por Tab).
  */
-const BLOQUEADO = {
-  border: '1.5px solid var(--border)',
-  background: 'var(--surface-2, #f4f5f7)',
-}
-
 export function FieldRow({
   rotulo,
   tecnico,
@@ -59,22 +46,13 @@ export function FieldRow({
   placeholder,
   variant = 'input',
   options = [],
-  bloqueado = false,
-  motivoBloqueio,
 }: FieldRowProps) {
-  // Campo bloqueado NAO usa o estilo de pendencia: vazio-e-ambar significa
-  // "falta voce preencher", e aqui nao falta nada — nao ha o que preencher.
-  // Pintar de ambar seria a tela cobrando uma acao que ela mesma impede.
-  const fs = bloqueado ? BLOQUEADO : fieldStyle(valor)
+  const fs = fieldStyle(valor)
   const id = useId()
   const idCampo = `${id}-campo`
   const idUnidade = `${id}-unidade`
   const idAjuda = `${id}-ajuda`
-  const idBloqueio = `${id}-bloqueio`
-  const descrito =
-    [unidade && idUnidade, ajuda && idAjuda, bloqueado && motivoBloqueio && idBloqueio]
-      .filter(Boolean)
-      .join(' ') || undefined
+  const descrito = [unidade && idUnidade, ajuda && idAjuda].filter(Boolean).join(' ') || undefined
 
   return (
     <div className={styles.row}>
@@ -102,10 +80,8 @@ export function FieldRow({
             className={styles.input}
             style={{ border: fs.border, background: fs.background }}
             value={valor}
-            placeholder={bloqueado ? '' : placeholder}
+            placeholder={placeholder}
             aria-describedby={descrito}
-            disabled={bloqueado}
-            title={bloqueado ? motivoBloqueio : undefined}
             onChange={(e) => onChange?.(e.target.value)}
           />
         )}
@@ -142,12 +118,6 @@ export function FieldRow({
       {ajuda && (
         <div className={styles.ajuda} id={idAjuda}>
           {ajuda}
-        </div>
-      )}
-
-      {bloqueado && motivoBloqueio && (
-        <div className={styles.ajuda} id={idBloqueio}>
-          {motivoBloqueio}
         </div>
       )}
     </div>

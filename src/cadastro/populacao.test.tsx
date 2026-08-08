@@ -117,7 +117,7 @@ describe('população — campo do usuário, só na régua certa', () => {
     expect(screen.getByText(/logo acima/)).toBeTruthy()
   })
 
-  it('fica BLOQUEADO — não some — quando a cidade mede por ligações', async () => {
+  it('não aparece quando a cidade mede por ligações', async () => {
     renderApp('/unidade/u-jacarei/sub-bacias')
     await screen.findByRole('button', { name: 'Salvar sub-bacia' })
 
@@ -126,37 +126,13 @@ describe('população — campo do usuário, só na régua certa', () => {
     })
     fireEvent.click(await screen.findByRole('button', { name: /b1_1_1/ }))
 
-    // Antes o bloco sumia. Sumir ensinava que o campo NAO EXISTE, e ele existe:
-    // a regua muda por aditivo de contrato, e no dia que virar populacao o
-    // numero que ja estava ali continua valendo. Some-lo tambem escondia do
-    // usuario que havia dado guardado que ele nunca poderia conferir.
-    const universo = screen.getByLabelText('População — universo') as HTMLInputElement
-    expect(universo).toBeTruthy()
-    expect(universo.disabled).toBe(true)
-    expect(screen.getByLabelText('População nova (obras)')).toBeTruthy()
-
-    // E diz POR QUE esta bloqueado. Campo cinza sem explicacao vira suporte.
-    expect(screen.getByText(/mede a meta por ligações/)).toBeTruthy()
-  })
-
-  it('bloqueado não conta pendência: a tela não cobra o que ela mesma impede', async () => {
-    renderApp('/unidade/u-jacarei/sub-bacias')
-    await screen.findByRole('button', { name: 'Salvar sub-bacia' })
-
-    fireEvent.change(screen.getByLabelText('Buscar sub-bacia por código ou sistema'), {
-      target: { value: 'b1_1_1' },
-    })
-    fireEvent.click(await screen.findByRole('button', { name: /b1_1_1/ }))
-
-    // Esta sub-bacia TEM populacao cadastrada (30.854) mesmo medindo por
-    // ligacoes. O valor continua a vista: e exatamente o dado que sumia quando o
-    // bloco era escondido, e que volta a valer se a regua mudar por aditivo.
-    const universo = screen.getByLabelText('População — universo') as HTMLInputElement
-    expect(universo.value).toBe('30.854')
-
-    // Bloqueado nao pinta de ambar. O ambar promete "preencha isto", e num campo
-    // que a tela impede de editar isso seria uma cobranca impossivel de atender.
-    expect(universo.style.border).not.toContain('dashed')
+    // Houve uma versão em que o bloco ficava visível e bloqueado nas outras
+    // réguas — a ideia era que "não se preenche agora" não é "não existe". Foi
+    // revertida: na planilha de origem população está vazia nas 4.850
+    // sub-bacias, então não havia dado a preservar da vista, e o bloco cinza só
+    // somava ruído em 140 das 141 cidades.
+    expect(screen.queryByLabelText('População — universo')).toBeNull()
+    expect(screen.queryByLabelText('População nova (obras)')).toBeNull()
   })
 
   it('o ƒ recalcula ao digitar e vira travessão com um lado vazio', async () => {
@@ -253,9 +229,8 @@ describe('CTS', () => {
     renderApp('/unidade/u-jacarei/cts')
     await screen.findByRole('button', { name: 'Salvar CTS' })
 
-    // A primeira CTS da árvore é a de Búzios (b3_1_1), que mede por ligações:
-    // o bloco esta la, bloqueado, pela mesma razao da sub-bacia.
-    expect((screen.getByLabelText('População — universo') as HTMLInputElement).disabled).toBe(true)
+    // A primeira CTS da árvore é a de Búzios (b3_1_1), que mede por ligações.
+    expect(screen.queryByLabelText('População — universo')).toBeNull()
     expect(ehRegua('Ligações — universo')).toBe(true)
     expect(celula('Economias novas (obras)')).toBe('152')
 

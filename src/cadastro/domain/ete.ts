@@ -37,14 +37,7 @@ export const ETE_DEFS: EteCampo[] = [
   ['WACC da ETE', 'wacc', 'wacc', 'fração', '0,091', 'Desconta CAPEX/OPEX e entra rateado por vazão na taxa da receita das sub-bacias.'],
 ]
 
-const BASE_KEYS: (keyof Ete)[] = [
-  'capMod',
-  'capexMod',
-  'opexMod',
-  'tExec',
-  'capNom',
-  'vazOp',
-]
+const BASE_KEYS: (keyof Ete)[] = ['capMod', 'capexMod', 'opexMod', 'tExec', 'capNom', 'vazOp']
 // `wacc` NAO entra: vazio aqui significa "usa o WACC medio da unidade", que e
 // resposta e nao silencio. Sao 598 das 997 ETEs da planilha sem wacc proprio, e
 // o motor roda 2 de cada 3 obras com o herdado — cobrar isso travava a simulacao

@@ -58,9 +58,7 @@ export function NotaDaRegua({
     <>
       A meta de <strong>{cidade.nome}</strong> é medida em <strong>{NOME_DA_REGUA[regua]}</strong> —
       é o trio destacado aqui. O outro continua na tela de propósito: a régua muda por aditivo de
-      contrato, e dado escondido é dado que ninguém confere. Pelo mesmo motivo os campos de
-      população ficam <strong>logo acima</strong>, bloqueados: existem, guardam o que já foi
-      preenchido, e não entram na conta enquanto a régua for esta.
+      contrato, e dado escondido é dado que ninguém confere.
       {extra ? <> {extra}</> : null}
     </>
   )
