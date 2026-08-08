@@ -200,15 +200,8 @@ export const handlers = [
     return HttpResponse.json(ficha)
   }),
 
-  http.post(`${BASE}/unidades/:id/cts`, async ({ request }) => {
-    const corpo = (await request.json()) as { subId?: string; cts?: Cts }
-    const falta = exigir(corpo as unknown as Record<string, unknown>, ['subId', 'cts'])
-    if (falta) return recusa(falta)
-    // A relacao e 1:1: pedir CTS para sub-bacia que ja tem e conflito.
-    if (ctsFx.pares.some((p) => p.sub === corpo.subId))
-      return HttpResponse.json({ erro: 'sub-bacia já tem CTS' }, { status: 409 })
-    return HttpResponse.json(corpo.cts, { status: 201 })
-  }),
-
-  http.delete(`${BASE}/unidades/:id/cts/:ctsId`, () => new HttpResponse(null, { status: 204 })),
+  // NAO ha POST nem DELETE de CTS aqui, e nao pode haver: o backend real responde
+  // 405 nessas rotas (a CTS e no da topologia). Um mock que aceita o que o
+  // servidor recusa faz o desenvolvimento local validar um contrato que nao
+  // existe — e foi assim que a criacao de CTS pareceu funcionar por semanas.
 ]

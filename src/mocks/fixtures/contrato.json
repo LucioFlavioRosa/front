@@ -4,49 +4,57 @@
       "id": "c1",
       "nome": "Maricá",
       "fim": "2045",
-      "cob": "ligacoes"
+      "cob": "ligacoes",
+      "versao": "v-c1"
     },
     {
       "id": "c2",
       "nome": "Saquarema",
       "fim": "2046",
-      "cob": "ligacoes"
+      "cob": "ligacoes",
+      "versao": "v-c2"
     },
     {
       "id": "c3",
       "nome": "Araruama",
       "fim": "2041",
-      "cob": ""
+      "cob": "",
+      "versao": "v-c3"
     },
     {
       "id": "c4",
       "nome": "Cabo Frio",
       "fim": "2041",
-      "cob": "ligacoes"
+      "cob": "ligacoes",
+      "versao": "v-c4"
     },
     {
       "id": "c5",
       "nome": "Iguaba",
       "fim": "",
-      "cob": ""
+      "cob": "",
+      "versao": "v-c5"
     },
     {
       "id": "c6",
       "nome": "Rio das Ostras",
       "fim": "2043",
-      "cob": "populacao"
+      "cob": "populacao",
+      "versao": "v-c6"
     },
     {
       "id": "c9",
       "nome": "Búzios",
       "fim": "2046",
-      "cob": "ligacoes"
+      "cob": "ligacoes",
+      "versao": "v-c9"
     },
     {
       "id": "c10",
       "nome": "Silva Jardim",
       "fim": "2049",
-      "cob": "economias"
+      "cob": "economias",
+      "versao": "v-c10"
     }
   ],
   "metas": [

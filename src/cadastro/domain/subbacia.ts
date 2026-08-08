@@ -47,7 +47,8 @@ export interface SubBaciaParams {
   /**
    * `vazao_contribuicao_industrial` — a parcela INDUSTRIAL da vazao nova, ja
    * contida em `vaz`. Mesma leitura do recorte industrial da base comercial:
-   * com industria vale `vaz`; so residencial, `vaz − vazInd`. Sem industria na
+   * com industria vale `vaz`; so residencial, `vaz − vazInd` (analise que o
+   * produto ainda nao faz — por isso o campo nao conta pendencia). Sem industria na
    * area, o valor e `0` — vazio nao e resposta.
    */
   vazInd: string
@@ -108,6 +109,17 @@ export interface SubBacia {
   params: SubBaciaParams
   /** Overrides das 5 obras-base, por indice (o resto herda a base). */
   obrasOverride: Record<string, Partial<Obra>>
+  /**
+   * Impressao do conteudo da ficha no momento em que o servidor a entregou.
+   *
+   * Viaja de volta no PUT e e o que dispara o 409: se outra pessoa gravou no
+   * intervalo, a versao que o servidor tem nao e mais esta.
+   *
+   * NAO entra na assinatura de "ficha suja" — ver `assinatura()` em `fichas.ts`.
+   * Aquela mede o que o USUARIO mudou; esta muda sozinha a cada gravacao, e
+   * inclui-la deixaria toda ficha suja para sempre depois de salvar.
+   */
+  versao: string
 }
 
 /** Arvore Sup -> Cidade -> Sistema -> (subIds), so ramos com sub-bacias. */

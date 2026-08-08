@@ -1,12 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useRegionais, useUnidades } from '@/comum/api/organizacao'
-import {
-  useCancelarRodada,
-  useCriarRodada,
-  useProntidao,
-  useStatusRodada,
-} from '@/simulacao/api/queries'
+import { useCriarRodada, useProntidao, useStatusRodada } from '@/simulacao/api/queries'
 import { useApp } from '@/comum/state/AppContext'
 import {
   aceitaFoco,
@@ -59,7 +54,6 @@ export function Simular() {
   const unidades = useUnidades(e.regionalId || null)
   const prontidao = useProntidao(e.unidadeId || undefined)
   const criar = useCriarRodada()
-  const cancelar = useCancelarRodada()
   const status = useStatusRodada(runId)
 
   const set = <K extends keyof EstadoSimulacao>(k: K, v: EstadoSimulacao[K]) =>
@@ -685,10 +679,6 @@ export function Simular() {
           terminal={terminal}
           falhou={st === 'ERRO' || st === 'FALHOU_QUALIDADE'}
           erro={status.data?.erro ?? undefined}
-          onCancelar={() => {
-            if (runId) cancelar.mutate(runId)
-            setRunId(undefined)
-          }}
           onFechar={() => setRunId(undefined)}
           onHistorico={() => navigate('/resultados')}
         />
@@ -761,7 +751,6 @@ function ModalProgresso({
   terminal,
   falhou,
   erro,
-  onCancelar,
   onFechar,
   onHistorico,
 }: {
@@ -769,7 +758,6 @@ function ModalProgresso({
   terminal: boolean
   falhou: boolean
   erro?: string
-  onCancelar: () => void
   onFechar: () => void
   onHistorico: () => void
 }) {
@@ -835,13 +823,16 @@ function ModalProgresso({
           </p>
         )}
         <div className={styles.modalAcoes}>
-          {/* Cancelar so faz sentido enquanto ela roda: oferecer "cancelar" uma
-              rodada que ja terminou (bem ou mal) e um botao que mente. */}
-          {!terminal && (
-            <button type="button" className={styles.modalCancelar} onClick={onCancelar}>
-              Cancelar rodada
-            </button>
-          )}
+          {/* O botao "Cancelar rodada" NAO esta aqui, e isso e temporario.
+              `POST /runs/{id}/cancelar` responde 501: `controle.run_status` tem um
+              CHECK sem `CANCELADA`, e o backend prefere dizer a verdade a fingir
+              que cancelou enquanto o cluster segue processando e cobrando.
+              Botao que sempre da erro e pior que botao ausente — ensina o usuario
+              a desconfiar da tela inteira.
+
+              Quando a migracao entrar, ele volta com a condicao que ja tinha:
+              `!terminal`, porque cancelar uma rodada que ja terminou (bem ou mal)
+              tambem seria um botao que mente. Ver CONTRATO.md §4.4. */}
           {falhou && (
             <button type="button" className={styles.modalCancelar} onClick={onFechar}>
               Ajustar parâmetros

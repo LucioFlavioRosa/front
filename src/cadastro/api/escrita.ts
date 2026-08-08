@@ -8,8 +8,10 @@
  *   PUT    /unidades/:uid/contrato/:cidId     FichaCidade    -> 200
  *   PUT    /unidades/:uid/etes/:eteId         FichaEte       -> 200
  *   PUT    /unidades/:uid/cts/:ctsId          FichaCts       -> 200
- *   POST   /unidades/:uid/cts                 NovaCts        -> 201 (a CTS criada)
- *   DELETE /unidades/:uid/cts/:ctsId                         -> 204
+ *
+ * NAO ha POST nem DELETE de CTS, de proposito: a CTS e no da topologia, e
+ * cria-la aqui produziria uma ficha que o motor nunca carrega. O backend
+ * responde 405 nessas rotas.
  *
  * Regras que valem para todas:
  *  - o corpo carrega a ficha INTEIRA, nao um patch: salvar e idempotente;
@@ -21,12 +23,22 @@
 import type { Cidade, Fator, Meta } from '@/cadastro/domain/contrato'
 import type { Ete } from '@/cadastro/domain/ete'
 import type { Obra, SubBaciaDb, SubBaciaParams } from '@/cadastro/domain/subbacia'
-import type { Cts } from '@/cadastro/domain/cts'
 import type { Override } from '@/cadastro/state/cadastroReducer'
 
-/** Trilha de auditoria dos dados do Databricks sobrescritos nesta ficha. */
+/** O que TODA ficha carrega, seja qual for a tela. */
 export interface ComOverrides {
+  /** Trilha de auditoria dos dados do Databricks sobrescritos nesta ficha. */
   overrides: Override[]
+  /**
+   * A versao que o servidor entregou no `GET`. E o que dispara o 409 quando
+   * outra pessoa gravou a mesma ficha no intervalo.
+   *
+   * Fica no TOPO do corpo, e nao dentro de `cidade`/`ete`, por dois motivos: e
+   * onde o backend a le (`corpo.get("versao")`), e assim ha um so lugar de onde
+   * `assinatura()` precisa remove-la para o controle de "ficha suja" nao
+   * enxergar uma mudanca que o usuario nao fez.
+   */
+  versao: string
 }
 
 export interface FichaSubBacia extends ComOverrides {
@@ -52,20 +64,6 @@ export interface FichaCts extends ComOverrides {
   db: SubBaciaDb
   /** Índices "0".."3" — a CTS tem 4 componentes. */
   obrasOverride: Record<string, Partial<Obra>>
-}
-
-/**
- * Criação de CTS — fluxo PESSIMISTA: a CTS só entra no cadastro depois do 201,
- * e o que entra é a ficha que o servidor DEVOLVEU, não a que foi enviada.
- *
- * O corpo traz um id sugerido, derivado da sub-bacia (`cts_<subId>`), mas o
- * backend pode normalizar campos ou gerar outro id: o front adota o retorno
- * (`useCriarCts` em api/mutations.ts → `ADD_CTS` no reducer). Devolva a CTS
- * criada no 201; sem ela, o cadastro fica sem a ficha.
- */
-export interface NovaCts {
-  subId: string
-  cts: Cts
 }
 
 /** Recorta do mapa global de overrides os que pertencem a uma ficha. */

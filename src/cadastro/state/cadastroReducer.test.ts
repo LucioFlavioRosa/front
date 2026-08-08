@@ -7,7 +7,7 @@ import ctsFx from '@/mocks/fixtures/cts.json'
 import type { SubBacia, SupNode } from '@/cadastro/domain/subbacia'
 import type { Cidade, Fator, Meta } from '@/cadastro/domain/contrato'
 import type { Ete } from '@/cadastro/domain/ete'
-import { CTS_CAMPOS, novaCts, type Cts, type ParCts } from '@/cadastro/domain/cts'
+import type { Cts, ParCts } from '@/cadastro/domain/cts'
 import {
   derive,
   initialState,
@@ -18,14 +18,7 @@ import {
   type Hier,
   type State,
 } from '@/cadastro/state/cadastroReducer'
-import {
-  assinatura,
-  chaveCts,
-  chaveSub,
-  fichaSub,
-  hierAlterada,
-  sujas,
-} from '@/cadastro/state/fichas'
+import { assinatura, chaveSub, fichaSub, hierAlterada, sujas } from '@/cadastro/state/fichas'
 import { BASE_OBRAS } from '@/cadastro/domain/subbacia'
 import { BASE_OBRAS_CTS } from '@/cadastro/domain/cts'
 
@@ -55,11 +48,16 @@ function seededState(): State {
   return s
 }
 
-/** Cria a CTS como o app cria: com a ficha que o servidor devolveu (o mock
- *  ecoa exatamente o que foi enviado, que e `novaCts(sub)`). */
-function criarCts(s: State, subId: string): State {
-  return reducer(s, { type: 'ADD_CTS', subId, cts: novaCts(s.subs![subId]) })
-}
+/*
+ * AQUI HAVIA os testes de ADD_CTS / REMOVE_CTS: pareamento 1:1, descarte do
+ * snapshot do servidor ao recriar a CTS com o mesmo id, e limpeza dos overrides
+ * na remocao. Eles nao falharam — a criacao/remocao de CTS pela tela foi
+ * retirada do produto, porque a CTS e no da topologia e cria-la aqui produzia
+ * uma ficha que o motor nunca carrega.
+ *
+ * Se um dia existir um editor de topologia de verdade, estes casos voltam a
+ * valer: o cuidado com o id deterministico (`cts_<subId>`) reaparece inteiro.
+ */
 
 describe('seeding', () => {
   it('estado inicial não está semeado; após os 5 SEED, sim', () => {
@@ -136,65 +134,6 @@ describe('grupo 05 — CTS', () => {
       valorNovo: '4.000',
     })
     expect(derive(s1).g5).toBe(derive(s0).g5)
-  })
-
-  it('ADD_CTS pareia uma sub-bacia livre e acrescenta os campos dela ao cadastro', () => {
-    const s0 = seededState()
-    const s1 = criarCts(s0, 'b1_1_1')
-    expect(s1.pares).toHaveLength(s0.pares!.length + 1)
-    expect(s1.ctss!['cts_b1_1_1'].subId).toBe('b1_1_1')
-    // CTS nova entra vazia: os 5 params pendentes; as obras herdam a base preenchida.
-    expect(derive(s1).g5).toBe(derive(s0).g5 + 5)
-    expect(derive(s1).counts.cts).toBe(4)
-    expect(CTS_CAMPOS).toBe(33)
-  })
-
-  it('ADD_CTS é ignorado se a sub-bacia já tem CTS (relação 1:1)', () => {
-    const s0 = seededState()
-    const s1 = criarCts(s0, 'b2_1_1')
-    expect(s1).toBe(s0)
-  })
-
-  it('recriar a CTS descarta o snapshot do servidor daquele id', () => {
-    // O id é determinístico (cts_<subId>), então remover e recriar reusa o id: o
-    // "valor antigo" do override tem de ser o da CTS nova (vazia), não o do
-    // dado que o servidor mandou para a CTS antiga.
-    const s0 = seededState()
-    const doServidor = s0.ctss!['cts_b2_1_4'].db.fat
-    expect(doServidor).not.toBe('')
-
-    const s1 = reducer(s0, { type: 'REMOVE_CTS', ctsId: 'cts_b2_1_4' })
-    const s2 = criarCts(s1, 'b2_1_4')
-    expect(s2.originalCtss!['cts_b2_1_4']).toBeUndefined()
-
-    const s3 = reducer(s2, {
-      type: 'EDIT_CTS_DB_FIELD',
-      ctsId: 'cts_b2_1_4',
-      key: 'fat',
-      value: '1.000',
-      at: AT,
-    })
-    expect(s3.overrides['cts_b2_1_4.fat']).toMatchObject({
-      valorAntigo: '', // a CTS recriada nasce vazia
-      valorNovo: '1.000',
-    })
-  })
-
-  it('REMOVE_CTS tira a CTS, o par e os overrides dela', () => {
-    const s0 = seededState()
-    const comOverride = reducer(s0, {
-      type: 'EDIT_CTS_DB_FIELD',
-      ctsId: 'cts_b2_1_4',
-      key: 'fat',
-      value: 'X',
-      at: AT,
-    })
-    const s1 = reducer(comOverride, { type: 'REMOVE_CTS', ctsId: 'cts_b2_1_4' })
-    expect(s1.ctss!['cts_b2_1_4']).toBeUndefined()
-    expect(s1.pares!.some((p) => p.cts === 'cts_b2_1_4')).toBe(false)
-    expect(s1.overrides['cts_b2_1_4.fat']).toBeUndefined()
-    // As 3 pendências daquela CTS saem do total junto com ela.
-    expect(derive(s1).g5).toBe(derive(s0).g5 - 3)
   })
 })
 
@@ -402,20 +341,6 @@ describe('fichas não salvas (baseline de gravação)', () => {
       at: AT,
     })
     expect(sujas(s1)).toEqual([chaveSub('b1_1_1')])
-  })
-
-  it('CTS criada nasce salva (o servidor já a aceitou) e some ao ser removida', () => {
-    const s0 = seededState()
-    const s1 = criarCts(s0, 'b1_1_1')
-    expect(s1.ctss!['cts_b1_1_1']).toBeTruthy()
-    expect(sujas(s1)).toEqual([])
-
-    const s2 = reducer(s1, { type: 'SET_CTS_PARAM', ctsId: 'cts_b1_1_1', key: 'vaz', value: '1' })
-    expect(sujas(s2)).toEqual([chaveCts('cts_b1_1_1')])
-
-    const s3 = reducer(s2, { type: 'REMOVE_CTS', ctsId: 'cts_b1_1_1' })
-    expect(sujas(s3)).toEqual([])
-    expect(s3.salvas[chaveCts('cts_b1_1_1')]).toBeUndefined()
   })
 
   it('a assinatura não depende da ordem em que as chaves foram criadas', () => {

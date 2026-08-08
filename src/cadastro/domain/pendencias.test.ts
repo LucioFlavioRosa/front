@@ -16,14 +16,7 @@ import {
 import { cidadePend, g2Pend, type ContratoPayload } from '@/cadastro/domain/contrato'
 import { capacidadeOciosa, etePend, isNova, type Ete } from '@/cadastro/domain/ete'
 import ctsFx from '@/mocks/fixtures/cts.json'
-import {
-  BASE_OBRAS_CTS,
-  CTS_CAMPOS,
-  ctsPend,
-  mkObrasCts,
-  novaCts,
-  type Cts,
-} from '@/cadastro/domain/cts'
+import { BASE_OBRAS_CTS, CTS_CAMPOS, ctsPend, mkObrasCts, type Cts } from '@/cadastro/domain/cts'
 
 const subs = subbacias.subs as unknown as Record<string, SubBacia>
 const contrato = contratoFx as ContratoPayload
@@ -139,15 +132,6 @@ describe('CTS — a irmã da sub-bacia', () => {
     // Sem override, a obra herda a base.
     expect(obras[2].nome).toBe(BASE_OBRAS_CTS[2].nome)
     expect(obras[2].preco).toBe(BASE_OBRAS_CTS[2].preco)
-  })
-
-  it('novaCts() nasce pareada e com os params vazios (5 pendências)', () => {
-    const nova = novaCts(subs['b1_1_1'])
-    expect(nova).toMatchObject({ id: 'cts_b1_1_1', subId: 'b1_1_1', sisId: 's1' })
-    // Herda a geografia da sub-bacia pareada, mas não a base comercial dela.
-    expect(nova.jusante).toBe(subs['b1_1_1'].jusante)
-    expect(nova.db.fat).toBe('')
-    expect(ctsPend(nova)).toBe(5)
   })
 })
 

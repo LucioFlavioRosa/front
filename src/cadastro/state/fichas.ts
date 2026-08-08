@@ -17,6 +17,8 @@ import {
   type FichaEte,
   type FichaSubBacia,
 } from '@/cadastro/api/escrita'
+import type { Cidade } from '@/cadastro/domain/contrato'
+import type { Ete } from '@/cadastro/domain/ete'
 import type { State } from '@/cadastro/state/cadastroReducer'
 
 /** Chave de ficha: `tipo:id`. E o que o mapa de baselines (`salvas`) indexa. */
@@ -31,6 +33,7 @@ export function fichaSub(state: State, subId: string): FichaSubBacia | null {
   const sub = state.subs?.[subId]
   if (!sub) return null
   return {
+    versao: sub.versao,
     params: sub.params,
     db: sub.db,
     obrasOverride: sub.obrasOverride,
@@ -42,8 +45,10 @@ export function fichaSub(state: State, subId: string): FichaSubBacia | null {
 export function fichaCidade(state: State, cidId: string): FichaCidade | null {
   const cidade = state.cidades?.find((c) => c.id === cidId)
   if (!cidade || !state.metas || !state.fator) return null
+  const { versao, ...semVersao } = cidade
   return {
-    cidade,
+    versao,
+    cidade: semVersao as Cidade,
     metas: state.metas.filter((m) => m.cid === cidId),
     fator: state.fator.filter((f) => f.cid === cidId),
     overrides: overridesDaFicha(state.overrides, cidId),
@@ -53,13 +58,15 @@ export function fichaCidade(state: State, cidId: string): FichaCidade | null {
 export function fichaEte(state: State, eteId: string): FichaEte | null {
   const ete = state.etes?.find((e) => e.id === eteId)
   if (!ete) return null
-  return { ete, overrides: overridesDaFicha(state.overrides, eteId) }
+  const { versao, ...semVersao } = ete
+  return { versao, ete: semVersao as Ete, overrides: overridesDaFicha(state.overrides, eteId) }
 }
 
 export function fichaCts(state: State, ctsId: string): FichaCts | null {
   const cts = state.ctss?.[ctsId]
   if (!cts) return null
   return {
+    versao: cts.versao,
     params: cts.params,
     db: cts.db,
     obrasOverride: cts.obrasOverride,
@@ -115,8 +122,17 @@ function ordenado(valor: unknown): unknown {
  * string mesmo que as chaves tenham sido criadas em ordens diferentes (o mapa
  * de obras, por exemplo, ganha indices na ordem em que o usuario edita).
  */
+/**
+ * A ficha reduzida ao que o USUARIO controla — e a base de "esta suja?".
+ *
+ * `versao` fica de FORA. Ela viaja no PUT (e o que dispara o 409), mas muda
+ * sozinha a cada gravacao: inclui-la faria a ficha divergir da ultima salva
+ * assim que o servidor devolvesse a versao nova, e o botao Salvar nunca mais
+ * apagaria.
+ */
 export function assinatura(ficha: unknown): string {
-  return JSON.stringify(ordenado(ficha))
+  const { versao: _versao, ...resto } = (ficha ?? {}) as Record<string, unknown>
+  return JSON.stringify(ordenado(resto))
 }
 
 /**

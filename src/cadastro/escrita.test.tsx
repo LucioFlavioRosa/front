@@ -54,7 +54,18 @@ describe('salvar sub-bacia', () => {
     expect(caminho).toBe('/unidades/u-jacarei/sub-bacias/b2_1_4')
 
     // Ficha inteira, não um patch.
-    expect(Object.keys(corpo).sort()).toEqual(['db', 'obrasOverride', 'overrides', 'params'])
+    expect(Object.keys(corpo).sort()).toEqual([
+      'db',
+      'obrasOverride',
+      'overrides',
+      'params',
+      'versao',
+    ])
+    // `versao` é o que dispara o 409 no servidor. Ela viajava no GET e o front
+    // simplesmente não a devolvia: a proteção existia no backend e nunca
+    // disparava, e o teste de conflito passava porque mockava a resposta 409 em
+    // vez de conferir o que o PUT manda.
+    expect(corpo.versao).toBe('v-b2_1_4')
     expect(corpo.db.fat).toBe('9.999')
 
     // A trilha carrega o valor ORIGINAL do servidor, não o penúltimo.
@@ -124,7 +135,11 @@ describe('salvar cidade (contrato & metas)', () => {
     await waitFor(() => expect(api.puts).toHaveLength(1))
     const [caminho, corpo] = api.puts[0]
     expect(caminho).toMatch(/^\/unidades\/u-jacarei\/contrato\//)
-    expect(Object.keys(corpo).sort()).toEqual(['cidade', 'fator', 'metas', 'overrides'])
+    expect(Object.keys(corpo).sort()).toEqual(['cidade', 'fator', 'metas', 'overrides', 'versao'])
+    // A versão vai no TOPO e sai de dentro de `cidade`: duplicada, a cópia
+    // aninhada entraria na assinatura de "ficha suja" e o Salvar nunca apagaria.
+    expect(corpo.versao).toBe(`v-${corpo.cidade.id}`)
+    expect('versao' in corpo.cidade).toBe(false)
     // As metas enviadas são só as da cidade aberta.
     for (const m of corpo.metas) expect(m.cid).toBe(corpo.cidade.id)
     for (const f of corpo.fator) expect(f.cid).toBe(corpo.cidade.id)

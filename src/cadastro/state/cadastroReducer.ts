@@ -134,8 +134,6 @@ export type Action =
   | { type: 'SET_CTS_PARAM'; ctsId: string; key: keyof SubBaciaParams; value: string }
   | { type: 'SET_CTS_OBRA_FIELD'; ctsId: string; index: number; key: keyof Obra; value: string }
   | { type: 'EDIT_CTS_DB_FIELD'; ctsId: string; key: keyof SubBaciaDb; value: string; at: string }
-  | { type: 'ADD_CTS'; subId: string; cts: Cts }
-  | { type: 'REMOVE_CTS'; ctsId: string }
   // grupo 02 · contrato & metas
   | { type: 'SET_CIDADE_FIELD'; cidId: string; key: keyof Cidade; value: string }
   | { type: 'ADD_META'; cid: string }
@@ -381,53 +379,11 @@ export function reducer(state: State, action: Action): State {
         ),
       }
     }
-    case 'ADD_CTS': {
-      const sub = state.subs![action.subId]
-      // Ja pareada: ignora (a relacao e 1:1).
-      if (!sub || state.pares!.some((p) => p.sub === action.subId)) return state
-      // A CTS que entra e a que o SERVIDOR devolveu, nao uma copia local: se ele
-      // normalizar campos ou trocar o id, e a versao dele que vale.
-      //
-      // O pareamento, porem, e o que o usuario pediu ("+ CTS em b1_1_1") e o que
-      // vai na tabela `pares`. Se o eco vier com outro `subId`, o rail mostraria
-      // a CTS num ramo e a ficha diria outro — normaliza para o par valer.
-      const cts =
-        action.cts.subId === action.subId ? action.cts : { ...action.cts, subId: action.subId }
-      // O id e deterministico (`cts_<subId>`), entao remover e recriar a CTS da
-      // mesma sub-bacia reusa o id. O snapshot do servidor daquele id descreve a
-      // CTS ANTIGA — se ficasse, o proximo override gravaria como "valor antigo"
-      // um dado que esta CTS nunca teve. Descarta junto com a recriacao.
-      const originalCtss = { ...(state.originalCtss ?? {}) }
-      delete originalCtss[cts.id]
-      // A criacao e pessimista: quando esta action roda, o servidor ja gravou a
-      // CTS exatamente como ela esta aqui — entao ela nasce "sem mudancas", e o
-      // Salvar dela so acende quando o usuario digitar algo.
-      return semMudancas(
-        {
-          ...state,
-          originalCtss,
-          ctss: { ...state.ctss, [cts.id]: cts },
-          pares: [...state.pares!, { sub: sub.id, cts: cts.id }],
-        },
-        [chaveCts(cts.id)],
-      )
-    }
-    case 'REMOVE_CTS': {
-      const { [action.ctsId]: removida, ...resto } = state.ctss ?? {}
-      if (!removida) return state
-      const { [chaveCts(action.ctsId)]: _baseline, ...salvas } = state.salvas
-      return {
-        ...state,
-        ctss: resto,
-        pares: state.pares!.filter((p) => p.cts !== action.ctsId),
-        // Overrides da CTS removida deixam de existir junto com ela.
-        overrides: Object.fromEntries(
-          Object.entries(state.overrides).filter(([k]) => !k.startsWith(`${action.ctsId}.`)),
-        ),
-        salvas,
-      }
-    }
-
+    // NAO ha ADD_CTS nem REMOVE_CTS, e isso e deliberado. A CTS e um NO DA
+    // TOPOLOGIA: cria-la pela tela gravava ficha e par sem tocar em
+    // `sistema_topologia`, produzindo uma CTS que o motor nunca ve; remove-la
+    // apagava a ficha e deixava o no, que virava um no de demanda ZERO.
+    // Topologia se corrige no cadastro estrutural (Grupo 01).
     case 'SET_CIDADE_FIELD':
       return {
         ...state,

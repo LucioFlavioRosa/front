@@ -61,6 +61,15 @@ export function useStatusRodada(runId: string | undefined) {
   })
 }
 
+/**
+ * Sem chamador HOJE, de proposito. `POST /runs/{id}/cancelar` responde 501
+ * enquanto `CANCELADA` nao entra no CHECK de `controle.run_status`, e o botao
+ * saiu da tela em vez de dar erro toda vez (ver CONTRATO.md §4.4).
+ *
+ * Fica porque e a superficie de API que o contrato define e o ponto exato onde o
+ * botao religa quando a migracao entrar — apagar e reescrever depois so perderia
+ * a invalidacao do status, que e a parte facil de esquecer.
+ */
 export function useCancelarRodada() {
   const qc = useQueryClient()
   return useMutation({

@@ -125,9 +125,6 @@ interface CadastroValue {
   setCtsParam: (ctsId: string, key: keyof SubBaciaParams, value: string) => void
   setCtsObraField: (ctsId: string, index: number, key: keyof Obra, value: string) => void
   editCtsDbField: (ctsId: string, key: keyof SubBaciaDb, value: string) => void
-  /** `cts` e a ficha devolvida pelo servidor (a criacao e pessimista). */
-  addCts: (subId: string, cts: Cts) => void
-  removeCts: (ctsId: string) => void
 }
 
 const Ctx = createContext<CadastroValue | null>(null)
@@ -395,8 +392,6 @@ export function CadastroProvider({
         dispatch({ type: 'SET_CTS_OBRA_FIELD', ctsId, index, key, value }),
       editCtsDbField: (ctsId: string, key: keyof SubBaciaDb, value: string) =>
         dispatch({ type: 'EDIT_CTS_DB_FIELD', ctsId, key, value, at: now() }),
-      addCts: (subId: string, cts: Cts) => dispatch({ type: 'ADD_CTS', subId, cts }),
-      removeCts: (ctsId: string) => dispatch({ type: 'REMOVE_CTS', ctsId }),
       // A assinatura vem do corpo QUE FOI ENVIADO, nao do estado atual: se o
       // usuario continuou digitando enquanto o PUT voava, essas teclas seguem
       // como nao salvas — que e a verdade.

@@ -38,15 +38,6 @@
   color: var(--db-text);
 }
 
-/* Card "sub-bacias sem CTS" (a CTS e esparsa: e um acrescimo, nao obrigatorio) */
-.semCts {
-  margin-top: 16px;
-  background: var(--surface);
-  border: 1px dashed var(--text-400);
-  border-radius: 14px;
-  padding: 16px 22px;
-}
-
 .semCtsTitulo {
   font-size: 14px;
   font-weight: 700;
@@ -65,18 +56,6 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-}
-
-.addBtn {
-  font-size: 12px;
-  font-weight: 700;
-  padding: 6px 12px;
-  border-radius: var(--radius-chip);
-  border: 1px solid var(--db-border);
-  background: var(--db-bg);
-  color: var(--db-text-2);
-  cursor: pointer;
-  white-space: nowrap;
 }
 
 .addBtn:hover {
@@ -109,35 +88,11 @@
   max-width: 68ch;
 }
 
-.remover {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text-400);
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 6px;
-}
-
 .remover:hover {
   color: #dc2626;
   background: #fef2f2;
 }
 
-/* Busca da criacao de CTS. A lista de sugestoes so aparece depois de digitar —
-   ver o comentario em GrupoCts.tsx sobre por que a lista completa saiu. */
-.buscaSub {
-  width: 100%;
-  margin: 8px 0 4px;
-  padding: 7px 10px;
-  font: inherit;
-  font-size: 12px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-chip, 6px);
-  background: var(--surface);
-  color: var(--text-900);
-}
 .buscaSub:focus-visible {
   outline: 2px solid var(--brand);
   outline-offset: 1px;

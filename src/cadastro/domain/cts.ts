@@ -31,6 +31,17 @@ export interface Cts {
   params: SubBaciaParams
   /** Overrides das 4 obras-base, por indice (o resto herda a base). */
   obrasOverride: Record<string, Partial<Obra>>
+  /**
+   * Impressao do conteudo da ficha no momento em que o servidor a entregou.
+   *
+   * Viaja de volta no PUT e e o que dispara o 409: se outra pessoa gravou no
+   * intervalo, a versao que o servidor tem nao e mais esta.
+   *
+   * NAO entra na assinatura de "ficha suja" — ver `assinatura()` em `fichas.ts`.
+   * Aquela mede o que o USUARIO mudou; esta muda sozinha a cada gravacao, e
+   * inclui-la deixaria toda ficha suja para sempre depois de salvar.
+   */
+  versao: string
 }
 
 /** De-para da sobreposicao (tabela `subbacia-cts`). */
@@ -92,43 +103,4 @@ export const camposDaCts = (porPopulacao: boolean) => CTS_CAMPOS + (porPopulacao
 /** Pendencias da CTS — mesma regra da sub-bacia, com 4 obras (wacc nao conta). */
 export function ctsPend(c: Cts, porPopulacao = false): number {
   return pendDe(c.params, mkObrasCts(c.obrasOverride), porPopulacao)
-}
-
-/**
- * CTS nova, criada a partir da sub-bacia pareada. A base comercial NAO e
- * copiada: sao areas sobrepostas, mas a demanda da CTS e propria e vem do
- * Databricks — aqui entra vazia, para a Regional preencher ou corrigir.
- */
-export function novaCts(sub: {
-  id: string
-  nome: string
-  sisId: string
-  sistema: string
-  jusante: string
-}): Cts {
-  return {
-    id: `cts_${sub.id}`,
-    nome: `CTS ${sub.nome.replace(/^Sub-bacia /, '')}`,
-    subId: sub.id,
-    sisId: sub.sisId,
-    sistema: sub.sistema,
-    jusante: sub.jusante,
-    db: {
-      fat: '',
-      arr: '',
-      ligU: '',
-      ligA: '',
-      ligN: '',
-      ligUInd: '',
-      ligAInd: '',
-      fatInd: '',
-      arrInd: '',
-      ecoU: '',
-      ecoA: '',
-      ecoN: '',
-      ticket: '—',
-    },
-    params: { preco: '', tarr: '', ramp: '', vaz: '', vazInd: '', pot: '', popU: '', popA: '' },
-    obrasOverride: {},
-  }
 }

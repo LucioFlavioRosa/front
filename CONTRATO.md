@@ -655,7 +655,18 @@ a diferença ao usuário — mande o motivo da reprovação aqui.
 
 ### 4.4 `POST /runs/{run_id}/cancelar`
 
-Responde `204`. O front chama quando o usuário cancela no modal.
+> **Ainda não disponível — responde `501`.** `controle.run_status` tem
+> `CHECK (status IN ('PENDENTE','RODANDO','SUCESSO','FALHOU_QUALIDADE','ERRO'))`,
+> e `CANCELADA` viola o CHECK: o UPDATE falharia. Responder `204` sem cancelar
+> seria pior que responder erro — a tela fecharia dizendo "cancelado" e o cluster
+> continuaria processando e cobrando, com a rodada aparecendo concluída minutos
+> depois.
+>
+> Enquanto a migração não roda, **o front não oferece o botão**. Quando `CANCELADA`
+> entrar no CHECK e o job souber interromper a execução, o endpoint passa a
+> responder `204` e o botão volta — os dois na mesma entrega, nunca um sem o outro.
+
+Quando disponível: responde `204`, e o front chama ao cancelar no modal.
 
 ### 4.5 `POST /runs/{run_id}/reexecutar` — retry
 

@@ -54,7 +54,8 @@
           "tPred": "6",
           "dur": "8"
         }
-      }
+      },
+      "versao": "v-cts_b2_1_1"
     },
     "cts_b2_1_4": {
       "id": "cts_b2_1_4",
@@ -103,7 +104,8 @@
           "tPred": "0",
           "dur": "0"
         }
-      }
+      },
+      "versao": "v-cts_b2_1_4"
     },
     "cts_b3_1_1": {
       "id": "cts_b3_1_1",
@@ -145,7 +147,8 @@
           "tPred": "5",
           "dur": ""
         }
-      }
+      },
+      "versao": "v-cts_b3_1_1"
     }
   },
   "inconsistencias": []
