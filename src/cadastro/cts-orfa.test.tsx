@@ -48,7 +48,7 @@ describe('CTS órfã da árvore de sub-bacias', () => {
     expect(screen.getByText(/3 CTS · confira o de-para no Databricks/)).toBeTruthy()
 
     // E o chip do grupo segue contando as pendências delas.
-    expect(await screen.findByText('7 pendências')).toBeTruthy()
+    expect(await screen.findByText('6 pendências')).toBeTruthy()
 
     // Sem árvore não dá para saber a régua da meta: a base do Databricks
     // aparece inteira, sem destaque em nenhum trio, e a tela diz o porquê.

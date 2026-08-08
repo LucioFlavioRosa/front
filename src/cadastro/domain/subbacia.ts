@@ -152,7 +152,13 @@ export function mkObras(override: Record<string, Partial<Obra>>): Obra[] {
   return mkObrasDe(BASE_OBRAS, override)
 }
 
-const PARAM_KEYS: (keyof SubBaciaParams)[] = ['preco', 'tarr', 'ramp', 'vaz', 'vazInd', 'pot']
+// `vazInd` NAO entra na regua. A planilha de origem nao tem a coluna
+// `vazao_contribuicao_industrial` para sub-bacia (so para CTS): chega NULL nas
+// 4.850 linhas e nao ha de onde preencher. E o motor so usa esse numero para
+// SUBTRAIR a parcela industrial quando se roda `INCLUIR_INDUSTRIAL=False` — na
+// analise de hoje ele nao entra na conta. Cobrar campo que a origem nao tem,
+// para uma simulacao que nao o usa, travava a unidade inteira por nada.
+const PARAM_KEYS: (keyof SubBaciaParams)[] = ['preco', 'tarr', 'ramp', 'vaz', 'pot']
 /** Quantos parametros a ficha cobra fora da regua de populacao. */
 export const CAMPOS_PARAMS = PARAM_KEYS.length
 /** Entram na conta so quando a cidade mede a meta por populacao. */

@@ -57,12 +57,12 @@ describe('num()', () => {
 })
 
 describe('subPend()', () => {
-  it('conta params vazios + campos de obra vazios (wacc não conta)', () => {
+  it('conta params vazios + campos de obra vazios (wacc e vazInd não contam)', () => {
     // b2_1_4: preco+tarr vazios (2) + obra índice 3 toda vazia (5) = 7
     expect(subPend(subs['b2_1_4'])).toBe(7)
     // b2_1_3: vaz e vazInd vazios = 2 (quem não sabe a vazão total também
     // não sabe a parcela industrial)
-    expect(subPend(subs['b2_1_3'])).toBe(2)
+    expect(subPend(subs['b2_1_3'])).toBe(1)
     // b1_1_1: tudo preenchido = 0
     expect(subPend(subs['b1_1_1'])).toBe(0)
   })
@@ -120,16 +120,16 @@ describe('CTS — a irmã da sub-bacia', () => {
     expect(nomes).not.toContain('Ligação de esgoto')
     expect(nomes).not.toContain('Rede coletora')
     // 6 params + 4 obras × 7 campos cobrados.
-    expect(CTS_CAMPOS).toBe(34)
+    expect(CTS_CAMPOS).toBe(33)
   })
 
-  it('ctsPend() conta igual à sub-bacia (wacc não conta)', () => {
+  it('ctsPend() conta igual à sub-bacia (wacc e vazInd não contam)', () => {
     // cts_b2_1_1 está completa.
     expect(ctsPend(ctss['cts_b2_1_1'])).toBe(0)
     // cts_b2_1_4: pot vazio (1) + opex da obra 0 (1) + qtd da obra 1 (1).
     expect(ctsPend(ctss['cts_b2_1_4'])).toBe(3)
     // cts_b3_1_1: vaz, vazInd e pot vazios (3) + dur da obra 0 (1).
-    expect(ctsPend(ctss['cts_b3_1_1'])).toBe(4)
+    expect(ctsPend(ctss['cts_b3_1_1'])).toBe(3)
   })
 
   it('mkObrasCts() aplica o override sobre a base', () => {
@@ -141,13 +141,13 @@ describe('CTS — a irmã da sub-bacia', () => {
     expect(obras[2].preco).toBe(BASE_OBRAS_CTS[2].preco)
   })
 
-  it('novaCts() nasce pareada e com os params vazios (6 pendências)', () => {
+  it('novaCts() nasce pareada e com os params vazios (5 pendências)', () => {
     const nova = novaCts(subs['b1_1_1'])
     expect(nova).toMatchObject({ id: 'cts_b1_1_1', subId: 'b1_1_1', sisId: 's1' })
     // Herda a geografia da sub-bacia pareada, mas não a base comercial dela.
     expect(nova.jusante).toBe(subs['b1_1_1'].jusante)
     expect(nova.db.fat).toBe('')
-    expect(ctsPend(nova)).toBe(6)
+    expect(ctsPend(nova)).toBe(5)
   })
 })
 
@@ -189,9 +189,9 @@ describe('colunas de obra e pendência', () => {
     expect(subPend(semTPred)).toBe(subPend(sub) + 1)
   })
 
-  it('cada obra cobra 7 campos: 5 obras = 35, mais os 6 params = 41', () => {
-    expect(camposDaSub(false)).toBe(41)
-    expect(camposDaSub(true)).toBe(43) // + população, quando é a régua
+  it('cada obra cobra 7 campos: 5 obras = 35, mais os 5 params = 40', () => {
+    expect(camposDaSub(false)).toBe(40)
+    expect(camposDaSub(true)).toBe(42) // + população, quando é a régua
   })
 })
 

@@ -365,16 +365,36 @@ describe('vazão industrial (parâmetro do usuário)', () => {
     expect(screen.getByText(/já contida nela, não some as duas/)).toBeTruthy()
   })
 
-  it('conta pendência como os outros parâmetros', async () => {
+  it('NÃO conta pendência: a planilha não tem a coluna e a simulação não a usa', async () => {
     renderApp('/unidade/u-jacarei/sub-bacias')
     await screen.findByRole('button', { name: 'Salvar sub-bacia' })
 
+    // Este teste afirmava o contrário, e estava certo para a regra de então. A
+    // regra mudou: `vazao_contribuicao_industrial` não existe na aba de
+    // sub-bacia da planilha (só na de CTS), então chega vazio nas 4.850 linhas
+    // e não há de onde preencher; e o motor só usa esse número para SUBTRAIR a
+    // parcela industrial quando se roda `INCLUIR_INDUSTRIAL=False`, que não é a
+    // análise de hoje. Cobrar travava as cinco unidades inteiras por nada.
     const antes = chipDaFicha().textContent
     fireEvent.change(campo('Vazão nova industrial'), { target: { value: '' } })
-    expect(chipDaFicha().textContent).not.toBe(antes)
-    // Sem indústria na área, a resposta é 0 — e 0 não é pendência.
-    fireEvent.change(campo('Vazão nova industrial'), { target: { value: '0' } })
     expect(chipDaFicha().textContent).toBe(antes)
+
+    // E continua editável e salvável — deixou de ser exigido, não de existir.
+    fireEvent.change(campo('Vazão nova industrial'), { target: { value: '2,4' } })
+    expect(chipDaFicha().textContent).toBe(antes)
+  })
+
+  it('o placeholder não finge ser um valor', async () => {
+    renderApp('/unidade/u-jacarei/sub-bacias')
+    await screen.findByRole('button', { name: 'Salvar sub-bacia' })
+
+    // Era '0'. Como o texto de ajuda dizia "sem indústria, informe 0", o campo
+    // vazio mostrava em cinza exatamente a resposta válida mais provável — e
+    // quem olhava via um zero preenchido. Placeholder nunca pode ser um valor
+    // que o campo aceita.
+    fireEvent.change(campo('Vazão nova industrial'), { target: { value: '' } })
+    expect(campo('Vazão nova industrial').placeholder).not.toBe('0')
+    expect(campo('Vazão nova industrial').placeholder).toBe('sem indústria')
   })
 
   it('vai no params do PUT, sem override (não é dado do Databricks)', async () => {

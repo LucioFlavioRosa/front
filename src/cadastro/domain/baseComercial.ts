@@ -119,7 +119,12 @@ export function camposParametros(escopo: 'sub-bacia' | 'cts'): CampoParam[] {
     ['Início da arrecadação', 'tarr', 'tempo_arrecadacao', 'meses', 'meses', 'Tempo entre a obra ficar pronta e começar a faturar.'],
     ['Rampa de adesão', 'ramp', 'tempo_ramp_up', 'meses', 'meses', 'Tempo até a adesão plena. A receita cresce em curva S até o pleno neste prazo.'],
     ['Vazão nova', 'vaz', 'vazao_contribuicao', 'L/s', 'vazão', vazao],
-    ['Vazão nova industrial', 'vazInd', 'vazao_contribuicao_industrial', 'L/s', '0', 'Parcela industrial da vazão acima — já contida nela, não some as duas. Sem indústria na área, informe 0.'],
+    // Placeholder ERA '0'. Como o proprio texto de ajuda diz "sem industria,
+    // informe 0", o campo vazio exibia em cinza exatamente a resposta valida
+    // mais provavel — e quem olhava via um zero preenchido. O dono do produto
+    // leu assim e estranhou a ficha continuar incompleta. Placeholder nunca pode
+    // ser um valor que o campo aceita.
+    ['Vazão nova industrial', 'vazInd', 'vazao_contribuicao_industrial', 'L/s', 'sem indústria', 'Parcela industrial da vazão acima — já contida nela, não some as duas. Opcional: em branco vale como sem indústria.'],
     ['Potencial de crescimento', 'pot', 'potencial_crescimento', 'fator', '1,0', 'Multiplica o universo de ligações (1,0 = sem). Só amplia o denominador da meta.'],
   ]
 }

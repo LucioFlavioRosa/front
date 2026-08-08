@@ -44,8 +44,12 @@ const BASE_KEYS: (keyof Ete)[] = [
   'tExec',
   'capNom',
   'vazOp',
-  'wacc',
 ]
+// `wacc` NAO entra: vazio aqui significa "usa o WACC medio da unidade", que e
+// resposta e nao silencio. Sao 598 das 997 ETEs da planilha sem wacc proprio, e
+// o motor roda 2 de cada 3 obras com o herdado — cobrar isso travava a simulacao
+// por um default que funciona. O backend dizia o mesmo no comentario dele e
+// cobrava assim mesmo; os dois lados foram corrigidos juntos.
 const NOVA_KEYS: (keyof Ete)[] = ['terreno', 'modulos']
 
 export const isNova = (e: Ete) => e.nova === 'Sim'
