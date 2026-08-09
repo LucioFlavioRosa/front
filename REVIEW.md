@@ -91,18 +91,26 @@ receberia uma trilha dizendo "X virou X" e o botão Salvar ficaria aceso para
 sempre (a assinatura da ficha inclui a trilha).
 → `cadastroReducer.test.ts`, bloco "reverter uma edição desfaz o registro dela".
 
-### 4. A criação de CTS é **pessimista** (a de dado editado, não)
+### 4. Callback que mexe no store fica no nível do hook
 
-A CTS só entra no store depois do 201, e é a **CTS devolvida pelo servidor** que
-entra. A versão otimista foi implementada e revertida: o rollback vivia no
-callback por chamada de `mutate`, que o TanStack não dispara quando o observer
-perde os listeners (usuário sai da tela antes da resposta) — e ainda apagava o
-que a pessoa tivesse digitado na CTS nova durante o voo.
+> Esta seção descrevia a **criação de CTS**, que não existe mais: a CTS é nó da
+> topologia, e criá-la pela tela produzia uma ficha que o motor nunca carrega
+> (ver `DEPLOY.md` §3). O teste citado — `escrita.test.tsx`, bloco "criar CTS" —
+> foi removido junto. A regra abaixo sobreviveu ao fluxo que a originou, e é o
+> motivo de a seção continuar aqui.
 
-Daí a regra: **callback que mexe no store fica no nível do hook**
-(`useMutation({ onSuccess })` em `api/mutations.ts`); callback que só mostra
-toast pode ficar no `mutate(vars, {...})` da página.
-→ `app.escrita.test.tsx`, bloco "criar CTS".
+A regra veio de uma criação otimista que foi implementada e revertida: o rollback
+vivia no callback por chamada de `mutate`, que o TanStack **não dispara** quando o
+observer perde os listeners — o usuário sai da tela antes da resposta e o rollback
+nunca roda. E, quando rodava, apagava o que a pessoa tivesse digitado durante o voo.
+
+Daí: **callback que mexe no store fica no nível do hook**
+(`useMutation({ onSuccess })` em `api/mutations.ts`); callback que só mostra toast
+pode ficar no `mutate(vars, {...})` da página.
+
+É a mesma razão pela qual a `versao` devolvida pelo PUT volta ao store por
+`onSuccess` do hook, e não pela página.
+→ `escrita.test.tsx`, bloco "o ciclo da versao".
 
 ### 5. O rascunho entra **no lugar** do seed
 

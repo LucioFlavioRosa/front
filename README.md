@@ -109,8 +109,15 @@ funções puras, então dá para travar "a cascata fecha no total" num teste
 unitário, sem renderizar. O SVG é `aria-hidden` e cada quadro carrega uma tabela
 visualmente oculta como equivalente textual.
 
-**Estado:** as 6 fatias estão implementadas contra mocks. O que falta é o backend
-real — nenhum destes endpoints existe fora do MSW.
+**Estado:** as 6 fatias estão implementadas, e **o backend real existe**. Há dois
+modos, e confundi-los é o erro mais fácil de cometer aqui:
+
+| modo | como sobe | quem responde |
+|---|---|---|
+| **dev** | `npm run dev` | MSW, com as fixtures de `src/mocks` |
+| **e2e** | `docker compose -f docker-compose.yml -f docker-compose.e2e.yml up` no repo do backend | FastAPI + Postgres com dado real da planilha, em `http://localhost:8080` |
+
+Os testes usam o `apiFake`, não o MSW nem a API real — ver `src/testes/apiFake.ts`.
 
 ## De onde vem o dado
 
@@ -198,4 +205,7 @@ Nada aqui é surpresa escondida — está tudo detalhado no `DEPLOY.md`:
 - **Hierarquia (Grupo 01) não grava**: o contrato de escrita não cobre a
   hierarquia. A tela avisa o usuário; as correções ficam no rascunho da aba.
 - **"Importar planilha"** no hub é um stub.
-- **O backend do cadastro não existe** — hoje tudo responde pelo MSW.
+- **O backend do cadastro EXISTE** (repo `otimizador-backend`), com leitura,
+  escrita, trilha de override e recorte por usuário. Este item dizia o contrário
+  por muito tempo depois de deixar de ser verdade — no modo `dev` o MSW responde,
+  e é só isso que a frase queria dizer.
