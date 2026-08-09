@@ -54,7 +54,19 @@ describe('CTS com cadastro incompleto', () => {
 
   it('a ficha denunciada continua editável em vez de sumir do rail', async () => {
     renderApp('/unidade/u-jacarei/cts')
-    await screen.findByText('2 CTS com cadastro incompleto')
+
+    // ESPERA PELA FICHA, e nao pelo painel. O painel vem de `ctsQ.data` direto
+    // (CadastroContext), enquanto a ficha depende do efeito de seed do reducer:
+    // ha sempre uma janela em que o painel ja esta na tela e a ficha ainda nao —
+    // e nessa janela o texto do estado vazio ESTA correto.
+    //
+    // A versao anterior esperava pelo painel, que aparece nos DOIS caminhos de
+    // render (de proposito: no estado vazio e justamente onde um no orfao ficaria
+    // invisivel). Ganhava a corrida quase sempre, e perdia sob a suite inteira,
+    // com os workers do vitest disputando CPU. Teste que falha as vezes ensina a
+    // ignorar falha de teste.
+    await screen.findByRole('button', { name: 'Salvar CTS' })
+    expect(screen.getByText('2 CTS com cadastro incompleto')).toBeTruthy()
 
     // Esconder a ficha "defeituosa" seria pior que mostrá-la: tiraria do usuário
     // a única tela onde ele veria o problema, e a ficha em si é editável.
