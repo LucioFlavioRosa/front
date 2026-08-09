@@ -42,6 +42,24 @@ interface OpcoesSalvar<V> {
   onSalva?: (vars: V, resposta: RespostaSalvar) => void
 }
 
+/**
+ * Denuncia servidor que aceitou (2xx) e nao devolveu `versao`.
+ *
+ * Nao vira toast: o salvamento DEU CERTO e o usuario nao tem o que fazer com a
+ * informacao. Mas a ficha perde a protecao de conflito ate a proxima carga (ver
+ * `FICHA_SALVA` no reducer), e isso nao pode acontecer em silencio para quem
+ * mantem o sistema — foi exatamente um silencio desses que deixou o 409 inteiro
+ * sem funcionar por semanas.
+ */
+function conferirContrato(rota: string, dado: RespostaSalvar | undefined): void {
+  if (!dado?.versao) {
+    console.error(
+      `[contrato] PUT ${rota} respondeu 2xx sem "versao". A ficha fica sem ` +
+        'protecao de conflito (409) ate a tela recarregar.',
+    )
+  }
+}
+
 type VarsSubBacia = { subId: string; ficha: FichaSubBacia }
 
 export function useSalvarSubBacia(
@@ -51,7 +69,10 @@ export function useSalvarSubBacia(
   return useMutation({
     mutationFn: ({ subId, ficha }: VarsSubBacia) =>
       api.put<RespostaSalvar>(`/unidades/${unidadeId}/sub-bacias/${subId}`, ficha),
-    onSuccess: (dado, vars) => opcoes?.onSalva?.(vars, dado),
+    onSuccess: (dado, vars) => {
+      conferirContrato(`/unidades/${unidadeId}/sub-bacias/${vars.subId}`, dado)
+      opcoes?.onSalva?.(vars, dado)
+    },
   })
 }
 
@@ -61,7 +82,10 @@ export function useSalvarCidade(unidadeId: string | undefined, opcoes?: OpcoesSa
   return useMutation({
     mutationFn: ({ cidId, ficha }: VarsCidade) =>
       api.put<RespostaSalvar>(`/unidades/${unidadeId}/contrato/${cidId}`, ficha),
-    onSuccess: (dado, vars) => opcoes?.onSalva?.(vars, dado),
+    onSuccess: (dado, vars) => {
+      conferirContrato(`/unidades/${unidadeId}/contrato/${vars.cidId}`, dado)
+      opcoes?.onSalva?.(vars, dado)
+    },
   })
 }
 
@@ -71,7 +95,10 @@ export function useSalvarEte(unidadeId: string | undefined, opcoes?: OpcoesSalva
   return useMutation({
     mutationFn: ({ eteId, ficha }: VarsEte) =>
       api.put<RespostaSalvar>(`/unidades/${unidadeId}/etes/${eteId}`, ficha),
-    onSuccess: (dado, vars) => opcoes?.onSalva?.(vars, dado),
+    onSuccess: (dado, vars) => {
+      conferirContrato(`/unidades/${unidadeId}/etes/${vars.eteId}`, dado)
+      opcoes?.onSalva?.(vars, dado)
+    },
   })
 }
 
@@ -81,6 +108,9 @@ export function useSalvarCts(unidadeId: string | undefined, opcoes?: OpcoesSalva
   return useMutation({
     mutationFn: ({ ctsId, ficha }: VarsCts) =>
       api.put<RespostaSalvar>(`/unidades/${unidadeId}/cts/${ctsId}`, ficha),
-    onSuccess: (dado, vars) => opcoes?.onSalva?.(vars, dado),
+    onSuccess: (dado, vars) => {
+      conferirContrato(`/unidades/${unidadeId}/cts/${vars.ctsId}`, dado)
+      opcoes?.onSalva?.(vars, dado)
+    },
   })
 }

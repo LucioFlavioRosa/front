@@ -150,6 +150,34 @@ describe('o ciclo da versao', () => {
     expect(segundo.versao).toBe('v1') // a que o PRIMEIRO PUT devolveu
   })
 
+  it('servidor 2xx SEM versao: a ficha fica salva, e a proxima gravacao nao conflita', async () => {
+    renderApp('/unidade/u-jacarei/sub-bacias')
+    const salvar = () =>
+      screen.getByRole('button', { name: 'Salvar sub-bacia' }) as HTMLButtonElement
+    await waitFor(() => expect(salvar()).toBeTruthy())
+
+    // Servidor quebrando o contrato: aceita e nao devolve a versao nova.
+    api.putSemVersao = true
+
+    fireEvent.change(screen.getByLabelText('Taxa de ligação'), { target: { value: '1.000,00' } })
+    fireEvent.click(salvar())
+    await waitFor(() => expect(api.puts).toHaveLength(1))
+
+    // 1. O servidor ACEITOU, entao a ficha esta salva. Marca-la como suja faria a
+    //    pessoa salvar de novo um dado que ja esta no banco.
+    await waitFor(() => expect(salvar().disabled).toBe(true))
+
+    // 2. E a proxima gravacao NAO manda a versao velha. Se mandasse, o servidor
+    //    responderia 409 e a tela diria "outra pessoa salvou esta ficha" — e
+    //    ninguem salvou. Erro que mente e pior que protecao ausente: ensina a
+    //    ignorar o unico aviso que separa duas pessoas se sobrescrevendo.
+    fireEvent.change(screen.getByLabelText('Taxa de ligação'), { target: { value: '2.000,00' } })
+    fireEvent.click(salvar())
+    await waitFor(() => expect(api.puts).toHaveLength(2))
+    const [, segundo] = api.puts[1]
+    expect(segundo.versao).toBe('')
+  })
+
   it('gravar nao deixa a ficha suja: a versao nova nao conta como edicao', async () => {
     renderApp('/unidade/u-jacarei/sub-bacias')
     const salvar = () =>

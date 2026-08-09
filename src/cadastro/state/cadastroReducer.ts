@@ -276,8 +276,24 @@ export function reducer(state: State, action: Action): State {
       // A versao NOVA volta para a entidade. Sem isto o proximo PUT da mesma
       // ficha mandaria a versao lida no GET, que a gravacao anterior tornou
       // obsoleta — 409 contra a propria alteracao.
-      if (!action.versao) return { ...state, salvas }
-      return { ...state, salvas, ...comVersao(state, action.chave, action.versao) }
+      //
+      // SERVIDOR 2xx SEM `versao` é quebra de contrato, e há três saídas ruins:
+      //
+      //  a) manter a versão antiga → o próximo salvamento toma 409 e a tela diz
+      //     "outra pessoa salvou esta ficha". Ninguém salvou. Erro que MENTE é
+      //     pior que proteção ausente: ensina a ignorar o aviso — e este aviso é
+      //     o único que separa duas pessoas se sobrescrevendo.
+      //  b) marcar a ficha como NÃO salva → mas o servidor ACEITOU. Dizer que
+      //     não salvou faz a pessoa salvar de novo um dado que já está no banco.
+      //  c) esquecer a versão → o próximo PUT vai sem ela, o backend tolera
+      //     (`_exigir_versao` deixa passar quando ausente) e o salvamento
+      //     funciona. O preço: aquela ficha fica sem proteção de conflito até a
+      //     próxima carga da tela, que a recupera do GET.
+      //
+      // (c), com a perda registrada no console (`conferirContrato` em
+      // api/mutations.ts). É a única que não mente ao usuário, e degrada para o
+      // comportamento anterior ao 409 em vez de para um erro falso.
+      return { ...state, salvas, ...comVersao(state, action.chave, action.versao ?? '') }
     }
 
     case 'SET_SUB_PARAM': {

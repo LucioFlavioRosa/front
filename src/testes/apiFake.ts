@@ -28,6 +28,8 @@ export interface EstadoApi {
   /** Falha em toda LEITURA — a tela de erro com "Tentar de novo". */
   erroGet: Error | null
   erroPut: Error | null
+  /** PUT responde 2xx SEM `versao` — servidor quebrando o contrato. */
+  putSemVersao: boolean
   erroPost: Error | null
   /** Segura a resposta para o teste observar a tela COM a gravação em voo. */
   segurarPut: boolean
@@ -48,6 +50,7 @@ export function estadoApi(): EstadoApi {
     respostas: {},
     erroGet: null,
     erroPut: null,
+    putSemVersao: false,
     erroPost: null,
     segurarPut: false,
     segurarPost: false,
@@ -139,7 +142,8 @@ export function apiFake(estado: EstadoApi, dados: Record<string, unknown>) {
       // mock fazia — escondia que o front descartava a resposta e continuava
       // mandando a versao velha no salvamento seguinte.
       estado.versaoSeq += 1
-      return { id: path.split('/').pop(), overridesGravados: 0, versao: `v${estado.versaoSeq}` }
+      const corpo = { id: path.split('/').pop(), overridesGravados: 0 }
+      return estado.putSemVersao ? corpo : { ...corpo, versao: `v${estado.versaoSeq}` }
     },
     post: async (path: string, body?: unknown) => {
       estado.posts.push([path, body])
