@@ -50,6 +50,20 @@ export function SelecaoUnidade() {
       </div>
 
       <div className={styles.card}>
+        {/* Lista VAZIA não é erro — é a resposta correta para quem não tem
+            nenhuma unidade liberada. Sem este bloco a tela virava um beco: select
+            vazio, nenhuma mensagem, e a pessoa concluindo que o sistema quebrou.
+            O servidor recorta `/regionais` pelo escopo do usuário desde que o
+            acesso passou a ser por pessoa. */}
+        {regQ.isSuccess && regionais.length === 0 && (
+          <div className={styles.erroSlot}>
+            <ErroCarga
+              alvo="nenhuma unidade"
+              semAcesso
+              detalhe="Nenhuma regional está liberada para o seu usuário."
+            />
+          </div>
+        )}
         {(regQ.isError || uniQ.isError) && (
           <div className={styles.erroSlot}>
             <ErroCarga

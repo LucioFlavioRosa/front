@@ -59,6 +59,15 @@ interface CadastroValue {
   carregando: boolean
   /** Mensagem tecnica da primeira fatia que falhou, ou null. */
   erro: string | null
+  /**
+   * O ERRO CRU da primeira fatia que falhou.
+   *
+   * A mensagem sozinha nao distingue queda de conexao de 404 por falta de
+   * acesso, e as duas pedem telas diferentes: uma se resolve tentando de novo,
+   * a outra nunca. Desde que o servidor recorta por usuario, a segunda deixou de
+   * ser hipotetica.
+   */
+  erroBruto: unknown
   /** Ha requisicao em voo (inclui a nova tentativa depois de um erro). */
   recarregando: boolean
   /** Refetch das 5 fatias — usado pelo botao "Tentar de novo". */
@@ -406,6 +415,7 @@ export function CadastroProvider({
       seeded,
       carregando,
       erro: erroMsg,
+      erroBruto: erro,
       recarregando,
       recarregar,
       subs: state.subs ?? {},
@@ -443,6 +453,7 @@ export function CadastroProvider({
       seeded,
       carregando,
       erroMsg,
+      erro,
       recarregando,
       recarregar,
       state,

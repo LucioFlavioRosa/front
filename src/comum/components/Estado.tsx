@@ -1,3 +1,4 @@
+import { ApiError } from '@/comum/api/client'
 import styles from './Estado.module.css'
 
 /**
@@ -40,6 +41,18 @@ export interface ErroCargaProps {
   tentando?: boolean
   /** Mensagem tecnica do erro, quando houver (mono, discreta). */
   detalhe?: string
+  /**
+   * O erro que a query devolveu. Serve para distinguir 404 de queda de conexao:
+   * o servidor recorta por usuario, e o que nao e seu responde 404.
+   */
+  erro?: unknown
+  /**
+   * Diz "sem acesso" sem precisar de um erro. Para o caso em que o servidor
+   * respondeu 200 com lista VAZIA — que é a resposta correta para quem não tem
+   * escopo, e não um erro. Sem isto o chamador teria de fabricar um `ApiError`
+   * falso só para alcançar o texto certo.
+   */
+  semAcesso?: boolean
 }
 
 /**
@@ -51,15 +64,28 @@ export function ErroCarga({
   onRetry,
   tentando,
   detalhe,
+  erro,
+  semAcesso: semAcessoProp,
 }: ErroCargaProps) {
+  // 404 é OUTRA COISA, e tratá-lo como queda de conexão produzia a pior
+  // combinação possível: um título falso ("não foi possível carregar"), uma
+  // promessa que este componente não tem como fazer ("nada foi perdido"), e um
+  // botão de tentar de novo que nunca vai funcionar.
+  //
+  // O servidor recorta por usuário: unidade fora do escopo e rodada de outra
+  // pessoa respondem 404 — e não 403, de propósito, porque 403 confirmaria que
+  // existe. Aqui a tela precisa dizer isso sem prometer que existe também.
+  const semAcesso = semAcessoProp || (erro instanceof ApiError && erro.status === 404)
+
   return (
     <div className={`${styles.wrap} ${styles.erro}`} role="alert">
       <div className={`${styles.titulo} ${styles.erroTitulo}`}>
-        Não foi possível carregar {alvo}
+        {semAcesso ? `Sem acesso a ${alvo}` : `Não foi possível carregar ${alvo}`}
       </div>
       <p className={`${styles.texto} ${styles.erroTexto}`}>
-        A conexão com a base falhou. Nada foi perdido — as edições que você já fez continuam nesta
-        sessão. Tente de novo; se persistir, avise o time da Base do Otimizador.
+        {semAcesso
+          ? 'Isto não existe ou não está liberado para o seu usuário. Tentar de novo não resolve — se você deveria ter acesso, peça a liberação ao time da Base do Otimizador.'
+          : 'A conexão com a base falhou. Nada foi perdido — as edições que você já fez continuam nesta sessão. Tente de novo; se persistir, avise o time da Base do Otimizador.'}
       </p>
       <div className={styles.acoes}>
         {onRetry && (

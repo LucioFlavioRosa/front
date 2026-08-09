@@ -92,13 +92,18 @@ export function Hub() {
   const { toast } = useApp()
   const unidQ = useUnidade(unidadeId)
   const unidade = unidQ.data
-  const { seeded, hier, derivado, carregando, erro, recarregar, recarregando } = useCadastro()
+  const { seeded, hier, derivado, carregando, erro, erroBruto, recarregar, recarregando } =
+    useCadastro()
 
   if (erro || unidQ.isError) {
     const detalhe = erro ?? (unidQ.error instanceof Error ? unidQ.error.message : undefined)
     return (
       <ErroCarga
         detalhe={detalhe}
+        // 404 aqui é unidade fora do escopo do usuário, e não queda de conexão:
+        // sem isto a tela dizia "a conexão com a base falhou" e oferecia tentar
+        // de novo para sempre.
+        erro={erroBruto ?? unidQ.error}
         tentando={recarregando || unidQ.isFetching}
         onRetry={() => {
           recarregar()
