@@ -138,8 +138,8 @@ export function Sistema() {
  * seta apontaria para tras. O `visitados` corta ciclo — cadastro ruim existe, e
  * um laco aqui congelaria a tela.
  */
-// eslint-disable-next-line react-refresh/only-export-components
-export function porDistanciaAteEte(nos: NoTopologia[]): NoTopologia[][] {
+
+function porDistanciaAteEte(nos: NoTopologia[]): NoTopologia[][] {
   const porId = new Map(nos.map((n) => [n.id, n]))
   const memo = new Map<string, number>()
 

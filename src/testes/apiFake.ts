@@ -41,7 +41,7 @@ export interface EstadoApi {
 /** Estado do arquivo de teste em execução (o Vitest isola módulos por arquivo). */
 export const api: EstadoApi = estadoApi()
 
-export function estadoApi(): EstadoApi {
+function estadoApi(): EstadoApi {
   return {
     puts: [],
     versaoSeq: 0,

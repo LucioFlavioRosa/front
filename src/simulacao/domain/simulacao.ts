@@ -395,7 +395,7 @@ export function corpoDaRodada(e: EstadoSimulacao): CorpoNovaRodada {
 }
 
 /** Etapas do modal de progresso, na ordem em que o job as executa. */
-export const ETAPAS = [
+const ETAPAS = [
   { ate: 20, texto: 'Lendo dados da unidade…' },
   { ate: 45, texto: 'Montando o modelo de otimização…' },
   { ate: 90, texto: 'Resolvendo (solver)…' },

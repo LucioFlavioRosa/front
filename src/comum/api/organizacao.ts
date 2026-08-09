@@ -14,7 +14,7 @@ import { useQuery } from '@tanstack/react-query'
 import { api } from '@/comum/api/client'
 import type { Regional, Unidade } from '@/comum/domain/organizacao'
 
-export const chavesOrganizacao = {
+const chavesOrganizacao = {
   regionais: ['regionais'] as const,
   unidades: (regionalId: string) => ['regionais', regionalId, 'unidades'] as const,
   unidade: (id: string) => ['unidades', id] as const,

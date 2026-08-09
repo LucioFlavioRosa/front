@@ -36,7 +36,7 @@ export interface EtesPayload {
 export type EteCampo = [string, keyof Ete, string, string, string, string]
 
 // prettier-ignore
-export const ETE_DEFS: EteCampo[] = [
+const ETE_DEFS: EteCampo[] = [
   ['Capacidade por módulo', 'capMod', 'capacidade_por_modulo', 'L/s', 'vazão', 'Vazão que cada módulo trata. Define quantos módulos a vazão conectada exige.'],
   ['CAPEX por módulo', 'capexMod', 'capex_por_modulo', 'R$', 'R$', 'Investimento de um módulo — o custo da expansão.'],
   ['OPEX por módulo', 'opexMod', 'opex_por_modulo', 'R$/ano', 'R$/ano', 'Custo anual de operar um módulo.'],

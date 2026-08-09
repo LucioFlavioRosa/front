@@ -174,7 +174,7 @@ const PARAM_KEYS: (keyof SubBaciaParams)[] = ['preco', 'tarr', 'ramp', 'vaz', 'p
 /** Quantos parametros a ficha cobra fora da regua de populacao. */
 export const CAMPOS_PARAMS = PARAM_KEYS.length
 /** Entram na conta so quando a cidade mede a meta por populacao. */
-export const PARAM_KEYS_POP: (keyof SubBaciaParams)[] = ['popU', 'popA']
+const PARAM_KEYS_POP: (keyof SubBaciaParams)[] = ['popU', 'popA']
 /**
  * Campos de obra que a simulacao exige.
  *
@@ -192,7 +192,7 @@ const OBRA_KEYS: (keyof Obra)[] = ['qtd', 'preco', 'opex', 'tPred', 'dur', 'anoO
 export const CHAVES_PARAMS: (keyof SubBaciaParams)[] = [...PARAM_KEYS, ...PARAM_KEYS_POP]
 
 /** Campos que uma estrutura de coleta precisa ter preenchidos, sem as obras. */
-export const paramsDaRegua = (porPopulacao: boolean) =>
+const paramsDaRegua = (porPopulacao: boolean) =>
   porPopulacao ? [...PARAM_KEYS, ...PARAM_KEYS_POP] : PARAM_KEYS
 
 /**

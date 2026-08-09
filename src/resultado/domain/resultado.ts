@@ -106,43 +106,36 @@ export interface KpisGlobais {
  * Os 6 niveis da cascata. `historico` e a porta de entrada; os outros cinco sao
  * o drill-down descrito na spec.
  */
-export type NivelResultado = 'historico' | 'global' | 'cidade' | 'sistema' | 'subbacia' | 'elemento'
 
-/**
- * Ordem canonica da cascata — o breadcrumb e a navegacao dependem dela.
- * `historico` fica fora: ele e a raiz, nao um degrau da rodada.
- */
-export const CASCATA: readonly NivelResultado[] = [
-  'global',
-  'cidade',
-  'sistema',
-  'subbacia',
-  'elemento',
-] as const
-
-/**
- * Componentes de obra, nos nomes CANONICOS.
+/*
+ * A ORDEM CANONICA DA CASCATA — global > cidade > sistema > subbacia > elemento —
+ * era uma constante `CASCATA` aqui, sem nenhum consumidor: o breadcrumb e a
+ * navegacao a reimplementam cada um por conta propria. `historico` NAO e um
+ * degrau: ele e a raiz.
  *
- * Duas regras do handoff moram aqui: "Linha de recalque" e o nome canonico (nao
- * "recalque", nao "linha"), e TRANSPORTE NUNCA E AGRUPADO — Tronco, EEE e Linha
- * de recalque aparecem sempre separados, nunca somados num "Transporte". Agrupar
- * esconde exatamente o que o usuario precisa ver para entender o gargalo.
+ * A constante saiu — e, com ela, o tipo `NivelResultado`, que existia so para
+ * tipa-la. O encadeamento e o proprio argumento: um simbolo sem leitor sustentava
+ * outro sem leitor, e os dois juntos davam a impressao de que a ordem estava
+ * garantida em algum lugar. Nao estava. Ela e regra de produto, e vive aqui em
+ * texto ate alguem precisar dela de verdade — o que e honesto, ao contrario de um
+ * tipo pendurado fingindo que impoe alguma coisa.
  */
-export const COMPONENTES_SUBBACIA = [
-  'Ligação de esgoto',
-  'Rede coletora',
-  'Tronco',
-  'EEE',
-  'Linha de recalque',
-] as const
 
-/** A CTS tem 4 obras proprias, ancoradas no coletor em vez da ligacao. */
-export const COMPONENTES_CTS = [
-  'Coletor de tempo seco',
-  'Tronco',
-  'EEE',
-  'Linha de recalque',
-] as const
+/**
+ * NOMES CANONICOS DE COMPONENTE — duas regras do handoff, que nao tem onde ser
+ * verificadas em codigo e por isso ficam escritas aqui, no arquivo que define o
+ * vocabulario do resultado:
+ *
+ *   1. "Linha de recalque" e o nome canonico. Nao "recalque", nao "linha".
+ *   2. TRANSPORTE NUNCA E AGRUPADO. Tronco, EEE e Linha de recalque aparecem
+ *      sempre separados, nunca somados num "Transporte" — agrupar esconde
+ *      exatamente o que o usuario precisa ver para entender o gargalo.
+ *
+ * (Havia duas listas constantes aqui, `COMPONENTES_SUBBACIA` e `COMPONENTES_CTS`,
+ * sem nenhum consumidor: o `knip` as apontou e o `tsc` confirmou. As listas
+ * sairam; as regras, nao — elas valem para quem renderizar componente, e o texto
+ * era a unica coisa viva nelas.)
+ */
 
 /** Situacao de uma obra na topologia e nas tabelas — dirige a cor. */
 export type SituacaoObra = 'construida' | 'nao-construida' | 'terceiro' | 'sem-obra'

@@ -8,7 +8,7 @@ export interface FieldStyle {
   background: string
 }
 
-export function isPendente(value: string): boolean {
+function isPendente(value: string): boolean {
   return value.trim() === ''
 }
 

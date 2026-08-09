@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { simulacao } from '@/simulacao/api/endpoints'
 import type { CorpoNovaRodada } from '@/simulacao/domain/simulacao'
 
-export const chavesSimulacao = {
+const chavesSimulacao = {
   prontidao: (unidadeId: string) => ['unidades', unidadeId, 'prontidao'] as const,
   status: (runId: string) => ['runs', runId, 'status'] as const,
 }

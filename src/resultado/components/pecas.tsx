@@ -30,8 +30,8 @@ export function KpiGrid({ children }: { children: ReactNode }) {
 }
 
 /** Rotulo humano de cada situacao de obra — um lugar so. */
-// eslint-disable-next-line react-refresh/only-export-components
-export const ROTULO_SITUACAO: Record<SituacaoObra, string> = {
+
+const ROTULO_SITUACAO: Record<SituacaoObra, string> = {
   construida: 'construída',
   'nao-construida': 'não construída',
   terceiro: 'terceiro',

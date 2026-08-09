@@ -94,7 +94,7 @@ export function fichaDe(state: State, chave: ChaveFicha): object | null {
 }
 
 /** Todas as chaves de ficha que existem no estado atual. */
-export function chavesDeFicha(state: State): ChaveFicha[] {
+function chavesDeFicha(state: State): ChaveFicha[] {
   return [
     ...Object.keys(state.subs ?? {}).map(chaveSub),
     ...(state.cidades ?? []).map((c) => chaveCidade(c.id)),

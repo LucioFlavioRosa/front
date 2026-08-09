@@ -105,8 +105,3 @@ export const handlersResultado = [
     return seExiste(String(params.runId), o)
   }),
 ]
-
-/** Usado pelos testes para voltar ao estado inicial entre casos. */
-export function resetarExclusoes() {
-  excluidas.clear()
-}

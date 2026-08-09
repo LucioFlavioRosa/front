@@ -35,7 +35,7 @@ import {
   type ChaveFicha,
 } from '@/cadastro/state/fichas'
 
-export const clone = <T>(x: T): T => JSON.parse(JSON.stringify(x)) as T
+const clone = <T>(x: T): T => JSON.parse(JSON.stringify(x)) as T
 const AUTOR = 'Regional/Unidade'
 
 export interface Hier {

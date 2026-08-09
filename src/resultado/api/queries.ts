@@ -20,9 +20,8 @@
  */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { resultados } from '@/resultado/api/endpoints'
-import type { RunMeta, RunResumo } from '@/resultado/domain/resultado'
 
-export const chavesResultado = {
+const chavesResultado = {
   /** A lista do historico. Muda com exclusao — por isso nao e "para sempre". */
   runs: (filtro?: { unidadeId?: string; usuario?: string }) =>
     ['runs', 'lista', filtro?.unidadeId ?? '*', filtro?.usuario ?? '*'] as const,
@@ -140,4 +139,7 @@ export function useExcluirRun() {
   })
 }
 
-export type { RunMeta, RunResumo }
+// `RunMeta`/`RunResumo` NAO sao re-exportados daqui: quem precisa dos tipos os
+// importa de `@/resultado/domain/resultado`, que e onde eles sao definidos. Um
+// re-export sem importador so cria um segundo caminho para a mesma coisa — e
+// dois caminhos e como um deles envelhece sem ninguem notar.

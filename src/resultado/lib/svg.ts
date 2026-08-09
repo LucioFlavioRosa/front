@@ -25,7 +25,7 @@ export interface Caixa {
  * e os valores escritos acima das barras sem encostar na borda; a esquerda,
  * "R$ mi" mais o maior numero do eixo.
  */
-export const MARGEM = { topo: 30, direita: 20, baixo: 34, esquerda: 60 }
+const MARGEM = { topo: 30, direita: 20, baixo: 34, esquerda: 60 }
 
 export function areaUtil(largura: number, altura: number, margem = MARGEM): Caixa {
   return {

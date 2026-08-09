@@ -105,9 +105,3 @@ export const handlersSimulacao = [
     return new HttpResponse(null, { status: 204 })
   }),
 ]
-
-/** Zera o estado entre casos de teste. */
-export function resetarRodadas() {
-  rodadas.clear()
-  seq = 0
-}
