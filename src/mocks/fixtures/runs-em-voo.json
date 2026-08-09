@@ -1,0 +1,44 @@
+[
+  {
+    "runId": "run_20260809_120000_aaaaaa",
+    "nome": "Cenário na fila",
+    "unidadeId": "uA1",
+    "unidadeNome": "Unidade Serrana",
+    "dataHora": "2026-08-09T12:00:00Z",
+    "autor": "ana@aegea",
+    "duracaoS": null,
+    "status": "PENDENTE",
+    "favorita": false,
+    "publicada": false,
+    "progresso": 0,
+    "erro": null
+  },
+  {
+    "runId": "run_20260809_120100_bbbbbb",
+    "nome": "Cenário rodando",
+    "unidadeId": "uA1",
+    "unidadeNome": "Unidade Serrana",
+    "dataHora": "2026-08-09T12:01:00Z",
+    "autor": "ana@aegea",
+    "duracaoS": null,
+    "status": "RODANDO",
+    "favorita": false,
+    "publicada": false,
+    "progresso": 62,
+    "erro": null
+  },
+  {
+    "runId": "run_20260809_120200_cccccc",
+    "nome": "Cenário que falhou",
+    "unidadeId": "uA1",
+    "unidadeNome": "Unidade Serrana",
+    "dataHora": "2026-08-09T12:02:00Z",
+    "autor": "ana@aegea",
+    "duracaoS": null,
+    "status": "ERRO",
+    "favorita": false,
+    "publicada": false,
+    "progresso": 10,
+    "erro": "Fila de simulações não configurada neste ambiente."
+  }
+]

@@ -29,7 +29,8 @@
         "metasAtingidas": 2,
         "metasTotal": 2,
         "ebitdaTotal": 469377285
-      }
+      },
+      "publicada": true
     },
     {
       "runId": "run_2026_0811",
@@ -59,7 +60,8 @@
         "metasAtingidas": 2,
         "metasTotal": 2,
         "ebitdaTotal": 471902118
-      }
+      },
+      "publicada": true
     },
     {
       "runId": "run_2026_0729",
@@ -89,7 +91,8 @@
         "metasAtingidas": 0,
         "metasTotal": 2,
         "ebitdaTotal": 302118440
-      }
+      },
+      "publicada": true
     },
     {
       "runId": "run_2026_0722",
@@ -108,7 +111,8 @@
         "orcamento": 90000000,
         "focoCobertura": 1.0,
         "incluirIndustrial": true
-      }
+      },
+      "publicada": true
     }
   ],
   "meta": {

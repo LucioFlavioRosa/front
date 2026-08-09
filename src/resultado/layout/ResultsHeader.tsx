@@ -36,9 +36,13 @@ export function ResultsHeader() {
     document.title = partes.filter(Boolean).join(' · ')
   }, [noHistorico, crumbs, meta?.nome])
 
-  // So rodadas com resultado entram no seletor: escolher uma INFEASIBLE levaria
-  // a uma tela que nao tem o que mostrar.
-  const opcoes = (runs ?? []).filter((r) => r.status !== 'INFEASIBLE')
+  // So rodadas com resultado entram no seletor: escolher uma INFEASIBLE — ou uma
+  // que ainda nao publicou — levaria a uma tela que nao tem o que mostrar.
+  //
+  // `publicada` e a condicao que importa, e nao o status: desde que o historico
+  // passou a incluir as em voo, PENDENTE e RODANDO tambem chegam aqui, e nenhuma
+  // das duas tem `meta`/`painel` para abrir.
+  const opcoes = (runs ?? []).filter((r) => r.publicada && r.status !== 'INFEASIBLE')
 
   return (
     <header className={styles.header}>

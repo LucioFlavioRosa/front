@@ -43,6 +43,16 @@ export interface ParametrosRodada {
  * `metricas` e opcional, e a UI mostra o aviso em vez de zeros (que seriam
  * mentira: zero VPL e um resultado, "nao houve resultado" e outra coisa).
  */
+/**
+ * O estado de uma rodada na LISTA, que e mais largo que o do solver.
+ *
+ * O historico mostra as rodadas EM VOO (o que esta rodando agora, o que falhou
+ * hoje) alem das publicadas — sem isso, quem fechasse o modal de acompanhamento
+ * perdia a rodada de vista, e a tela mais operacional do produto era cega para o
+ * estado operacional.
+ */
+export type StatusRodada = StatusSolver | 'PENDENTE' | 'RODANDO' | 'ERRO'
+
 export interface RunResumo {
   runId: string
   nome: string
@@ -51,10 +61,24 @@ export interface RunResumo {
   dataHora: string
   autor: string
   /** Segundos de solver — ajuda a explicar VIAVEL(limite de tempo). */
-  duracaoS: number
-  status: StatusSolver
+  duracaoS: number | null
+  status: StatusRodada
   favorita: boolean
-  parametros: ParametrosRodada
+  /**
+   * A rodada tem resultado gravado em `otim_*`?
+   *
+   * Separa as duas metades da lista, e nao da para deduzir pelo `status`: uma
+   * rodada pode estar RODANDO (sem resultado) ou ERRO (idem), e so a publicada
+   * tem metricas, parametros e drill-down. O front usava `status` para isso e
+   * quebrava — `parametros` vinha `undefined` e a tela inteira caia.
+   */
+  publicada: boolean
+  /** 0..100. So nas em voo; a publicada esta em 100 por definicao. */
+  progresso?: number
+  /** Causa da falha, quando o job ou a fila reportaram uma. */
+  erro?: string | null
+  /** Ausente enquanto a rodada nao publica: eles saem de `otim_meta`. */
+  parametros?: ParametrosRodada
   metricas?: MetricasCapa
 }
 

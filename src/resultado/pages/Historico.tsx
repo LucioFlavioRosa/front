@@ -163,7 +163,13 @@ function CardRodada({
   onExcluir: () => void
   excluindo: boolean
 }) {
-  const semResultado = r.status === 'INFEASIBLE'
+  // TRES estados, e nao dois. A tela nasceu com "tem resultado" x "INFEASIBLE",
+  // e desde que o historico inclui as rodadas EM VOO ha um terceiro: a que ainda
+  // nao publicou. Ela nao tem metricas, nem parametros, nem para onde navegar —
+  // e foi o que derrubou a tela inteira, com `r.parametros.janelaCapex` num
+  // objeto `undefined`.
+  const emVoo = !r.publicada
+  const semResultado = !emVoo && r.status === 'INFEASIBLE'
   const ehMelhor = !semResultado && r.metricas?.vpl === melhorVpl
   const usoApertado = (r.metricas?.usoOrcamentoPct ?? 0) > 97
 
@@ -186,11 +192,22 @@ function CardRodada({
         </div>
         <div className={styles.selos}>
           {ehMelhor && <span className={styles.tag}>★ maior VPL</span>}
-          <span className={semResultado ? styles.seloRuim : styles.seloBom}>solver {r.status}</span>
+          <span className={emVoo || semResultado ? styles.seloRuim : styles.seloBom}>
+            {emVoo ? r.status : `solver ${r.status}`}
+          </span>
         </div>
       </div>
 
-      {semResultado ? (
+      {emVoo ? (
+        <p className={styles.aviso}>
+          {r.status === 'ERRO'
+            ? (r.erro ??
+              'A execução falhou e o job não informou a causa. O histórico guarda a rodada para reexecução.')
+            : r.status === 'RODANDO'
+              ? `Em execução — ${r.progresso ?? 0}% concluído. O resultado aparece aqui quando o job publicar.`
+              : 'Na fila, esperando um executor. Ainda não começou a rodar.'}
+        </p>
+      ) : semResultado ? (
         <p className={styles.aviso}>
           O solver não encontrou um plano viável com estes parâmetros — não há resultados para
           abrir. Normalmente é orçamento pequeno demais para as obras obrigatórias, ou uma janela
@@ -216,21 +233,26 @@ function CardRodada({
         </dl>
       )}
 
-      {/* Os parametros ficam SEMPRE visiveis, inclusive na rodada que falhou:
-          e olhando para eles que se entende por que ela falhou. */}
-      <ul className={styles.params}>
-        <Param k="janela de CAPEX" v={`${r.parametros.janelaCapex} anos`} />
-        <Param k="orçamento" v={brlMi(r.parametros.orcamento)} />
-        <Param k="foco" v={String(r.parametros.focoCobertura)} />
-        <Param k="usar CTS" v={r.parametros.usarCts ? 'sim' : 'não'} />
-        <Param k="base de receita" v={r.parametros.baseReceita} />
-        <Param k="indústria" v={r.parametros.incluirIndustrial ? 'incluída' : 'só residencial'} />
-      </ul>
+      {/* Os parametros ficam visiveis inclusive na rodada que FALHOU: e olhando
+          para eles que se entende por que ela falhou.
+          Na rodada EM VOO eles ainda nao existem — saem de `otim_meta`, que so e
+          escrita na publicacao. Antes este bloco era incondicional, e a tela
+          inteira caia em `undefined.janelaCapex`. */}
+      {r.parametros && (
+        <ul className={styles.params}>
+          <Param k="janela de CAPEX" v={`${r.parametros.janelaCapex} anos`} />
+          <Param k="orçamento" v={brlMi(r.parametros.orcamento)} />
+          <Param k="foco" v={String(r.parametros.focoCobertura)} />
+          <Param k="usar CTS" v={r.parametros.usarCts ? 'sim' : 'não'} />
+          <Param k="base de receita" v={r.parametros.baseReceita} />
+          <Param k="indústria" v={r.parametros.incluirIndustrial ? 'incluída' : 'só residencial'} />
+        </ul>
+      )}
 
       <div className={styles.acoes}>
-        {semResultado ? (
+        {emVoo || semResultado ? (
           <span className={styles.verDesabilitado} aria-disabled="true">
-            sem resultados
+            {emVoo ? 'ainda sem resultado' : 'sem resultados'}
           </span>
         ) : (
           <Link to={`/resultados/${r.runId}`} className={styles.ver}>
