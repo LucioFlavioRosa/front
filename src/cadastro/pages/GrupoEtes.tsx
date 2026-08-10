@@ -34,6 +34,7 @@ export function GrupoEtes() {
     setEteField,
     carregando,
     erro,
+    erroBruto,
     recarregar,
     recarregando,
   } = useCadastro()
@@ -63,6 +64,10 @@ export function GrupoEtes() {
       <section>
         <GrupoHeader titulo={TITULO} sub={SUB} />
         <ErroCarga
+          // 404 aqui e unidade fora do escopo do usuario, e nao queda de
+          // conexao: sem isto a tela dizia "a conexao com a base falhou" e
+          // oferecia tentar de novo para sempre.
+          erro={erroBruto}
           alvo="as ETEs desta unidade"
           detalhe={erro}
           onRetry={recarregar}

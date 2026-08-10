@@ -28,6 +28,7 @@ export function GrupoHierarquia() {
     seeded,
     carregando,
     erro,
+    erroBruto,
     recarregar,
     recarregando,
     setHierUnidReg,
@@ -60,6 +61,10 @@ export function GrupoHierarquia() {
       <section>
         <GrupoHeader titulo={TITULO} sub={SUB} />
         <ErroCarga
+          // 404 aqui e unidade fora do escopo do usuario, e nao queda de
+          // conexao: sem isto a tela dizia "a conexao com a base falhou" e
+          // oferecia tentar de novo para sempre.
+          erro={erroBruto}
           alvo="a hierarquia desta unidade"
           detalhe={erro}
           onRetry={recarregar}

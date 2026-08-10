@@ -68,6 +68,7 @@ export function SelecaoUnidade() {
           <div className={styles.erroSlot}>
             <ErroCarga
               alvo={regQ.isError ? 'a lista de regionais' : 'as unidades desta regional'}
+              erro={regQ.error ?? uniQ.error}
               onRetry={() => {
                 if (regQ.isError) void regQ.refetch()
                 if (uniQ.isError) void uniQ.refetch()

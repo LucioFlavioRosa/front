@@ -28,6 +28,7 @@ export function GrupoContrato() {
     marcarSalva,
     carregando,
     erro,
+    erroBruto,
     recarregar,
     recarregando,
     cidades,
@@ -71,6 +72,10 @@ export function GrupoContrato() {
       <section>
         <GrupoHeader titulo={TITULO} sub={SUB} />
         <ErroCarga
+          // 404 aqui e unidade fora do escopo do usuario, e nao queda de
+          // conexao: sem isto a tela dizia "a conexao com a base falhou" e
+          // oferecia tentar de novo para sempre.
+          erro={erroBruto}
           alvo="o contrato e as metas desta unidade"
           detalhe={erro}
           onRetry={recarregar}

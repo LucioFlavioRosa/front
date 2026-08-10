@@ -28,7 +28,14 @@ export function Elemento() {
 
   if (q.isPending) return <Carregando label="Carregando a obra…" />
   if (q.isError)
-    return <ErroCarga alvo="esta obra" onRetry={() => void q.refetch()} tentando={q.isFetching} />
+    return (
+      <ErroCarga
+        alvo="esta obra"
+        erro={q.error}
+        onRetry={() => void q.refetch()}
+        tentando={q.isFetching}
+      />
+    )
 
   const o = q.data
 

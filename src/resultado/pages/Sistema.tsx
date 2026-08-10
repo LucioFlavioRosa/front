@@ -41,6 +41,7 @@ export function Sistema() {
   if (topo.isError)
     return (
       <ErroCarga
+        erro={topo.error}
         alvo="a topologia deste sistema"
         onRetry={() => void topo.refetch()}
         tentando={topo.isFetching}

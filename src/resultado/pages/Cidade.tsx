@@ -19,6 +19,7 @@ export function Cidade() {
   if (cidade.isError)
     return (
       <ErroCarga
+        erro={cidade.error}
         alvo="os dados desta cidade"
         onRetry={() => void cidade.refetch()}
         tentando={cidade.isFetching}
@@ -77,7 +78,11 @@ export function Cidade() {
         {ebitda.isPending ? (
           <Carregando label="Carregando EBITDA da cidade…" />
         ) : ebitda.isError ? (
-          <ErroCarga alvo="o EBITDA desta cidade" onRetry={() => void ebitda.refetch()} />
+          <ErroCarga
+            alvo="o EBITDA desta cidade"
+            erro={ebitda.error}
+            onRetry={() => void ebitda.refetch()}
+          />
         ) : (
           <GraficoEbitda
             anos={ebitda.data.anos}

@@ -25,7 +25,7 @@ const ORDENS: { id: Ordem; rotulo: string }[] = [
  * CTS e a outra nao.
  */
 export function Historico() {
-  const { data: runs, isPending, isError, refetch, isFetching } = useRuns()
+  const { data: runs, isPending, isError, error, refetch, isFetching } = useRuns()
   const excluir = useExcluirRun()
   const { askConfirm, toast } = useApp()
   const [busca, setBusca] = useState('')
@@ -78,6 +78,7 @@ export function Historico() {
   if (isError)
     return (
       <ErroCarga
+        erro={error}
         alvo="o histórico de simulações"
         onRetry={() => void refetch()}
         tentando={isFetching}

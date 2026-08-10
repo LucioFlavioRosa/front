@@ -39,6 +39,7 @@ export function Global() {
   if (meta.isError || painel.isError)
     return (
       <ErroCarga
+        erro={meta.error ?? painel.error}
         alvo="esta rodada"
         onRetry={() => {
           void meta.refetch()
@@ -129,7 +130,11 @@ export function Global() {
           {ebitda.isPending ? (
             <Carregando label="Carregando EBITDA…" />
           ) : ebitda.isError ? (
-            <ErroCarga alvo="o EBITDA da rodada" onRetry={() => void ebitda.refetch()} />
+            <ErroCarga
+              alvo="o EBITDA da rodada"
+              erro={ebitda.error}
+              onRetry={() => void ebitda.refetch()}
+            />
           ) : (
             <GraficoEbitda
               anos={ebitda.data.anos}
@@ -147,7 +152,11 @@ export function Global() {
       {cidades.isPending ? (
         <Carregando label="Carregando cidades…" />
       ) : cidades.isError ? (
-        <ErroCarga alvo="as cidades desta rodada" onRetry={() => void cidades.refetch()} />
+        <ErroCarga
+          alvo="as cidades desta rodada"
+          erro={cidades.error}
+          onRetry={() => void cidades.refetch()}
+        />
       ) : (
         <DataTable<CidadeLinha>
           linhas={cidades.data}

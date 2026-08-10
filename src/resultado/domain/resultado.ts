@@ -358,7 +358,8 @@ export interface CidadeDetalhe {
 
 /** Um componente dentro de um no da topologia. */
 export interface ComponenteNo {
-  /** Nome canonico (ver COMPONENTES_SUBBACIA / COMPONENTES_CTS). */
+  /** Nome canonico do componente — as duas regras estao no topo do arquivo:
+   *  "Linha de recalque" e o nome, e transporte NUNCA e agrupado. */
   nome: string
   /** Id da obra — leva ao nivel 5. */
   obraId: string | null

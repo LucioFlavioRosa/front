@@ -27,6 +27,7 @@ export function SubBacia() {
   if (q.isError)
     return (
       <ErroCarga
+        erro={q.error}
         alvo="os dados desta sub-bacia"
         onRetry={() => void q.refetch()}
         tentando={q.isFetching}
