@@ -1,0 +1,168 @@
+/* Mesma geometria do `ConfirmModal`: os dois sao modal na mesma aplicacao, e
+   duas linguagens de overlay fariam a tela parecer ter dois sistemas. Muda so a
+   largura — este mostra uma LISTA de parametros, e 460px a espremeria. */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  background: var(--overlay);
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.card {
+  width: 620px;
+  max-width: 100%;
+  max-height: 85vh;
+  overflow: auto;
+  background: var(--surface);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  padding: 24px;
+}
+
+.titulo {
+  margin: 0 0 14px;
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--text-900);
+}
+
+/* ---------- metadados ---------- */
+.meta {
+  margin: 0 0 18px;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.linha {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 10px;
+  align-items: baseline;
+}
+
+.chave {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-400);
+}
+
+.valor {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-900);
+  overflow-wrap: anywhere;
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text-500);
+}
+
+/* ---------- variaveis ---------- */
+.secao {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-400);
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+}
+
+.params {
+  margin: 0 0 18px;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.param {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: baseline;
+  border-bottom: 1px dashed var(--border);
+  padding-bottom: 6px;
+}
+
+.paramRotulo {
+  font-size: 12.5px;
+  color: var(--text-900);
+}
+
+/* O nome TECNICO ao lado do rotulo, e nao no lugar dele: a tela de simulacao
+   mostra o tecnico porque a rastreabilidade com o notebook foi requisito de
+   handoff, e quem compara os dois precisa reconhecer a chave. */
+.tecnico {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--text-400);
+  margin-left: 6px;
+}
+
+.paramValor {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-700, var(--text-900));
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.semParams {
+  margin: 0 0 18px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-500);
+}
+
+/* ---------- acoes ---------- */
+.acoes {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+}
+
+.btn {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 9px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-900);
+  cursor: pointer;
+}
+.btn:hover {
+  border-color: var(--text-400);
+}
+.btn:focus-visible {
+  outline: 2px solid var(--text-900);
+  outline-offset: 2px;
+}
+
+.primario {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+}
+.primario:hover {
+  background: var(--brand-hover);
+  border-color: var(--brand-hover);
+}
+.primario:disabled {
+  background: var(--text-400);
+  border-color: var(--text-400);
+  cursor: not-allowed;
+}

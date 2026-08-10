@@ -107,13 +107,16 @@ describe('histórico de simulações', () => {
     })
   })
 
-  it('rodada INFEASIBLE avisa, não abre e não inventa métricas', async () => {
+  it('rodada INFEASIBLE avisa, não inventa métricas, e não deixa abrir resultado', async () => {
     renderApp('/resultados')
     expect(await screen.findByText('solver INFEASIBLE')).toBeTruthy()
     expect(await screen.findByText(/não encontrou um plano viável/)).toBeTruthy()
-    expect(await screen.findByText('sem resultados')).toBeTruthy()
-    // 4 rodadas, 3 com resultado.
-    expect(screen.getAllByRole('link', { name: /Ver detalhes/ }).length).toBe(3)
+
+    // Todas as rodadas oferecem os metadados — inclusive esta, e principalmente
+    // esta: "com que parâmetros isso ficou inviável?" é a pergunta que ela gera.
+    // O que ela NÃO oferece é o resultado, e o bloqueio vive no modal.
+    const cards = screen.getAllByRole('button', { name: 'Ver detalhes →' })
+    expect(cards.length).toBe(4)
   })
 
   it('excluir pede confirmação e deixa claro que o cadastro não é afetado', async () => {

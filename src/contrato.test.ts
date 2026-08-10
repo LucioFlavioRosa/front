@@ -25,6 +25,11 @@ const FONTES_TIPOS = [
   'src/resultado/domain/resultado.ts',
   'src/simulacao/domain/simulacao.ts',
   'src/simulacao/api/endpoints.ts',
+  // As chaves do `pedido` nao sao campos de interface: sao DADO — os nomes dos
+  // parametros que o job aceita. Elas vivem aqui, no de-para de rotulos, e e
+  // aqui que o documento tem de casar. Sem esta linha, citar `PENALIDADE_COBERTURA`
+  // no CONTRATO.md seria acusado de campo inventado.
+  'src/resultado/domain/pedido.ts',
 ]
 
 /**

@@ -189,6 +189,21 @@ Query opcional: `unidade`, `usuario`.
       "focoCobertura": 1.0, // 0 a 1
       "incluirIndustrial": true,
     },
+    // AS VARIÁVEIS COM QUE A RODADA FOI PEDIDA — as chaves de `controle.run_request`,
+    // como vieram. `parametros` acima traz seis campos tipados (os que o card
+    // mostra); o formulário tem mais de vinte, e os outros não apareciam em lugar
+    // nenhum depois de a rodada existir. O modal de detalhes os lista.
+    //
+    // `null` quando a rodada foi publicada SEM passar pela fila (o pacote de
+    // produção publica direto) — aí não há `run_request` de onde tirá-las.
+    // `UNIDADE`, `USUARIO` e `REGIONAL` ficam de fora: já são campo próprio acima,
+    // e repeti-las mostraria a mesma coisa duas vezes, com nome técnico na segunda.
+    "pedido": {
+      "ORCAMENTO": { "2026": 60000000 },
+      "PENALIDADE_COBERTURA": "meta+cobertura",
+      "CURVA_ADOCAO": "scurve",
+      "WORKERS": 8,
+    },
     // AUSENTE quando status = INFEASIBLE. Ver §2.3.
     "metricas": {
       "vpl": 168069034,

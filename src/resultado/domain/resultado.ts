@@ -14,6 +14,8 @@
  */
 
 /** Status do solver, como o CP-SAT devolve. INFEASIBLE = rodada sem resultado. */
+import type { Pedido } from '@/resultado/domain/pedido'
+
 export type StatusSolver = 'OPTIMAL' | 'FEASIBLE' | 'INFEASIBLE'
 
 /**
@@ -80,6 +82,16 @@ export interface RunResumo {
   /** Ausente enquanto a rodada nao publica: eles saem de `otim_meta`. */
   parametros?: ParametrosRodada
   metricas?: MetricasCapa
+  /**
+   * As variaveis com que a rodada foi PEDIDA — mais de vinte, contra os seis de
+   * `parametros`. Ver `domain/pedido.ts`.
+   *
+   * `null` quando a rodada foi publicada sem passar pela fila: o pacote de
+   * producao publica direto, e ai nao ha `run_request` de onde tirar o pedido.
+   * A tela diz isso em vez de mostrar lista vazia, que se leria como "rodou sem
+   * parametro nenhum".
+   */
+  pedido?: Pedido | null
 }
 
 export interface MetricasCapa {

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { cleanup, screen } from '@testing-library/react'
+import { cleanup, fireEvent, screen, within } from '@testing-library/react'
 
 /**
  * O histórico com rodadas que AINDA NÃO PUBLICARAM.
@@ -55,16 +55,22 @@ describe('histórico com rodadas em voo', () => {
     expect(screen.getByText(/Fila de simulações não configurada/)).toBeTruthy()
   })
 
-  it('não oferece "Ver detalhes" para o que não tem resultado', async () => {
+  it('a rodada em voo ABRE os detalhes, mas não deixa ir ao resultado', async () => {
+    // Antes ela não oferecia nada: sem resultado, sem link, e nenhuma forma de
+    // ver com que parâmetros tinha sido pedida — justamente a pergunta que se faz
+    // sobre uma rodada que está demorando ou que falhou.
+    //
+    // Agora abre o modal de metadados, e o bloqueio mudou de lugar: quem fica
+    // desabilitado é o "Ver resultados" lá dentro. A garantia que importa é a
+    // mesma — não se navega para um resultado que não existe.
     renderApp('/resultados')
     await screen.findByText('Cenário rodando')
 
-    // Uma por rodada em voo. O link levaria a `meta`/`painel` que não existem —
-    // e o usuário só descobriria depois de clicar.
-    expect(screen.getAllByText('ainda sem resultado')).toHaveLength(3)
-
-    // As publicadas continuam abrindo normalmente.
-    expect(screen.getAllByText('Ver detalhes →').length).toBeGreaterThan(0)
+    fireEvent.click(screen.getAllByRole('button', { name: 'Ver detalhes →' })[0])
+    const modal = await screen.findByRole('dialog')
+    const ver = within(modal).getByRole('button', { name: /Ver resultados/ }) as HTMLButtonElement
+    expect(ver.disabled).toBe(true)
+    expect(within(modal).getByRole('button', { name: 'Fechar' })).toBeTruthy()
   })
 
   it('rodada em voo não mostra parâmetros: eles só existem depois de publicar', async () => {
