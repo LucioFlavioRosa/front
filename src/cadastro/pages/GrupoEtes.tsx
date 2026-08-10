@@ -5,6 +5,7 @@ import { FieldRow } from '@/cadastro/components/FieldRow'
 import { Carregando, ErroCarga, Vazio } from '@/comum/components/Estado'
 import { MarcaSalvamento } from '@/cadastro/components/MarcaSalvamento'
 import { UltimaAlteracao } from '@/cadastro/components/UltimaAlteracao'
+import { HistoricoDaFicha } from '@/cadastro/components/HistoricoDaFicha'
 import { GrupoHeader } from '@/cadastro/pages/GrupoHeader'
 import { chipPendencias } from '@/cadastro/lib/chip'
 import { useApp } from '@/comum/state/AppContext'
@@ -45,6 +46,7 @@ export function GrupoEtes() {
   })
 
   const [selEte, setSelEte] = useState('')
+  const [verHistorico, setVerHistorico] = useState(false)
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
   const [busca, setBusca] = useState('')
   const [soPend, setSoPend] = useState(false)
@@ -182,7 +184,7 @@ export function GrupoEtes() {
         >
           {g4Chip.label}
         </span>
-        <UltimaAlteracao auditoria={cur} />
+        <UltimaAlteracao auditoria={cur} onAbrirHistorico={() => setVerHistorico(true)} />
         <MarcaSalvamento sujo={eteSuja} />
         <button
           type="button"
@@ -274,6 +276,15 @@ export function GrupoEtes() {
           </div>
         </div>
       </div>
+      {verHistorico && (
+        <HistoricoDaFicha
+          unidadeId={unidadeId}
+          tipo="ete"
+          fichaId={cur.id}
+          nome={cur.id}
+          onFechar={() => setVerHistorico(false)}
+        />
+      )}
     </section>
   )
 }

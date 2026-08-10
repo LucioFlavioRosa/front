@@ -24,6 +24,8 @@ export interface RecordSheetProps {
    * que o dado nao sustenta: a coluna so existe desde a migracao.
    */
   auditoria?: Auditoria
+  /** Abre o histórico completo da ficha. Ver `UltimaAlteracao`. */
+  onAbrirHistorico?: () => void
   chip?: ChipStatus
   onSalvar?: () => void
   salvarLabel?: string
@@ -45,6 +47,7 @@ export function RecordSheet({
   titulo,
   nome,
   auditoria,
+  onAbrirHistorico,
   chip,
   onSalvar,
   salvarLabel = 'Salvar',
@@ -61,7 +64,7 @@ export function RecordSheet({
           <div className={styles.titulo}>
             {titulo} {nome && <span className={styles.nome}>{nome}</span>}
           </div>
-          <UltimaAlteracao auditoria={auditoria} />
+          <UltimaAlteracao auditoria={auditoria} onAbrirHistorico={onAbrirHistorico} />
         </div>
         <div className={styles.actions}>
           {chip && (

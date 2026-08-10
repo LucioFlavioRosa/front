@@ -20,8 +20,6 @@ import {
 } from '@/cadastro/state/cadastroReducer'
 import { assinatura, chaveSub, fichaSub, hierAlterada, sujas } from '@/cadastro/state/fichas'
 
-const AT = '2026-01-01T00:00:00.000Z'
-
 /** Estado totalmente semeado a partir dos fixtures (mesmo dado do app). */
 function seededState(): State {
   let s = initialState
@@ -116,7 +114,7 @@ describe('grupo 05 — CTS', () => {
     expect(derive(s1).g5).toBe(derive(s0).g5 - 1)
   })
 
-  it('EDIT_CTS_DB_FIELD grava override com o valor original e não mexe em g5', () => {
+  it('EDIT_CTS_DB_FIELD muda o valor e não mexe em g5', () => {
     const s0 = seededState()
     const original = s0.ctss!['cts_b2_1_1'].db.fat
     const s1 = reducer(s0, {
@@ -124,13 +122,11 @@ describe('grupo 05 — CTS', () => {
       ctsId: 'cts_b2_1_1',
       key: 'fat',
       value: '4.000',
-      at: AT,
     })
-    expect(s1.overrides['cts_b2_1_1.fat']).toMatchObject({
-      campo: 'fat',
-      valorAntigo: original,
-      valorNovo: '4.000',
-    })
+    expect(s1.ctss!['cts_b2_1_1'].db.fat).toBe('4.000')
+    // O snapshot do servidor não se mexe: ele é o que a ficha compara para saber
+    // se está suja, e o que a tela mostra ao lado do campo corrigido.
+    expect(s0.originalCtss!['cts_b2_1_1'].db.fat).toBe(original)
     expect(derive(s1).g5).toBe(derive(s0).g5)
   })
 })
@@ -176,8 +172,8 @@ describe('SET_SUB_PARAM', () => {
   })
 })
 
-describe('EDIT_DB_FIELD — trilha de override', () => {
-  it('grava override com o valor ORIGINAL, mesmo após várias edições', () => {
+describe('EDIT_DB_FIELD', () => {
+  it('a última edição é a que vale, e o snapshot do servidor não se mexe', () => {
     const s0 = seededState()
     const original = s0.subs!['b1_1_1'].db.fat // '260.964'
     const s1 = reducer(s0, {
@@ -185,37 +181,36 @@ describe('EDIT_DB_FIELD — trilha de override', () => {
       subId: 'b1_1_1',
       key: 'fat',
       value: 'X',
-      at: AT,
     })
     const s2 = reducer(s1, {
       type: 'EDIT_DB_FIELD',
       subId: 'b1_1_1',
       key: 'fat',
       value: 'Y',
-      at: AT,
     })
     expect(s2.subs!['b1_1_1'].db.fat).toBe('Y')
-    expect(s2.overrides['b1_1_1.fat']).toMatchObject({
+    // O snapshot do SEED continua sendo o do servidor — é dele que sai a
+    // comparação de "está suja?". A trilha (que salto foi de X para Y) é do
+    // servidor agora: ele compara o gravado com o que chega, e por isso registra
+    // `X -> Y`, e não `original -> Y` como esta tela registrava.
+    expect(s0.originalSubs!['b1_1_1'].db.fat).toBe(original)
+    expect({
       campo: 'fat',
       valorAntigo: original, // permanece o original, não 'X'
       valorNovo: 'Y',
       autor: 'Regional/Unidade',
-      at: AT,
     })
   })
 })
 
-describe('SET_HIER_TOPO_JUSANTE — override do "escoa para"', () => {
-  it('grava override do campo mais crítico com valor original', () => {
+describe('SET_HIER_TOPO_JUSANTE — o "escoa para"', () => {
+  it('muda o jusante e marca a hierarquia como editada', () => {
     const s0 = seededState()
     const original = s0.hier!.topo[0].jus // 'e1'
-    const s1 = reducer(s0, { type: 'SET_HIER_TOPO_JUSANTE', index: 0, value: 'e9', at: AT })
+    const s1 = reducer(s0, { type: 'SET_HIER_TOPO_JUSANTE', index: 0, value: 'e9' })
     expect(s1.hier!.topo[0].jus).toBe('e9')
-    expect(s1.overrides['hier.topo.0']).toMatchObject({
-      campo: 'componente_sistema_id_jusante',
-      valorAntigo: original,
-      valorNovo: 'e9',
-    })
+    expect(s1.originalHier!.topo[0].jus).toBe(original)
+    expect(hierAlterada(s1)).toBe(true)
   })
 })
 
@@ -272,12 +267,13 @@ describe('demais actions de mutação', () => {
     expect(derive(s2).g2).toBe(derive(s0).g2)
   })
 
-  it('SET_HIER_SUP_NOME grava override com o nome original', () => {
+  it('SET_HIER_SUP_NOME muda o nome da superintendência', () => {
     const s0 = seededState()
     const original = s0.hier!.superintendencias.find((s) => s.id === 'sup1')!.nome
-    const s1 = reducer(s0, { type: 'SET_HIER_SUP_NOME', supId: 'sup1', value: 'Nova Sup', at: AT })
+    const s1 = reducer(s0, { type: 'SET_HIER_SUP_NOME', supId: 'sup1', value: 'Nova Sup' })
     expect(s1.hier!.superintendencias.find((s) => s.id === 'sup1')!.nome).toBe('Nova Sup')
-    expect(s1.overrides['hier.sup.sup1']).toMatchObject({ campo: 'nome', valorAntigo: original })
+    expect(s1.originalHier!.superintendencias.find((s) => s.id === 'sup1')!.nome).toBe(original)
+    expect(hierAlterada(s1)).toBe(true)
   })
 
   it('EDIT_DB_FIELD não altera pendências (dado Databricks não é do usuário)', () => {
@@ -287,7 +283,6 @@ describe('demais actions de mutação', () => {
       subId: 'b1_1_1',
       key: 'fat',
       value: 'X',
-      at: AT,
     })
     expect(derive(s1).g3).toBe(derive(s0).g3) // g3 inalterado
   })
@@ -329,14 +324,13 @@ describe('fichas não salvas (baseline de gravação)', () => {
     expect(sujas(s3)).toEqual([chaveSub('b2_1_4')])
   })
 
-  it('a trilha de override conta como mudança da ficha', () => {
+  it('editar um dado do Databricks suja a ficha, como qualquer campo', () => {
     const s0 = seededState()
     const s1 = reducer(s0, {
       type: 'EDIT_DB_FIELD',
       subId: 'b1_1_1',
       key: 'fat',
       value: 'X',
-      at: AT,
     })
     expect(sujas(s1)).toEqual([chaveSub('b1_1_1')])
   })
@@ -355,8 +349,8 @@ describe('fichas não salvas (baseline de gravação)', () => {
   })
 })
 
-describe('reverter uma edição desfaz o registro dela', () => {
-  it('EDIT_DB_FIELD de volta ao valor do servidor apaga o override', () => {
+describe('reverter uma edição limpa a ficha', () => {
+  it('EDIT_DB_FIELD de volta ao valor do servidor limpa a ficha', () => {
     const s0 = seededState()
     const original = s0.subs!['b1_1_1'].db.fat
     const s1 = reducer(s0, {
@@ -364,20 +358,20 @@ describe('reverter uma edição desfaz o registro dela', () => {
       subId: 'b1_1_1',
       key: 'fat',
       value: 'X',
-      at: AT,
     })
-    expect(s1.overrides['b1_1_1.fat']).toBeTruthy()
+    expect(sujas(s1)).toEqual(['sub:b1_1_1'])
 
     const s2 = reducer(s1, {
       type: 'EDIT_DB_FIELD',
       subId: 'b1_1_1',
       key: 'fat',
       value: original,
-      at: AT,
     })
-    // Sem isto o backend receberia uma trilha dizendo "X virou X" e a ficha
-    // ficaria "não salva" para sempre (a assinatura inclui os overrides).
-    expect(s2.overrides['b1_1_1.fat']).toBeUndefined()
+    // Quem responde "está suja?" é a comparação de CONTEÚDO. Antes havia um
+    // segundo mecanismo — apagar o override do mapa —, e ele existia porque a
+    // assinatura incluía a trilha. Sem trilha no cliente, sobrou o que sempre
+    // bastou: valor igual ao do servidor, ficha limpa.
+    expect(s2.subs!['b1_1_1'].db.fat).toBe(original)
     expect(sujas(s2)).toEqual([])
   })
 
@@ -389,29 +383,26 @@ describe('reverter uma edição desfaz o registro dela', () => {
       ctsId: 'cts_b3_1_1',
       key: 'arr',
       value: 'X',
-      at: AT,
     })
-    expect(s1.overrides['cts_b3_1_1.arr']).toBeTruthy()
+    expect(sujas(s1)).toEqual(['cts:cts_b3_1_1'])
 
     const s2 = reducer(s1, {
       type: 'EDIT_CTS_DB_FIELD',
       ctsId: 'cts_b3_1_1',
       key: 'arr',
       value: original,
-      at: AT,
     })
-    expect(s2.overrides['cts_b3_1_1.arr']).toBeUndefined()
+    expect(s2.ctss!['cts_b3_1_1'].db.arr).toBe(original)
     expect(sujas(s2)).toEqual([])
   })
 
-  it('SET_HIER_SUP_NOME de volta ao nome original apaga o override', () => {
+  it('SET_HIER_SUP_NOME de volta ao nome original não deixa a hierarquia editada', () => {
     const s0 = seededState()
     const original = s0.hier!.superintendencias.find((x) => x.id === 'sup1')!.nome
-    const s1 = reducer(s0, { type: 'SET_HIER_SUP_NOME', supId: 'sup1', value: 'Outra', at: AT })
-    expect(s1.overrides['hier.sup.sup1']).toBeTruthy()
+    const s1 = reducer(s0, { type: 'SET_HIER_SUP_NOME', supId: 'sup1', value: 'Outra' })
+    expect(hierAlterada(s1)).toBe(true)
 
-    const s2 = reducer(s1, { type: 'SET_HIER_SUP_NOME', supId: 'sup1', value: original, at: AT })
-    expect(s2.overrides['hier.sup.sup1']).toBeUndefined()
+    const s2 = reducer(s1, { type: 'SET_HIER_SUP_NOME', supId: 'sup1', value: original })
     expect(hierAlterada(s2)).toBe(false)
   })
 

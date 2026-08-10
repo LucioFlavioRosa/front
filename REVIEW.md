@@ -83,11 +83,15 @@ Unificar os dois quebraria a auditoria: depois de salvar, o "valor antigo" virar
 o valor recém-gravado e a origem Databricks se perderia.
 → `state/cadastroReducer.test.ts`, bloco "fichas não salvas".
 
-### 3. Reverter uma edição apaga o registro dela
+### 3. Reverter uma edição limpa a ficha
 
-Voltar um campo ao valor original **remove** o override. Sem isso o backend
-receberia uma trilha dizendo "X virou X" e o botão Salvar ficaria aceso para
-sempre (a assinatura da ficha inclui a trilha).
+Voltar um campo ao valor do servidor faz a ficha deixar de estar suja. Quem
+responde isso é a comparação de **conteúdo** (`assinatura` em `state/fichas.ts`).
+
+Havia aqui um segundo mecanismo: o mapa de `overrides` do cliente, do qual a
+reversão apagava a entrada. Ele saiu junto com a trilha montada no front — o
+servidor calcula a diferença agora —, e com ele saiu a razão de existir do
+mecanismo: a assinatura não inclui mais trilha nenhuma.
 
 Nas **obras** isso mudou: elas não têm mais obra-base para comparar, e o mapa
 carrega a obra inteira como o servidor a mandou. Apagar chave dali criaria buraco

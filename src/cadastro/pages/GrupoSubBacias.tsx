@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { CascadeTree, type TreeNode } from '@/cadastro/components/CascadeTree'
 import { RecordSheet } from '@/cadastro/components/RecordSheet'
+import { HistoricoDaFicha } from '@/cadastro/components/HistoricoDaFicha'
 import { DbCard, DbField, DbFieldGrid } from '@/cadastro/components/DbCard'
 import { FieldRow } from '@/cadastro/components/FieldRow'
 import { Carregando, ErroCarga, Vazio } from '@/comum/components/Estado'
@@ -59,6 +60,7 @@ export function GrupoSubBacias() {
   })
 
   const [selSub, setSelSub] = useState('')
+  const [verHistorico, setVerHistorico] = useState(false)
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
   const [busca, setBusca] = useState('')
   const [soPend, setSoPend] = useState(false)
@@ -312,6 +314,7 @@ export function GrupoSubBacias() {
           titulo={cur.id}
           nome={cur.nome}
           auditoria={cur}
+          onAbrirHistorico={() => setVerHistorico(true)}
           chip={sheetChip}
           onSalvar={salvar}
           salvarLabel="Salvar sub-bacia"
@@ -421,6 +424,15 @@ export function GrupoSubBacias() {
           </div>
         </RecordSheet>
       </div>
+      {verHistorico && (
+        <HistoricoDaFicha
+          unidadeId={unidadeId}
+          tipo="sub-bacia"
+          fichaId={cur.id}
+          nome={cur.nome}
+          onFechar={() => setVerHistorico(false)}
+        />
+      )}
     </section>
   )
 }

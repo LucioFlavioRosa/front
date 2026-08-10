@@ -5,6 +5,7 @@ import { FieldRow } from '@/cadastro/components/FieldRow'
 import { Carregando, ErroCarga, Vazio } from '@/comum/components/Estado'
 import { MarcaSalvamento } from '@/cadastro/components/MarcaSalvamento'
 import { UltimaAlteracao } from '@/cadastro/components/UltimaAlteracao'
+import { HistoricoDaFicha } from '@/cadastro/components/HistoricoDaFicha'
 import { GrupoHeader } from '@/cadastro/pages/GrupoHeader'
 import { fieldStyle } from '@/cadastro/lib/fieldState'
 import { chipPendencias } from '@/cadastro/lib/chip'
@@ -53,6 +54,7 @@ export function GrupoContrato() {
   })
 
   const [selCid, setSelCid] = useState('')
+  const [verHistorico, setVerHistorico] = useState(false)
   const [busca, setBusca] = useState('')
   const [soPend, setSoPend] = useState(false)
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
@@ -178,7 +180,7 @@ export function GrupoContrato() {
         >
           {g2Chip.label}
         </span>
-        <UltimaAlteracao auditoria={cur} />
+        <UltimaAlteracao auditoria={cur} onAbrirHistorico={() => setVerHistorico(true)} />
         <MarcaSalvamento sujo={cidSuja} />
         <button
           type="button"
@@ -402,6 +404,15 @@ export function GrupoContrato() {
           </div>
         </div>
       </div>
+      {verHistorico && (
+        <HistoricoDaFicha
+          unidadeId={unidadeId}
+          tipo="cidade"
+          fichaId={cur.id}
+          nome={cur.nome}
+          onFechar={() => setVerHistorico(false)}
+        />
+      )}
     </section>
   )
 }

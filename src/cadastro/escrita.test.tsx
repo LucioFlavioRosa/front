@@ -53,28 +53,26 @@ describe('salvar sub-bacia', () => {
     const [caminho, corpo] = api.puts[0]
     expect(caminho).toBe('/unidades/u-jacarei/sub-bacias/b2_1_4')
 
-    // Ficha inteira, não um patch.
-    expect(Object.keys(corpo).sort()).toEqual(['db', 'obrasOverride', 'overrides', 'params'])
-    // O corpo NÃO carrega nada sobre concorrência nem sobre autoria. Havia aqui
-    // uma `versao`, que o servidor comparava para responder 409; ela saiu junto
-    // com o 409 (R6). E a auditoria nunca pode subir: quem escolhe o nome que
-    // assina a gravação é o token, no servidor.
-    expect('versao' in corpo).toBe(false)
-    expect('atualizadoPor' in corpo).toBe(false)
-    expect('atualizadoEm' in corpo).toBe(false)
+    // Ficha inteira, não um patch — e SÓ os blocos de dado.
+    expect(Object.keys(corpo).sort()).toEqual(['db', 'obrasOverride', 'params'])
     expect(corpo.db.fat).toBe('9.999')
 
-    // A trilha carrega o valor ORIGINAL do servidor, não o penúltimo.
-    expect(corpo.overrides).toHaveLength(1)
-    expect(corpo.overrides[0]).toMatchObject({
-      campo: 'fat',
-      valorNovo: '9.999',
-      autor: 'Regional/Unidade',
-    })
-    expect(corpo.overrides[0].valorAntigo).not.toBe('9.999')
+    // O corpo não carrega NADA sobre concorrência, autoria ou trilha. As três
+    // coisas moravam aqui e saíram pelo mesmo motivo — o cliente não é fonte
+    // confiável sobre si mesmo:
+    //
+    //   `versao`     o servidor comparava para responder 409 (saiu com o 409)
+    //   `overrides`  a trilha vinha PRONTA daqui; hoje o servidor a calcula
+    //   auditoria    quem assina a gravação é o token
+    //
+    // A trilha em si continua existindo, e agora cobre a ficha inteira — só que
+    // do outro lado. Ver `tests/test_trilha_cadastro.py` no backend.
+    for (const proibido of ['versao', 'overrides', 'atualizadoPor', 'atualizadoEm']) {
+      expect(proibido in corpo).toBe(false)
+    }
   })
 
-  it('só manda os overrides desta ficha', async () => {
+  it('a ficha de outra sub-bacia não leva nada da que ficou para trás', async () => {
     renderApp('/unidade/u-jacarei/sub-bacias')
     await screen.findByRole('button', { name: 'Salvar sub-bacia' })
 
@@ -82,9 +80,8 @@ describe('salvar sub-bacia', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Sim, editar' }))
     fireEvent.change(screen.getByLabelText('Receita faturada (12m)'), { target: { value: '1' } })
 
-    // Troca de sub-bacia e salva a outra: a trilha da primeira não vai junto.
-    // (Editar um parâmetro é o que habilita o Salvar dela — e parâmetro não
-    // gera override, então a ficha sai com a trilha vazia.)
+    // Troca de sub-bacia e salva a OUTRA: o corpo é o dela, e nada da primeira
+    // viaja junto. (Editar um parâmetro é o que habilita o Salvar dela.)
     fireEvent.click(screen.getByRole('button', { name: /b2_1_3/ }))
     fireEvent.change(screen.getByLabelText('Taxa de ligação'), { target: { value: '7' } })
     fireEvent.click(screen.getByRole('button', { name: 'Salvar sub-bacia' }))
@@ -92,7 +89,9 @@ describe('salvar sub-bacia', () => {
     await waitFor(() => expect(api.puts).toHaveLength(1))
     const [caminho, corpo] = api.puts[0]
     expect(caminho).toBe('/unidades/u-jacarei/sub-bacias/b2_1_3')
-    expect(corpo.overrides).toHaveLength(0)
+    expect(corpo.params.preco).toBe('7')
+    // A edição da PRIMEIRA ficha não contaminou esta.
+    expect(corpo.db.fat).not.toBe('1')
   })
 
   it('falha do servidor avisa e mantém as edições na tela', async () => {
@@ -193,7 +192,7 @@ describe('salvar cidade (contrato & metas)', () => {
     await waitFor(() => expect(api.puts).toHaveLength(1))
     const [caminho, corpo] = api.puts[0]
     expect(caminho).toMatch(/^\/unidades\/u-jacarei\/contrato\//)
-    expect(Object.keys(corpo).sort()).toEqual(['cidade', 'fator', 'metas', 'overrides'])
+    expect(Object.keys(corpo).sort()).toEqual(['cidade', 'fator', 'metas'])
     // A auditoria sai de dentro de `cidade`: ela muda a cada gravação, e dentro
     // do corpo entraria na assinatura de "ficha suja" — o Salvar ficaria aceso
     // para sempre, num campo que o usuário não digitou.
@@ -217,6 +216,5 @@ describe('salvar ETE', () => {
     const [caminho, corpo] = api.puts[0]
     expect(caminho).toBe('/unidades/u-jacarei/etes/e2')
     expect(corpo.ete.id).toBe('e2')
-    expect(corpo.overrides).toEqual([])
   })
 })

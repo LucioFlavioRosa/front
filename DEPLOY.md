@@ -185,6 +185,51 @@ Quatro consequências para o backend:
 A lista de campos das duas telas vive em `src/cadastro/domain/baseComercial.ts` — campo
 novo entra ali e aparece na sub-bacia e na CTS.
 
+### Trilha de auditoria (`GET /unidades/:uid/alteracoes`)
+
+Quem mudou o quê, quando — a ficha inteira, e não só o bloco do Databricks.
+
+```jsonc
+{
+  "alteracoes": [
+    {
+      "tipo": "sub-bacia",          // sub-bacia | cts | ete | cidade
+      "fichaId": "b1b25_1_1",
+      "campo": "obra:Rede coletora:qtd",
+      "de": "2.472,6",              // null = não existia (foi criado)
+      "para": "3.000",              // null = deixou de existir (foi removido)
+      "autor": "ana@aegea",
+      "quando": "2026-08-10T14:32:00+00:00",
+      "origem": "regional",         // databricks | regional
+    },
+  ],
+  "cortado": false, // true = o servidor cortou no teto; NÃO é o histórico inteiro
+}
+```
+
+**`campo` usa a IDENTIDADE do registro, nunca a posição.** Três formas compostas:
+
+| forma | exemplo | por quê |
+| --- | --- | --- |
+| `obra:<componente>:<campo>` | `obra:Rede coletora:qtd` | a obra não tem id próprio; quem a identifica na tela é o nome |
+| `meta:<ano>:pct` | `meta:2030:pct` | a meta é identificada pelo ano |
+| `faixa:<cobertura>:paridade` | `faixa:80:paridade` | a faixa, pela cobertura |
+
+Por índice (`obra:2:qtd`) seria mais curto, não diria nada a quem abre a auditoria
+seis meses depois, e mudaria de significado se a ordem mudasse.
+
+**`origem` separa correção de preenchimento** — `databricks` é discordar de um
+número que veio de fora, `regional` é a Regional fazendo o próprio trabalho. A
+tela usa verbos diferentes ("corrigiu" / "alterou"), e é a distinção que a
+auditoria existe para fazer. Fica **gravada**, e não derivada do nome do campo:
+o conjunto do que vem do Databricks muda com o tempo, e uma trilha cuja leitura
+muda retroativamente não é trilha.
+
+A tela abre isto pela linha "última alteração" do cabeçalho da ficha. Os dois se
+completam: a linha responde "alguém mexeu depois de mim?" (a pergunta do momento
+da edição), o painel responde "de quanto para quanto, e por quem" (a que aparece
+meses depois).
+
 ### Obras (`obrasOverride`)
 
 Cada componente tem estas colunas. A ficha carrega a obra **inteira**, por
@@ -262,8 +307,26 @@ PUT    /unidades/:uid/contrato/:cidId     { cidade, metas, fator, overrides }
 PUT    /unidades/:uid/etes/:eteId         { ete, overrides }
 PUT    /unidades/:uid/cts/:ctsId          { params, db, obrasOverride, overrides }
 
-resposta (todas): { id, overridesGravados, atualizadoEm, atualizadoPor }
+resposta (todas): { id, alteracoesGravadas, atualizadoEm, atualizadoPor }
+
+GET    /unidades/:uid/alteracoes?tipo=&fichaId=&limite=
+       -> { alteracoes: [...], cortado: bool }
 ```
+
+**O corpo NÃO carrega a trilha de auditoria.** Ele carregava: um campo
+`overrides` com `{campo, valorAntigo, valorNovo, autor}`, montado pela tela. Saiu,
+e o motivo é o mesmo da `versao` — o cliente não é fonte confiável sobre si mesmo:
+
+- auditoria montada pelo auditado quebra em silêncio (um bug na tela, e o rastro
+  some sem sinal);
+- ela cobria **um quarto da ficha**: só o bloco do Databricks virava override, e
+  `params`, obras, cidade e ETE não deixavam rastro nenhum;
+- o `valorAntigo` era o valor lido no SEED, então duas edições na mesma sessão
+  gravavam `A → B` e depois `A → C`, quando o segundo salto foi `B → C`.
+
+Hoje o **servidor compara** o que está gravado com o que chega, campo a campo,
+antes de cada gravação. `alteracoesGravadas` diz quantas diferenças ele viu —
+zero é resposta legítima (salvar sem mudar nada não gera trilha).
 
 **Auditoria da ficha.** As quatro fichas trazem no `GET` — e a resposta do `PUT`
 devolve — dois campos que o corpo **nunca envia**:

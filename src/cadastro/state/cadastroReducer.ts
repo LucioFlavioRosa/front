@@ -37,7 +37,6 @@ import {
 } from '@/cadastro/state/fichas'
 
 const clone = <T>(x: T): T => JSON.parse(JSON.stringify(x)) as T
-const AUTOR = 'Regional/Unidade'
 
 export interface Hier {
   unidReg: UnidReg
@@ -45,16 +44,6 @@ export interface Hier {
   cidades: CidadeH[]
   sistemas: SistemaH[]
   topo: TopoRow[]
-}
-
-/** Registro da trilha de auditoria de um dado do Databricks sobrescrito. */
-export interface Override {
-  campo: string
-  valorAntigo: string
-  valorNovo: string
-  autor: string
-  /** ISO timestamp — carimbado no dispatch (mantem o reducer puro). */
-  at: string
 }
 
 export interface State {
@@ -78,7 +67,6 @@ export interface State {
   originalSubs: Record<string, SubBacia> | null
   originalCtss: Record<string, Cts> | null
   originalHier: Hier | null
-  overrides: Record<string, Override>
   /**
    * Assinatura de cada ficha no ultimo estado que o SERVIDOR tem — o que veio
    * dele no seed e, dai em diante, o que cada Salvar bem-sucedido enviou.
@@ -113,7 +101,6 @@ export const initialState: State = {
   originalSubs: null,
   originalCtss: null,
   originalHier: null,
-  overrides: {},
   salvas: {},
   impressoes: {},
 }
@@ -128,13 +115,13 @@ export type Action =
   // grupo 03 · sub-bacias
   | { type: 'SET_SUB_PARAM'; subId: string; key: keyof SubBaciaParams; value: string }
   | { type: 'SET_OBRA_FIELD'; subId: string; index: number; key: keyof Obra; value: string }
-  | { type: 'EDIT_DB_FIELD'; subId: string; key: keyof SubBaciaDb; value: string; at: string }
+  | { type: 'EDIT_DB_FIELD'; subId: string; key: keyof SubBaciaDb; value: string }
   // grupo 04 · ETEs
   | { type: 'SET_ETE_FIELD'; eteId: string; key: keyof Ete; value: string }
   // grupo 05 · CTS (irma da sub-bacia: mesmas acoes + criar/remover, por ser esparsa)
   | { type: 'SET_CTS_PARAM'; ctsId: string; key: keyof SubBaciaParams; value: string }
   | { type: 'SET_CTS_OBRA_FIELD'; ctsId: string; index: number; key: keyof Obra; value: string }
-  | { type: 'EDIT_CTS_DB_FIELD'; ctsId: string; key: keyof SubBaciaDb; value: string; at: string }
+  | { type: 'EDIT_CTS_DB_FIELD'; ctsId: string; key: keyof SubBaciaDb; value: string }
   // grupo 02 · contrato & metas
   | { type: 'SET_CIDADE_FIELD'; cidId: string; key: keyof Cidade; value: string }
   | { type: 'ADD_META'; cid: string }
@@ -144,38 +131,33 @@ export type Action =
   | { type: 'SET_FATOR'; index: number; key: keyof Fator; value: string }
   | { type: 'REMOVE_FATOR'; index: number }
   // grupo 01 · hierarquia (Databricks — todos gravam override)
-  | { type: 'SET_HIER_UNIDREG'; key: keyof UnidReg; value: string; at: string }
-  | { type: 'SET_HIER_SUP_NOME'; supId: string; value: string; at: string }
-  | { type: 'SET_HIER_CID_NOME'; cidId: string; value: string; at: string }
-  | { type: 'SET_HIER_SIS_NOME'; sisId: string; value: string; at: string }
-  | { type: 'SET_HIER_TOPO_JUSANTE'; index: number; value: string; at: string }
+  | { type: 'SET_HIER_UNIDREG'; key: keyof UnidReg; value: string }
+  | { type: 'SET_HIER_SUP_NOME'; supId: string; value: string }
+  | { type: 'SET_HIER_CID_NOME'; cidId: string; value: string }
+  | { type: 'SET_HIER_SIS_NOME'; sisId: string; value: string }
+  | { type: 'SET_HIER_TOPO_JUSANTE'; index: number; value: string }
   // o servidor aceitou uma ficha: ela passa a ser o novo "sem mudancas"
   | { type: 'FICHA_SALVA'; chave: ChaveFicha; assinatura: string; auditoria?: Partial<Auditoria> }
 
 /**
- * Acrescenta/atualiza um override, sempre preservando o valor ORIGINAL.
+ * A TRILHA SAIU DAQUI, e o lugar dela agora e o servidor.
  *
- * Voltar o campo ao valor que veio do servidor APAGA o override: nao houve
- * correcao nenhuma. Sem isso o backend receberia uma trilha dizendo "X virou X"
- * e a ficha ficaria eternamente "nao salva" (a assinatura inclui a trilha).
+ * Havia aqui `withOverride`, que montava um registro `{campo, valorAntigo,
+ * valorNovo, autor, at}` a cada edicao de campo do Databricks, guardava num mapa
+ * e o mandava no corpo do `PUT`. Tres coisas estavam erradas nisso:
+ *
+ *  1. **Auditoria montada pelo auditado.** Um bug neste arquivo e o rastro sumia
+ *     sem sinal nenhum — e o servidor gravava o que chegasse.
+ *  2. **Cobria um quarto da ficha.** So o bloco do Databricks virava override;
+ *     `params`, obras, cidade e ETE nunca geraram linha.
+ *  3. **O `valorAntigo` era o do SEED**, e nao o ultimo gravado. Duas edicoes na
+ *     mesma sessao gravavam `A -> B` e depois `A -> C`, quando o segundo salto
+ *     foi `B -> C`.
+ *
+ * O servidor compara o que esta gravado com o que chega
+ * (`cadastro_escrita.diferencas`), o que resolve as tres de uma vez. Aqui ficou
+ * so o que e mesmo do cliente: o estado da tela.
  */
-function withOverride(
-  state: State,
-  chave: string,
-  campo: string,
-  original: string | undefined,
-  novo: string,
-  at: string,
-): Record<string, Override> {
-  if (novo === (original ?? '')) {
-    const { [chave]: _desfeito, ...resto } = state.overrides
-    return resto
-  }
-  return {
-    ...state.overrides,
-    [chave]: { campo, valorAntigo: original ?? '', valorNovo: novo, autor: AUTOR, at },
-  }
-}
 
 /**
  * Grava o campo digitado na obra daquele indice.
@@ -338,21 +320,12 @@ export function reducer(state: State, action: Action): State {
     }
     case 'EDIT_DB_FIELD': {
       const sub = state.subs![action.subId]
-      const original = state.originalSubs?.[action.subId]?.db[action.key] ?? sub.db[action.key]
       return {
         ...state,
         subs: {
           ...state.subs,
           [action.subId]: { ...sub, db: { ...sub.db, [action.key]: action.value } },
         },
-        overrides: withOverride(
-          state,
-          `${action.subId}.${action.key}`,
-          action.key,
-          original,
-          action.value,
-          action.at,
-        ),
       }
     }
 
@@ -394,21 +367,12 @@ export function reducer(state: State, action: Action): State {
     }
     case 'EDIT_CTS_DB_FIELD': {
       const cts = state.ctss![action.ctsId]
-      const original = state.originalCtss?.[action.ctsId]?.db[action.key] ?? cts.db[action.key]
       return {
         ...state,
         ctss: {
           ...state.ctss,
           [action.ctsId]: { ...cts, db: { ...cts.db, [action.key]: action.value } },
         },
-        overrides: withOverride(
-          state,
-          `${action.ctsId}.${action.key}`,
-          action.key,
-          original,
-          action.value,
-          action.at,
-        ),
       }
     }
     // NAO ha ADD_CTS nem REMOVE_CTS, e isso e deliberado. A CTS e um NO DA
@@ -450,14 +414,6 @@ export function reducer(state: State, action: Action): State {
       return {
         ...state,
         hier: { ...state.hier!, unidReg: { ...state.hier!.unidReg, [action.key]: action.value } },
-        overrides: withOverride(
-          state,
-          `hier.unidReg.${action.key}`,
-          action.key,
-          state.originalHier?.unidReg[action.key],
-          action.value,
-          action.at,
-        ),
       }
     case 'SET_HIER_SUP_NOME':
       return {
@@ -468,14 +424,6 @@ export function reducer(state: State, action: Action): State {
             s.id === action.supId ? { ...s, nome: action.value } : s,
           ),
         },
-        overrides: withOverride(
-          state,
-          `hier.sup.${action.supId}`,
-          'nome',
-          state.originalHier?.superintendencias.find((s) => s.id === action.supId)?.nome,
-          action.value,
-          action.at,
-        ),
       }
     case 'SET_HIER_CID_NOME':
       return {
@@ -486,14 +434,6 @@ export function reducer(state: State, action: Action): State {
             c.id === action.cidId ? { ...c, nome: action.value } : c,
           ),
         },
-        overrides: withOverride(
-          state,
-          `hier.cid.${action.cidId}`,
-          'nome',
-          state.originalHier?.cidades.find((c) => c.id === action.cidId)?.nome,
-          action.value,
-          action.at,
-        ),
       }
     case 'SET_HIER_SIS_NOME':
       return {
@@ -504,14 +444,6 @@ export function reducer(state: State, action: Action): State {
             s.id === action.sisId ? { ...s, nome: action.value } : s,
           ),
         },
-        overrides: withOverride(
-          state,
-          `hier.sis.${action.sisId}`,
-          'nome',
-          state.originalHier?.sistemas.find((s) => s.id === action.sisId)?.nome,
-          action.value,
-          action.at,
-        ),
       }
     case 'SET_HIER_TOPO_JUSANTE':
       return {
@@ -522,14 +454,6 @@ export function reducer(state: State, action: Action): State {
             j === action.index ? { ...t, jus: action.value } : t,
           ),
         },
-        overrides: withOverride(
-          state,
-          `hier.topo.${action.index}`,
-          'componente_sistema_id_jusante',
-          state.originalHier?.topo[action.index]?.jus,
-          action.value,
-          action.at,
-        ),
       }
 
     default:

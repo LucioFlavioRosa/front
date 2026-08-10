@@ -15,8 +15,9 @@
  *
  * Regras que valem para todas:
  *  - o corpo carrega a ficha INTEIRA, nao um patch: salvar e idempotente;
- *  - `overrides` viaja junto com a ficha para a trilha de auditoria ser gravada
- *    na MESMA transacao do dado (senao um erro parcial deixa dado sem trilha);
+ *  - a trilha de auditoria e gravada na MESMA transacao do dado (senao um erro
+ *    parcial deixa dado sem trilha) — mas quem a calcula e o SERVIDOR, comparando
+ *    o gravado com o que chega. O corpo nao a carrega;
  *  - 400/422 = conteudo recusado; 401/403 = sessao (ver auth/sessao.ts).
  *
  * NAO ha mais 409 na escrita de ficha. Ele existia quando o corpo levava
@@ -27,21 +28,28 @@
 import type { Cidade, Fator, Meta } from '@/cadastro/domain/contrato'
 import type { Ete } from '@/cadastro/domain/ete'
 import type { Obra, SubBaciaDb, SubBaciaParams } from '@/cadastro/domain/subbacia'
-import type { Override } from '@/cadastro/state/cadastroReducer'
 
 /**
  * O que TODA ficha carrega, seja qual for a tela.
  *
- * Aqui havia tambem `versao`, que o corpo devolvia para o servidor conferir e
- * responder 409. Ela saiu inteira (R6): o corpo NAO carrega mais nada sobre
- * concorrencia, e a ultima alteracao vem do servidor no `GET` e na resposta do
- * `PUT` — nunca daqui para la. Autoria que o cliente pudesse escolher nao seria
- * auditoria.
+ * Hoje: nada alem dos blocos de dado. Duas coisas moravam aqui e sairam, e as
+ * duas pelo mesmo motivo — o cliente nao e fonte confiavel sobre si mesmo:
+ *
+ *   `versao`     o corpo a devolvia para o servidor conferir e responder 409.
+ *                Saiu com o 409 (R6); a ultima alteracao vem do SERVIDOR, no
+ *                `GET` e na resposta do `PUT`.
+ *   `overrides`  o corpo trazia a trilha PRONTA, montada aqui. Auditoria que
+ *                pergunta ao auditado o que ele mudou tem o defeito no desenho:
+ *                um bug neste arquivo e o rastro sumia sem sinal. E era o caso
+ *                de metade da ficha — `params`, obras, cidade e ETE nunca
+ *                geraram linha, porque so o bloco do Databricks virava override.
+ *                Hoje o SERVIDOR compara o gravado com o que chega.
+ *
+ * A interface fica, vazia, porque as quatro fichas a estendem e ela e o lugar de
+ * "o que toda ficha carrega" — voltar a haver algo comum e provavel.
  */
-export interface ComOverrides {
-  /** Trilha de auditoria dos dados do Databricks sobrescritos nesta ficha. */
-  overrides: Override[]
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- ver acima
+export interface ComOverrides {}
 
 export interface FichaSubBacia extends ComOverrides {
   params: SubBaciaParams
@@ -78,14 +86,11 @@ export interface FichaCts extends ComOverrides {
  */
 export interface RespostaSalvar {
   id: string
-  overridesGravados: number
+  /** Quantos campos o servidor viu mudar. Zero e resposta legitima: salvar sem
+   *  alterar nada nao gera trilha, e a contagem e o unico jeito de quem chamou
+   *  conferir que ela foi junto sem consultar o banco. */
+  alteracoesGravadas: number
   atualizadoEm: string
   atualizadoPor: string
 }
 
-/** Recorta do mapa global de overrides os que pertencem a uma ficha. */
-export function overridesDaFicha(overrides: Record<string, Override>, prefixo: string): Override[] {
-  return Object.entries(overrides)
-    .filter(([chave]) => chave.startsWith(`${prefixo}.`))
-    .map(([, o]) => o)
-}

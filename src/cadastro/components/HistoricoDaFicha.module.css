@@ -1,0 +1,122 @@
+/* Mesma geometria do painel de dicionario (`DictionaryPanel.module.css`): os
+   dois abrem pela direita, na mesma tela, e duas larguras diferentes fariam a
+   tela parecer ter dois sistemas de painel. */
+.painel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: var(--dict-w);
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  box-shadow: -12px 0 40px -20px rgba(15, 23, 42, 0.25);
+  z-index: var(--z-panel);
+  padding: 24px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.kicker {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-400);
+}
+
+.titulo {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-900);
+  margin-top: 2px;
+  overflow-wrap: anywhere;
+}
+
+.fechar {
+  cursor: pointer;
+  color: var(--text-400);
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 1;
+  background: none;
+  border: none;
+  padding: 2px 6px;
+}
+.fechar:hover {
+  color: var(--text-900);
+}
+
+/* A rolagem fica no CORPO, e nao no painel: o cabecalho diz de que ficha e o
+   historico, e perde-lo de vista no meio de uma lista longa e como ler uma
+   auditoria sem saber de quem ela e. */
+.corpo {
+  flex: 1;
+  overflow: auto;
+  margin: -4px;
+  padding: 4px;
+}
+
+.lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.item {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: var(--surface);
+}
+
+.campo {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-900);
+}
+
+.valores {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-700, var(--text-900));
+  margin-top: 3px;
+  overflow-wrap: anywhere;
+}
+
+.assinatura {
+  font-size: 11px;
+  color: var(--text-400);
+  margin-top: 5px;
+}
+
+.aviso {
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: var(--text-500);
+  margin: 0 0 10px;
+}
+
+.link {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}

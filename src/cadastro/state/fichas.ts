@@ -11,7 +11,6 @@
  * ciclo em runtime. Import de tipo e apagado na compilacao.
  */
 import {
-  overridesDaFicha,
   type FichaCidade,
   type FichaCts,
   type FichaEte,
@@ -36,7 +35,6 @@ export function fichaSub(state: State, subId: string): FichaSubBacia | null {
     params: sub.params,
     db: sub.db,
     obrasOverride: sub.obrasOverride,
-    overrides: overridesDaFicha(state.overrides, subId),
   }
 }
 
@@ -52,7 +50,6 @@ export function fichaCidade(state: State, cidId: string): FichaCidade | null {
     cidade: semAuditoria as Cidade,
     metas: state.metas.filter((m) => m.cid === cidId),
     fator: state.fator.filter((f) => f.cid === cidId),
-    overrides: overridesDaFicha(state.overrides, cidId),
   }
 }
 
@@ -60,7 +57,7 @@ export function fichaEte(state: State, eteId: string): FichaEte | null {
   const ete = state.etes?.find((e) => e.id === eteId)
   if (!ete) return null
   const { atualizadoEm: _em, atualizadoPor: _por, ...semAuditoria } = ete
-  return { ete: semAuditoria as Ete, overrides: overridesDaFicha(state.overrides, eteId) }
+  return { ete: semAuditoria as Ete }
 }
 
 export function fichaCts(state: State, ctsId: string): FichaCts | null {
@@ -70,7 +67,6 @@ export function fichaCts(state: State, ctsId: string): FichaCts | null {
     params: cts.params,
     db: cts.db,
     obrasOverride: cts.obrasOverride,
-    overrides: overridesDaFicha(state.overrides, ctsId),
   }
 }
 
