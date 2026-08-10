@@ -1,7 +1,9 @@
 /** Dominio do Grupo 04 (ETEs). Regras: prototipo linhas 819-825, 1104-1126. */
+import type { Auditoria } from '@/cadastro/domain/auditoria'
+
 import { num } from '@/cadastro/domain/subbacia'
 
-export interface Ete {
+export interface Ete extends Auditoria {
   id: string
   sub: string
   cidId: string
@@ -15,17 +17,6 @@ export interface Ete {
   terreno: string
   modulos: string
   wacc: string
-  /**
-   * Impressao do conteudo da ficha no momento em que o servidor a entregou.
-   *
-   * Viaja de volta no PUT e e o que dispara o 409: se outra pessoa gravou no
-   * intervalo, a versao que o servidor tem nao e mais esta.
-   *
-   * NAO entra na assinatura de "ficha suja" — ver `assinatura()` em `fichas.ts`.
-   * Aquela mede o que o USUARIO mudou; esta muda sozinha a cada gravacao, e
-   * inclui-la deixaria toda ficha suja para sempre depois de salvar.
-   */
-  versao: string
 }
 
 export interface EtesPayload {

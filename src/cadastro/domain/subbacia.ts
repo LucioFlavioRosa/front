@@ -11,6 +11,8 @@
  * Populacao NAO esta aqui: quando a cidade mede a meta por populacao, quem
  * informa esses numeros e a Regional (ver SubBaciaParams).
  */
+import type { Auditoria } from '@/cadastro/domain/auditoria'
+
 export interface SubBaciaDb {
   fat: string
   arr: string
@@ -99,7 +101,7 @@ export interface Obra {
   wacc: string
 }
 
-export interface SubBacia {
+export interface SubBacia extends Auditoria {
   id: string
   nome: string
   sisId: string
@@ -109,17 +111,6 @@ export interface SubBacia {
   params: SubBaciaParams
   /** Overrides das 5 obras-base, por indice (o resto herda a base). */
   obrasOverride: Record<string, Partial<Obra>>
-  /**
-   * Impressao do conteudo da ficha no momento em que o servidor a entregou.
-   *
-   * Viaja de volta no PUT e e o que dispara o 409: se outra pessoa gravou no
-   * intervalo, a versao que o servidor tem nao e mais esta.
-   *
-   * NAO entra na assinatura de "ficha suja" — ver `assinatura()` em `fichas.ts`.
-   * Aquela mede o que o USUARIO mudou; esta muda sozinha a cada gravacao, e
-   * inclui-la deixaria toda ficha suja para sempre depois de salvar.
-   */
-  versao: string
 }
 
 /** Arvore Sup -> Cidade -> Sistema -> (subIds), so ramos com sub-bacias. */
@@ -144,24 +135,57 @@ export interface SubBaciasPayload {
   subs: Record<string, SubBacia>
 }
 
-/** As 5 obras-base de toda sub-bacia (prototipo mkObras, linhas 706-712). */
-// prettier-ignore
-export const BASE_OBRAS: Obra[] = [
-  { nome: 'Ligação de esgoto', un: 'ligação', qtd: '244', preco: '2.497,70', opex: '2.738', tPred: '11', dur: '9', anoObrig: '0', proibAte: '0', wacc: '0,091' },
-  { nome: 'Rede coletora', un: 'm', qtd: '2.472,6', preco: '449,99', opex: '35.659', tPred: '4', dur: '6', anoObrig: '0', proibAte: '0', wacc: '0,091' },
-  { nome: 'Coletor tronco', un: 'm', qtd: '0', preco: '1.200,00', opex: '0', tPred: '0', dur: '0', anoObrig: '0', proibAte: '0', wacc: '0,091' },
-  { nome: 'Estação elevatória (EEE)', un: 'un', qtd: '0', preco: '0', opex: '0', tPred: '0', dur: '0', anoObrig: '0', proibAte: '0', wacc: '' },
-  { nome: 'Linha de recalque (LR)', un: 'm', qtd: '0', preco: '900,00', opex: '0', tPred: '0', dur: '15', anoObrig: '0', proibAte: '0', wacc: '0,067' },
-]
+/**
+ * Quantos componentes de obra toda sub-bacia tem.
+ *
+ * NAO e um valor de cadastro — e a CARDINALIDADE que a simulacao exige, a mesma
+ * de `pendencias.OBRAS_SUBBACIA` no backend. Serve para uma coisa so: uma obra
+ * que FALTA pesar como uma obra em branco na contagem de pendencias. Sem isso a
+ * ficha com quatro componentes se declararia completa, porque o que nao veio nao
+ * tem campo vazio para contar.
+ *
+ * Quem denuncia QUAL componente falta e o backend (`/prontidao` -> `faltando`):
+ * so ele pode saber, porque o que falta nao chega no payload da ficha.
+ * `tests/test_obras_do_banco.py` prende os dois numeros ao banco real.
+ */
+export const OBRAS_POR_SUBBACIA = 5
 
-/** Aplica overrides por indice sobre uma lista de obras-base. */
-export function mkObrasDe(base: Obra[], override: Record<string, Partial<Obra>>): Obra[] {
-  return base.map((b, i) => ({ ...b, ...(override[String(i)] ?? {}) }))
-}
-
-/** Resolve as 5 obras aplicando os overrides da sub-bacia sobre a base. */
+/**
+ * As obras da ficha, na ordem dos indices — SO o que o servidor mandou.
+ *
+ * Aqui havia `BASE_OBRAS`: cinco obras literais que esta funcao mesclava com o
+ * que vinha do `GET`. Ela e a gemea da `_BASE_SUBBACIA` que saiu do backend, e
+ * pelo mesmo motivo (R1/R2): componente ausente reaparecia com `preco 900` e
+ * `dur 15`, numeros que ninguem digitou e que o banco nao tem. A tela mostrava
+ * cinco linhas onde havia quatro, e a quinta era invencao — plausivel, o que a
+ * torna pior.
+ *
+ * O `GET` passou a mandar `nome` e `un` junto dos numeros, entao a linha inteira
+ * vem do banco. Campo que o payload nao trouxer fica VAZIO, e vazio conta
+ * pendencia: e a leitura certa de "o servidor nao mandou", e nao um valor
+ * inventado para tapar o buraco.
+ */
 export function mkObras(override: Record<string, Partial<Obra>>): Obra[] {
-  return mkObrasDe(BASE_OBRAS, override)
+  return Object.keys(override ?? {})
+    .sort((a, b) => Number(a) - Number(b))
+    .map((i) => {
+      // Campo a campo, e nao um cast: com `as Obra` sobre um objeto montado
+      // dinamicamente, acrescentar campo ao tipo `Obra` compilaria e chegaria
+      // `undefined` na tela. Escrito assim, o compilador cobra o campo novo aqui.
+      const o = override[i] ?? {}
+      return {
+        nome: o.nome ?? '',
+        un: o.un ?? '',
+        qtd: o.qtd ?? '',
+        preco: o.preco ?? '',
+        opex: o.opex ?? '',
+        tPred: o.tPred ?? '',
+        dur: o.dur ?? '',
+        anoObrig: o.anoObrig ?? '',
+        proibAte: o.proibAte ?? '',
+        wacc: o.wacc ?? '',
+      }
+    })
 }
 
 // `vazInd` NAO entra na regua. A planilha de origem nao tem a coluna
@@ -204,7 +228,12 @@ const paramsDaRegua = (porPopulacao: boolean) =>
  * de populacao viram obrigatorios como qualquer outro parametro — e por isso a
  * completude cai e o hub trava a simulacao ate alguem preencher.
  */
-export function pendDe(params: SubBaciaParams, obras: Obra[], porPopulacao = false): number {
+export function pendDe(
+  params: SubBaciaParams,
+  obras: Obra[],
+  porPopulacao = false,
+  esperadas = OBRAS_POR_SUBBACIA,
+): number {
   let n = 0
   paramsDaRegua(porPopulacao).forEach((k) => {
     // `?? ''` porque o payload do backend pode vir sem a chave: ausencia vira
@@ -213,9 +242,15 @@ export function pendDe(params: SubBaciaParams, obras: Obra[], porPopulacao = fal
   })
   obras.forEach((o) => {
     OBRA_KEYS.forEach((k) => {
-      if (String(o[k]).trim() === '') n++
+      if (String(o[k] ?? '').trim() === '') n++
     })
   })
+  // Obra que FALTA pesa como obra toda em branco — que e exatamente o que ela e.
+  // Enquanto a base literal existia, o componente ausente vinha preenchido com
+  // valores de template e contribuia ZERO: a ficha se declarava completa sem
+  // ele. Mesma regra do backend (`pendencias.sb_obras`), e nao por acaso: as
+  // duas contas aparecem na mesma tela, uma no chip da ficha e outra no hub.
+  n += Math.max(0, esperadas - obras.length) * OBRA_KEYS.length
   return n
 }
 
@@ -229,7 +264,7 @@ export const CAMPOS_POR_OBRA = OBRA_KEYS.length
 
 /** Campos contados da sub-bacia: params + 5 obras (+2 quando a regua e populacao). */
 export const camposDaSub = (porPopulacao: boolean) =>
-  paramsDaRegua(porPopulacao).length + BASE_OBRAS.length * CAMPOS_POR_OBRA
+  paramsDaRegua(porPopulacao).length + OBRAS_POR_SUBBACIA * CAMPOS_POR_OBRA
 
 /** De-para sub-bacia → cidade, tirado da arvore (sup › cidade › sistema). */
 export function cidadePorSub(arvore: SupNode[]): Record<string, string> {

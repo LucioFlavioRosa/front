@@ -47,6 +47,8 @@ const AJUDA_PENALIDADE: Record<Penalidade, string> = {
 export function Simular() {
   const [e, setE] = useState<EstadoSimulacao>(estadoInicial)
   const [runId, setRunId] = useState<string | undefined>()
+  /** Rodada CONCLUÍDA idêntica que o servidor devolveu em vez de criar (R5). */
+  const [jaExistente, setJaExistente] = useState<string | null>(null)
   const navigate = useNavigate()
   const { toast } = useApp()
 
@@ -77,8 +79,22 @@ export function Simular() {
 
   function iniciar() {
     if (travado) return
+    setJaExistente(null)
     criar.mutate(corpoDaRodada(e), {
-      onSuccess: (r) => setRunId(r.runId),
+      onSuccess: (r) => {
+        // O servidor deduplicou para uma rodada que JÁ TERMINOU (R5): não há o
+        // que acompanhar, e abrir o modal de progresso de algo concluído ontem
+        // seria teatro. Mostra o aviso com o link e não inicia polling nenhum.
+        //
+        // Dedupe de rodada EM VOO continua caindo no caminho normal: ali há
+        // execução acontecendo, e acompanhá-la é exatamente o que o usuário quer
+        // — é o duplo clique levando ao mesmo lugar.
+        if (r.jaExistia && r.status === 'SUCESSO') {
+          setJaExistente(r.runId)
+          return
+        }
+        setRunId(r.runId)
+      },
       onError: () => toast('Não foi possível iniciar a rodada. Tente de novo.'),
     })
   }
@@ -657,6 +673,21 @@ export function Simular() {
             ))}
           </ul>
         </div>
+
+        {jaExistente && (
+          // Aviso INLINE, e não toast: o toast some, e a informação útil aqui é
+          // o link. Quem pediu de novo a mesma simulação quer abrir a que existe,
+          // e não descobrir que ela existe e ter de procurá-la no histórico.
+          <div className={styles.jaExiste} role="status">
+            <strong>Já existe uma simulação idêntica a esta.</strong> Mesmos
+            parâmetros, mesma unidade, e o cadastro não mudou desde então — o
+            resultado seria o mesmo.{' '}
+            <Link to={`/resultados/${jaExistente}`} onClick={() => setJaExistente(null)}>
+              Abrir a simulação que já existe
+            </Link>
+            . Para rodar mesmo assim, mude algum parâmetro.
+          </div>
+        )}
 
         <button
           type="button"

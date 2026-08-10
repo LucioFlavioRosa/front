@@ -1,602 +1,637 @@
 {
- "pares": [
-  {
-   "sub": "e1b59_1_4",
-   "cts": "cts_e1b59_1_4"
-  },
-  {
-   "sub": "e1b60_1_2",
-   "cts": "cts_e1b60_1_2"
-  },
-  {
-   "sub": "e1b81_1_1",
-   "cts": "cts_e1b81_1_1"
-  },
-  {
-   "sub": "e1b83_1_1",
-   "cts": "cts_e1b83_1_1"
-  },
-  {
-   "sub": "e1b83_2_3",
-   "cts": "cts_e1b83_2_3"
-  },
-  {
-   "sub": "e1b87_1_3",
-   "cts": "cts_e1b87_1_3"
-  },
-  {
-   "sub": "e1b91_2_1",
-   "cts": "cts_e1b91_2_1"
-  }
- ],
- "ctss": {
-  "cts_e1b59_1_4": {
-   "id": "cts_e1b59_1_4",
-   "db": {
-    "fat": "20.940,67",
-    "arr": "16.501,25",
-    "ligU": "162",
-    "ligA": "74",
-    "ligN": "88",
-    "ecoU": "422",
-    "ecoA": "191",
-    "ecoN": "231",
-    "ligUInd": "",
-    "ligAInd": "",
-    "fatInd": "",
-    "arrInd": "",
-    "ticket": "222,99"
-   },
-   "params": {
-    "preco": "857,39",
-    "tarr": "9",
-    "ramp": "10",
-    "vaz": "7,91",
-    "popU": "",
-    "popA": "",
-    "popN": "",
-    "pot": "1,15",
-    "vazInd": ""
-   },
-   "nome": "cts_e1b59_1_4",
-   "subId": "e1b59_1_4",
-   "sisId": "e1s59",
-   "sistema": "Sistema 59 Interior1",
-   "jusante": "e1e59",
-   "obrasOverride": {
-    "0": {
-     "qtd": "89",
-     "un": "ligacao",
-     "preco": "2.654,64",
-     "opex": "7.087,89",
-     "tPred": "0",
-     "dur": "12",
-     "anoObrig": "0",
-     "proibAte": "0",
-     "wacc": "0,075"
+  "pares": [
+    {
+      "sub": "e1b59_1_4",
+      "cts": "cts_e1b59_1_4"
     },
-    "1": {
-     "qtd": "107",
-     "un": "m",
-     "preco": "1.409,05",
-     "opex": "4.523,05",
-     "tPred": "0",
-     "dur": "12",
-     "anoObrig": "0",
-     "proibAte": "0",
-     "wacc": "0,075"
+    {
+      "sub": "e1b60_1_2",
+      "cts": "cts_e1b60_1_2"
     },
-    "2": {
-     "qtd": "1",
-     "un": "un",
-     "preco": "429.409,26",
-     "opex": "12.882,28",
-     "tPred": "3",
-     "dur": "13",
-     "anoObrig": "0",
-     "proibAte": "0",
-     "wacc": "0,075"
+    {
+      "sub": "e1b81_1_1",
+      "cts": "cts_e1b81_1_1"
     },
-    "3": {
-     "qtd": "71",
-     "un": "m",
-     "preco": "987,57",
-     "opex": "2.103,52",
-     "tPred": "3",
-     "dur": "10",
-     "anoObrig": "0",
-     "proibAte": "0",
-     "wacc": "0,075"
+    {
+      "sub": "e1b83_1_1",
+      "cts": "cts_e1b83_1_1"
+    },
+    {
+      "sub": "e1b83_2_3",
+      "cts": "cts_e1b83_2_3"
+    },
+    {
+      "sub": "e1b87_1_3",
+      "cts": "cts_e1b87_1_3"
+    },
+    {
+      "sub": "e1b91_2_1",
+      "cts": "cts_e1b91_2_1"
     }
-   },
-   "versao": "e716a488e780b7dc"
-  },
-  "cts_e1b60_1_2": {
-   "id": "cts_e1b60_1_2",
-   "db": {
-    "fat": "7.248,08",
-    "arr": "6.689,98",
-    "ligU": "267",
-    "ligA": "120",
-    "ligN": "147",
-    "ecoU": "694",
-    "ecoA": "314",
-    "ecoN": "380",
-    "ligUInd": "",
-    "ligAInd": "",
-    "fatInd": "",
-    "arrInd": "",
-    "ticket": "55,75"
-   },
-   "params": {
-    "preco": "660,59",
-    "tarr": "3",
-    "ramp": "8",
-    "vaz": "16,53",
-    "popU": "",
-    "popA": "",
-    "popN": "",
-    "pot": "1,15",
-    "vazInd": ""
-   },
-   "nome": "cts_e1b60_1_2",
-   "subId": "e1b60_1_2",
-   "sisId": "e1s60",
-   "sistema": "Sistema 60 Interior1",
-   "jusante": "e1e60",
-   "obrasOverride": {
-    "0": {
-     "qtd": "146",
-     "un": "ligacao",
-     "preco": "2.843,31",
-     "opex": "12.453,7",
-     "tPred": "0",
-     "dur": "12",
-     "anoObrig": "0",
-     "proibAte": "0",
-     "wacc": "0,075"
+  ],
+  "ctss": {
+    "cts_e1b59_1_4": {
+      "id": "cts_e1b59_1_4",
+      "db": {
+        "fat": "20.940,67",
+        "arr": "16.501,25",
+        "ligU": "162",
+        "ligA": "74",
+        "ligN": "88",
+        "ecoU": "422",
+        "ecoA": "191",
+        "ecoN": "231",
+        "ligUInd": "",
+        "ligAInd": "",
+        "fatInd": "",
+        "arrInd": "",
+        "ticket": "222,99"
+      },
+      "params": {
+        "preco": "857,39",
+        "tarr": "9",
+        "ramp": "10",
+        "vaz": "7,91",
+        "popU": "",
+        "popA": "",
+        "popN": "",
+        "pot": "1,15",
+        "vazInd": ""
+      },
+      "nome": "cts_e1b59_1_4",
+      "subId": "e1b59_1_4",
+      "sisId": "e1s59",
+      "sistema": "Sistema 59 Interior1",
+      "jusante": "e1e59",
+      "obrasOverride": {
+        "0": {
+          "nome": "Coletor de tempo seco",
+          "qtd": "89",
+          "un": "ligacao",
+          "preco": "2.654,64",
+          "opex": "7.087,89",
+          "tPred": "0",
+          "dur": "12",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,075"
+        },
+        "1": {
+          "nome": "Tronco",
+          "qtd": "107",
+          "un": "m",
+          "preco": "1.409,05",
+          "opex": "4.523,05",
+          "tPred": "0",
+          "dur": "12",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,075"
+        },
+        "2": {
+          "nome": "EEE",
+          "qtd": "1",
+          "un": "un",
+          "preco": "429.409,26",
+          "opex": "12.882,28",
+          "tPred": "3",
+          "dur": "13",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,075"
+        },
+        "3": {
+          "nome": "Linha de recalque",
+          "qtd": "71",
+          "un": "m",
+          "preco": "987,57",
+          "opex": "2.103,52",
+          "tPred": "3",
+          "dur": "10",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,075"
+        }
+      },
+      "atualizadoEm": "",
+      "atualizadoPor": ""
     },
-    "1": {
-     "qtd": "175",
-     "un": "m",
-     "preco": "1.259,16",
-     "opex": "6.610,59",
-     "tPred": "0",
-     "dur": "12",
-     "anoObrig": "0",
-     "proibAte": "0",
-     "wacc": "0,075"
+    "cts_e1b60_1_2": {
+      "id": "cts_e1b60_1_2",
+      "db": {
+        "fat": "7.248,08",
+        "arr": "6.689,98",
+        "ligU": "267",
+        "ligA": "120",
+        "ligN": "147",
+        "ecoU": "694",
+        "ecoA": "314",
+        "ecoN": "380",
+        "ligUInd": "",
+        "ligAInd": "",
+        "fatInd": "",
+        "arrInd": "",
+        "ticket": "55,75"
+      },
+      "params": {
+        "preco": "660,59",
+        "tarr": "3",
+        "ramp": "8",
+        "vaz": "16,53",
+        "popU": "",
+        "popA": "",
+        "popN": "",
+        "pot": "1,15",
+        "vazInd": ""
+      },
+      "nome": "cts_e1b60_1_2",
+      "subId": "e1b60_1_2",
+      "sisId": "e1s60",
+      "sistema": "Sistema 60 Interior1",
+      "jusante": "e1e60",
+      "obrasOverride": {
+        "0": {
+          "nome": "Coletor de tempo seco",
+          "qtd": "146",
+          "un": "ligacao",
+          "preco": "2.843,31",
+          "opex": "12.453,7",
+          "tPred": "0",
+          "dur": "12",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,075"
+        },
+        "1": {
+          "nome": "Tronco",
+          "qtd": "175",
+          "un": "m",
+          "preco": "1.259,16",
+          "opex": "6.610,59",
+          "tPred": "0",
+          "dur": "12",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,075"
+        },
+        "2": {
+          "nome": "EEE",
+          "qtd": "1",
+          "un": "un",
+          "preco": "107.630,74",
+          "opex": "3.228,92",
+          "tPred": "3",
+          "dur": "13",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": ""
+        },
+        "3": {
+          "nome": "Linha de recalque",
+          "qtd": "117",
+          "un": "m",
+          "preco": "922,89",
+          "opex": "3.239,34",
+          "tPred": "3",
+          "dur": "10",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": ""
+        }
+      },
+      "atualizadoEm": "",
+      "atualizadoPor": ""
     },
-    "2": {
-     "qtd": "1",
-     "un": "un",
-     "preco": "107.630,74",
-     "opex": "3.228,92",
-     "tPred": "3",
-     "dur": "13",
-     "anoObrig": "0",
-     "proibAte": "0",
-     "wacc": ""
+    "cts_e1b81_1_1": {
+      "id": "cts_e1b81_1_1",
+      "db": {
+        "fat": "108.191,81",
+        "arr": "96.507,09",
+        "ligU": "1.084",
+        "ligA": "490",
+        "ligN": "594",
+        "ecoU": "2.817",
+        "ecoA": "1.274",
+        "ecoN": "1.543",
+        "ligUInd": "",
+        "ligAInd": "",
+        "fatInd": "",
+        "arrInd": "",
+        "ticket": "196,95"
+      },
+      "params": {
+        "preco": "1.071,48",
+        "tarr": "6",
+        "ramp": "2",
+        "vaz": "44,97",
+        "popU": "",
+        "popA": "",
+        "popN": "",
+        "pot": "1,15",
+        "vazInd": ""
+      },
+      "nome": "cts_e1b81_1_1",
+      "subId": "e1b81_1_1",
+      "sisId": "e1s81",
+      "sistema": "Sistema 81 Interior1",
+      "jusante": "e1b81_1_2",
+      "obrasOverride": {
+        "0": {
+          "nome": "Coletor de tempo seco",
+          "qtd": "594",
+          "un": "ligacao",
+          "preco": "2.677,38",
+          "opex": "47.710,91",
+          "tPred": "0",
+          "dur": "12",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,075"
+        },
+        "1": {
+          "nome": "Tronco",
+          "qtd": "713",
+          "un": "m",
+          "preco": "1.191,31",
+          "opex": "25.482,12",
+          "tPred": "0",
+          "dur": "12",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,075"
+        },
+        "2": {
+          "nome": "EEE",
+          "qtd": "1",
+          "un": "un",
+          "preco": "450.000",
+          "opex": "13.500",
+          "tPred": "3",
+          "dur": "13",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": ""
+        },
+        "3": {
+          "nome": "Linha de recalque",
+          "qtd": "475",
+          "un": "m",
+          "preco": "877,91",
+          "opex": "12.510,22",
+          "tPred": "3",
+          "dur": "10",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": ""
+        }
+      },
+      "atualizadoEm": "",
+      "atualizadoPor": ""
     },
-    "3": {
-     "qtd": "117",
-     "un": "m",
-     "preco": "922,89",
-     "opex": "3.239,34",
-     "tPred": "3",
-     "dur": "10",
-     "anoObrig": "0",
-     "proibAte": "0",
-     "wacc": ""
+    "cts_e1b83_1_1": {
+      "id": "cts_e1b83_1_1",
+      "db": {
+        "fat": "7.306,87",
+        "arr": "6.313,13",
+        "ligU": "70",
+        "ligA": "32",
+        "ligN": "38",
+        "ecoU": "183",
+        "ecoA": "83",
+        "ecoN": "100",
+        "ligUInd": "",
+        "ligAInd": "",
+        "fatInd": "",
+        "arrInd": "",
+        "ticket": "197,29"
+      },
+      "params": {
+        "preco": "1.000,65",
+        "tarr": "1",
+        "ramp": "12",
+        "vaz": "2,88",
+        "popU": "",
+        "popA": "",
+        "popN": "",
+        "pot": "1,15",
+        "vazInd": ""
+      },
+      "nome": "cts_e1b83_1_1",
+      "subId": "e1b83_1_1",
+      "sisId": "e1s83",
+      "sistema": "Sistema 83 Interior1",
+      "jusante": "e1b83_1_2",
+      "obrasOverride": {
+        "0": {
+          "nome": "Coletor de tempo seco",
+          "qtd": "39",
+          "un": "ligacao",
+          "preco": "2.779,06",
+          "opex": "3.251,5",
+          "tPred": "0",
+          "dur": "12",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": ""
+        },
+        "1": {
+          "nome": "Tronco",
+          "qtd": "47",
+          "un": "m",
+          "preco": "1.138,44",
+          "opex": "1.605,2",
+          "tPred": "0",
+          "dur": "12",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": ""
+        },
+        "2": {
+          "nome": "EEE",
+          "qtd": "1",
+          "un": "un",
+          "preco": "450.000",
+          "opex": "13.500",
+          "tPred": "3",
+          "dur": "13",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": ""
+        },
+        "3": {
+          "nome": "Linha de recalque",
+          "qtd": "31",
+          "un": "m",
+          "preco": "1.058,47",
+          "opex": "984,38",
+          "tPred": "3",
+          "dur": "10",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": ""
+        }
+      },
+      "atualizadoEm": "",
+      "atualizadoPor": ""
+    },
+    "cts_e1b83_2_3": {
+      "id": "cts_e1b83_2_3",
+      "db": {
+        "fat": "1.183,68",
+        "arr": "1.083,07",
+        "ligU": "40",
+        "ligA": "18",
+        "ligN": "22",
+        "ecoU": "104",
+        "ecoA": "47",
+        "ecoN": "57",
+        "ligUInd": "",
+        "ligAInd": "",
+        "fatInd": "",
+        "arrInd": "",
+        "ticket": "60,17"
+      },
+      "params": {
+        "preco": "1.264,01",
+        "tarr": "2",
+        "ramp": "11",
+        "vaz": "2,16",
+        "popU": "",
+        "popA": "",
+        "popN": "",
+        "pot": "1,15",
+        "vazInd": ""
+      },
+      "nome": "cts_e1b83_2_3",
+      "subId": "e1b83_2_3",
+      "sisId": "e1s83",
+      "sistema": "Sistema 83 Interior1",
+      "jusante": "e1e83",
+      "obrasOverride": {
+        "0": {
+          "nome": "Coletor de tempo seco",
+          "qtd": "22",
+          "un": "ligacao",
+          "preco": "2.290,58",
+          "opex": "1.511,78",
+          "tPred": "0",
+          "dur": "12",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,075"
+        },
+        "1": {
+          "nome": "Tronco",
+          "qtd": "26",
+          "un": "m",
+          "preco": "1.202,78",
+          "opex": "938,17",
+          "tPred": "0",
+          "dur": "12",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,075"
+        },
+        "2": {
+          "nome": "EEE",
+          "qtd": "1",
+          "un": "un",
+          "preco": "450.000",
+          "opex": "13.500",
+          "tPred": "3",
+          "dur": "13",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,075"
+        },
+        "3": {
+          "nome": "Linha de recalque",
+          "qtd": "18",
+          "un": "m",
+          "preco": "914,1",
+          "opex": "493,61",
+          "tPred": "3",
+          "dur": "10",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,075"
+        }
+      },
+      "atualizadoEm": "",
+      "atualizadoPor": ""
+    },
+    "cts_e1b87_1_3": {
+      "id": "cts_e1b87_1_3",
+      "db": {
+        "fat": "15.964,78",
+        "arr": "12.963,4",
+        "ligU": "125",
+        "ligA": "57",
+        "ligN": "68",
+        "ecoU": "326",
+        "ecoA": "148",
+        "ecoN": "178",
+        "ligUInd": "",
+        "ligAInd": "",
+        "fatInd": "",
+        "arrInd": "",
+        "ticket": "227,43"
+      },
+      "params": {
+        "preco": "944,86",
+        "tarr": "6",
+        "ramp": "9",
+        "vaz": "5,6",
+        "popU": "",
+        "popA": "",
+        "popN": "",
+        "pot": "1,15",
+        "vazInd": ""
+      },
+      "nome": "cts_e1b87_1_3",
+      "subId": "e1b87_1_3",
+      "sisId": "e1s87",
+      "sistema": "Sistema 87 Interior1",
+      "jusante": "e1b87_1_4",
+      "obrasOverride": {
+        "0": {
+          "nome": "Coletor de tempo seco",
+          "qtd": "68",
+          "un": "ligacao",
+          "preco": "2.879,12",
+          "opex": "5.873,4",
+          "tPred": "0",
+          "dur": "12",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,075"
+        },
+        "1": {
+          "nome": "Tronco",
+          "qtd": "82",
+          "un": "m",
+          "preco": "1.191,24",
+          "opex": "2.930,45",
+          "tPred": "0",
+          "dur": "12",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,075"
+        },
+        "2": {
+          "nome": "EEE",
+          "qtd": "1",
+          "un": "un",
+          "preco": "450.000",
+          "opex": "13.500",
+          "tPred": "3",
+          "dur": "13",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,075"
+        },
+        "3": {
+          "nome": "Linha de recalque",
+          "qtd": "54",
+          "un": "m",
+          "preco": "833,11",
+          "opex": "1.349,64",
+          "tPred": "3",
+          "dur": "10",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,075"
+        }
+      },
+      "atualizadoEm": "",
+      "atualizadoPor": ""
+    },
+    "cts_e1b91_2_1": {
+      "id": "cts_e1b91_2_1",
+      "db": {
+        "fat": "3.888,36",
+        "arr": "3.285,66",
+        "ligU": "62",
+        "ligA": "28",
+        "ligN": "34",
+        "ecoU": "161",
+        "ecoA": "73",
+        "ecoN": "88",
+        "ligUInd": "",
+        "ligAInd": "",
+        "fatInd": "",
+        "arrInd": "",
+        "ticket": "117,34"
+      },
+      "params": {
+        "preco": "562,85",
+        "tarr": "2",
+        "ramp": "9",
+        "vaz": "2,57",
+        "popU": "",
+        "popA": "",
+        "popN": "",
+        "pot": "1,15",
+        "vazInd": ""
+      },
+      "nome": "cts_e1b91_2_1",
+      "subId": "e1b91_2_1",
+      "sisId": "e1s91",
+      "sistema": "Sistema 91 Interior1",
+      "jusante": "e1b91_2_2",
+      "obrasOverride": {
+        "0": {
+          "nome": "Coletor de tempo seco",
+          "qtd": "34",
+          "un": "ligacao",
+          "preco": "2.526,61",
+          "opex": "2.577,14",
+          "tPred": "0",
+          "dur": "12",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,075"
+        },
+        "1": {
+          "nome": "Tronco",
+          "qtd": "41",
+          "un": "m",
+          "preco": "1.214,11",
+          "opex": "1.493,36",
+          "tPred": "0",
+          "dur": "12",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,075"
+        },
+        "2": {
+          "nome": "EEE",
+          "qtd": "1",
+          "un": "un",
+          "preco": "450.000",
+          "opex": "13.500",
+          "tPred": "3",
+          "dur": "13",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,075"
+        },
+        "3": {
+          "nome": "Linha de recalque",
+          "qtd": "27",
+          "un": "m",
+          "preco": "858,83",
+          "opex": "695,65",
+          "tPred": "3",
+          "dur": "10",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,075"
+        }
+      },
+      "atualizadoEm": "",
+      "atualizadoPor": ""
     }
-   },
-   "versao": "f681c4159f76c4a9"
   },
-  "cts_e1b81_1_1": {
-   "id": "cts_e1b81_1_1",
-   "db": {
-    "fat": "108.191,81",
-    "arr": "96.507,09",
-    "ligU": "1.084",
-    "ligA": "490",
-    "ligN": "594",
-    "ecoU": "2.817",
-    "ecoA": "1.274",
-    "ecoN": "1.543",
-    "ligUInd": "",
-    "ligAInd": "",
-    "fatInd": "",
-    "arrInd": "",
-    "ticket": "196,95"
-   },
-   "params": {
-    "preco": "1.071,48",
-    "tarr": "6",
-    "ramp": "2",
-    "vaz": "44,97",
-    "popU": "",
-    "popA": "",
-    "popN": "",
-    "pot": "1,15",
-    "vazInd": ""
-   },
-   "nome": "cts_e1b81_1_1",
-   "subId": "e1b81_1_1",
-   "sisId": "e1s81",
-   "sistema": "Sistema 81 Interior1",
-   "jusante": "e1b81_1_2",
-   "obrasOverride": {
-    "0": {
-     "qtd": "594",
-     "un": "ligacao",
-     "preco": "2.677,38",
-     "opex": "47.710,91",
-     "tPred": "0",
-     "dur": "12",
-     "anoObrig": "0",
-     "proibAte": "0",
-     "wacc": "0,075"
-    },
-    "1": {
-     "qtd": "713",
-     "un": "m",
-     "preco": "1.191,31",
-     "opex": "25.482,12",
-     "tPred": "0",
-     "dur": "12",
-     "anoObrig": "0",
-     "proibAte": "0",
-     "wacc": "0,075"
-    },
-    "2": {
-     "qtd": "1",
-     "un": "un",
-     "preco": "450.000",
-     "opex": "13.500",
-     "tPred": "3",
-     "dur": "13",
-     "anoObrig": "0",
-     "proibAte": "0",
-     "wacc": ""
-    },
-    "3": {
-     "qtd": "475",
-     "un": "m",
-     "preco": "877,91",
-     "opex": "12.510,22",
-     "tPred": "3",
-     "dur": "10",
-     "anoObrig": "0",
-     "proibAte": "0",
-     "wacc": ""
-    }
-   },
-   "versao": "1d0f5ae4f0642bef"
-  },
-  "cts_e1b83_1_1": {
-   "id": "cts_e1b83_1_1",
-   "db": {
-    "fat": "7.306,87",
-    "arr": "6.313,13",
-    "ligU": "70",
-    "ligA": "32",
-    "ligN": "38",
-    "ecoU": "183",
-    "ecoA": "83",
-    "ecoN": "100",
-    "ligUInd": "",
-    "ligAInd": "",
-    "fatInd": "",
-    "arrInd": "",
-    "ticket": "197,29"
-   },
-   "params": {
-    "preco": "1.000,65",
-    "tarr": "1",
-    "ramp": "12",
-    "vaz": "2,88",
-    "popU": "",
-    "popA": "",
-    "popN": "",
-    "pot": "1,15",
-    "vazInd": ""
-   },
-   "nome": "cts_e1b83_1_1",
-   "subId": "e1b83_1_1",
-   "sisId": "e1s83",
-   "sistema": "Sistema 83 Interior1",
-   "jusante": "e1b83_1_2",
-   "obrasOverride": {
-    "0": {
-     "qtd": "39",
-     "un": "ligacao",
-     "preco": "2.779,06",
-     "opex": "3.251,5",
-     "tPred": "0",
-     "dur": "12",
-     "anoObrig": "0",
-     "proibAte": "0",
-     "wacc": ""
-    },
-    "1": {
-     "qtd": "47",
-     "un": "m",
-     "preco": "1.138,44",
-     "opex": "1.605,2",
-     "tPred": "0",
-     "dur": "12",
-     "anoObrig": "0",
-     "proibAte": "0",
-     "wacc": ""
-    },
-    "2": {
-     "qtd": "1",
-     "un": "un",
-     "preco": "450.000",
-     "opex": "13.500",
-     "tPred": "3",
-     "dur": "13",
-     "anoObrig": "0",
-     "proibAte": "0",
-     "wacc": ""
-    },
-    "3": {
-     "qtd": "31",
-     "un": "m",
-     "preco": "1.058,47",
-     "opex": "984,38",
-     "tPred": "3",
-     "dur": "10",
-     "anoObrig": "0",
-     "proibAte": "0",
-     "wacc": ""
-    }
-   },
-   "versao": "42946fbb20922a08"
-  },
-  "cts_e1b83_2_3": {
-   "id": "cts_e1b83_2_3",
-   "db": {
-    "fat": "1.183,68",
-    "arr": "1.083,07",
-    "ligU": "40",
-    "ligA": "18",
-    "ligN": "22",
-    "ecoU": "104",
-    "ecoA": "47",
-    "ecoN": "57",
-    "ligUInd": "",
-    "ligAInd": "",
-    "fatInd": "",
-    "arrInd": "",
-    "ticket": "60,17"
-   },
-   "params": {
-    "preco": "1.264,01",
-    "tarr": "2",
-    "ramp": "11",
-    "vaz": "2,16",
-    "popU": "",
-    "popA": "",
-    "popN": "",
-    "pot": "1,15",
-    "vazInd": ""
-   },
-   "nome": "cts_e1b83_2_3",
-   "subId": "e1b83_2_3",
-   "sisId": "e1s83",
-   "sistema": "Sistema 83 Interior1",
-   "jusante": "e1e83",
-   "obrasOverride": {
-    "0": {
-     "qtd": "22",
-     "un": "ligacao",
-     "preco": "2.290,58",
-     "opex": "1.511,78",
-     "tPred": "0",
-     "dur": "12",
-     "anoObrig": "0",
-     "proibAte": "0",
-     "wacc": "0,075"
-    },
-    "1": {
-     "qtd": "26",
-     "un": "m",
-     "preco": "1.202,78",
-     "opex": "938,17",
-     "tPred": "0",
-     "dur": "12",
-     "anoObrig": "0",
-     "proibAte": "0",
-     "wacc": "0,075"
-    },
-    "2": {
-     "qtd": "1",
-     "un": "un",
-     "preco": "450.000",
-     "opex": "13.500",
-     "tPred": "3",
-     "dur": "13",
-     "anoObrig": "0",
-     "proibAte": "0",
-     "wacc": "0,075"
-    },
-    "3": {
-     "qtd": "18",
-     "un": "m",
-     "preco": "914,1",
-     "opex": "493,61",
-     "tPred": "3",
-     "dur": "10",
-     "anoObrig": "0",
-     "proibAte": "0",
-     "wacc": "0,075"
-    }
-   },
-   "versao": "cbd59c92e51fcc15"
-  },
-  "cts_e1b87_1_3": {
-   "id": "cts_e1b87_1_3",
-   "db": {
-    "fat": "15.964,78",
-    "arr": "12.963,4",
-    "ligU": "125",
-    "ligA": "57",
-    "ligN": "68",
-    "ecoU": "326",
-    "ecoA": "148",
-    "ecoN": "178",
-    "ligUInd": "",
-    "ligAInd": "",
-    "fatInd": "",
-    "arrInd": "",
-    "ticket": "227,43"
-   },
-   "params": {
-    "preco": "944,86",
-    "tarr": "6",
-    "ramp": "9",
-    "vaz": "5,6",
-    "popU": "",
-    "popA": "",
-    "popN": "",
-    "pot": "1,15",
-    "vazInd": ""
-   },
-   "nome": "cts_e1b87_1_3",
-   "subId": "e1b87_1_3",
-   "sisId": "e1s87",
-   "sistema": "Sistema 87 Interior1",
-   "jusante": "e1b87_1_4",
-   "obrasOverride": {
-    "0": {
-     "qtd": "68",
-     "un": "ligacao",
-     "preco": "2.879,12",
-     "opex": "5.873,4",
-     "tPred": "0",
-     "dur": "12",
-     "anoObrig": "0",
-     "proibAte": "0",
-     "wacc": "0,075"
-    },
-    "1": {
-     "qtd": "82",
-     "un": "m",
-     "preco": "1.191,24",
-     "opex": "2.930,45",
-     "tPred": "0",
-     "dur": "12",
-     "anoObrig": "0",
-     "proibAte": "0",
-     "wacc": "0,075"
-    },
-    "2": {
-     "qtd": "1",
-     "un": "un",
-     "preco": "450.000",
-     "opex": "13.500",
-     "tPred": "3",
-     "dur": "13",
-     "anoObrig": "0",
-     "proibAte": "0",
-     "wacc": "0,075"
-    },
-    "3": {
-     "qtd": "54",
-     "un": "m",
-     "preco": "833,11",
-     "opex": "1.349,64",
-     "tPred": "3",
-     "dur": "10",
-     "anoObrig": "0",
-     "proibAte": "0",
-     "wacc": "0,075"
-    }
-   },
-   "versao": "99ec4940ab207ab2"
-  },
-  "cts_e1b91_2_1": {
-   "id": "cts_e1b91_2_1",
-   "db": {
-    "fat": "3.888,36",
-    "arr": "3.285,66",
-    "ligU": "62",
-    "ligA": "28",
-    "ligN": "34",
-    "ecoU": "161",
-    "ecoA": "73",
-    "ecoN": "88",
-    "ligUInd": "",
-    "ligAInd": "",
-    "fatInd": "",
-    "arrInd": "",
-    "ticket": "117,34"
-   },
-   "params": {
-    "preco": "562,85",
-    "tarr": "2",
-    "ramp": "9",
-    "vaz": "2,57",
-    "popU": "",
-    "popA": "",
-    "popN": "",
-    "pot": "1,15",
-    "vazInd": ""
-   },
-   "nome": "cts_e1b91_2_1",
-   "subId": "e1b91_2_1",
-   "sisId": "e1s91",
-   "sistema": "Sistema 91 Interior1",
-   "jusante": "e1b91_2_2",
-   "obrasOverride": {
-    "0": {
-     "qtd": "34",
-     "un": "ligacao",
-     "preco": "2.526,61",
-     "opex": "2.577,14",
-     "tPred": "0",
-     "dur": "12",
-     "anoObrig": "0",
-     "proibAte": "0",
-     "wacc": "0,075"
-    },
-    "1": {
-     "qtd": "41",
-     "un": "m",
-     "preco": "1.214,11",
-     "opex": "1.493,36",
-     "tPred": "0",
-     "dur": "12",
-     "anoObrig": "0",
-     "proibAte": "0",
-     "wacc": "0,075"
-    },
-    "2": {
-     "qtd": "1",
-     "un": "un",
-     "preco": "450.000",
-     "opex": "13.500",
-     "tPred": "3",
-     "dur": "13",
-     "anoObrig": "0",
-     "proibAte": "0",
-     "wacc": "0,075"
-    },
-    "3": {
-     "qtd": "27",
-     "un": "m",
-     "preco": "858,83",
-     "opex": "695,65",
-     "tPred": "3",
-     "dur": "10",
-     "anoObrig": "0",
-     "proibAte": "0",
-     "wacc": "0,075"
-    }
-   },
-   "versao": "e5bf3b793d2539c7"
-  }
- },
- "inconsistencias": []
+  "inconsistencias": []
 }

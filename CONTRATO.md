@@ -6,8 +6,9 @@ poucas garantias sem as quais a tela mente para o usuário.
 
 > **O contrato do CADASTRO não está aqui.** Ele já existe em
 > [`DEPLOY.md`](DEPLOY.md) §3 (leitura das fichas, PUT por ficha, trilha de
-> override, 409). Este documento cobre as duas áreas novas: **resultados**
-> (leitura pura de uma rodada) e **simulação** (o disparo da rodada).
+> override, auditoria da ficha). Este documento cobre as duas áreas novas:
+> **resultados** (leitura pura de uma rodada) e **simulação** (o disparo da
+> rodada).
 
 O frontend inteiro roda hoje contra mocks (MSW). Cada endpoint abaixo tem um
 handler em `src/mocks/handlersResultado.ts` e `src/mocks/handlersSimulacao.ts` —
@@ -48,10 +49,14 @@ cada uma:
 | `404`         | Recurso inexistente. A tela mostra o estado de erro com "Tentar de novo" |
 | `5xx`         | Idem 404, sem detalhe técnico ao usuário                                 |
 
-O `409` aparece em dois lugares e o corpo é o mesmo nos dois: conflito de edição no
-cadastro (ver `DEPLOY.md`) e tentativa de reexecutar uma rodada já publicada (§4.5).
-Nos dois casos o usuário precisa entender **o que** conflitou, e a única fonte é o
-texto que vem no corpo.
+O `409` aparece **só na simulação**: tentativa de reexecutar uma rodada já
+publicada (§4.5). O usuário precisa entender **o que** conflitou, e a única fonte
+é o texto que vem no corpo.
+
+O outro `409`, o de edição de cadastro, **saiu** — o servidor não recusa mais a
+gravação de quem leu a ficha antes de um colega salvar. No lugar dele a ficha
+carrega `atualizadoEm`/`atualizadoPor` e a tela mostra quem mexeu por último
+(`DEPLOY.md` §3). É uma troca, não uma remoção: barrar virou avisar.
 
 Uma resposta 2xx que **não** seja JSON válido é tratada como erro. Isso é
 proposital: proxy devolvendo HTML já quebrou este app antes, e falhar cedo é
@@ -611,11 +616,42 @@ tela mostra o nome técnico ao lado de cada controle).
 }
 ```
 
-Resposta `201`:
+Resposta `201` — rodada criada:
 
 ```jsonc
-{ "runId": "run_novo_0001", "status": "RODANDO" } // PENDENTE | RODANDO
+{ "runId": "run_novo_0001", "status": "RODANDO", "jaExistia": false } // PENDENTE | RODANDO
 ```
+
+Resposta `200` — **nada foi criado; já existia uma rodada idêntica** (R5):
+
+```jsonc
+{ "runId": "run_de_ontem", "status": "SUCESSO", "jaExistia": true }
+```
+
+O `200` acontece quando o pedido é **idêntico** (mesmos parâmetros) e **da mesma
+pessoa** — o `USUARIO` entra na identidade do pedido, então duas pessoas pedindo a
+mesma coisa geram duas rodadas. Dois casos caem aqui:
+
+| caso | o que a tela faz |
+| --- | --- |
+| rodada **em voo** (`PENDENTE`/`RODANDO`) | acompanha, como se a tivesse criado — é o duplo clique levando ao mesmo lugar |
+| rodada **concluída** (`SUCESSO`) | avisa que já existe e oferece o link; não abre acompanhamento de algo que terminou |
+
+Três condições para uma rodada **concluída** deduplicar, e nenhuma é dispensável:
+
+1. **`SUCESSO`** — `ERRO` libera execução nova, sempre. Quem repete depois de uma
+   falha está corrigindo algo, e apontá-lo para o fracasso anterior impediria a
+   correção.
+2. **publicada** — `SUCESSO` sem resultado consultável é um estado que mente;
+   mandar alguém para ele é prometer uma tela vazia.
+3. **posterior à última alteração do cadastro da unidade** — os mesmos parâmetros
+   de tela não são a mesma simulação se o cadastro mudou no meio. O servidor
+   compara com `atualizado_em` das fichas.
+
+**`jaExistia` viaja no CORPO**, e não só no código HTTP. É deliberado: o cliente
+do front devolve o JSON e descarta o status, então ler `200` vs `201` exigiria
+mudar o transporte para saber o que o corpo já diz. O código continua correto para
+quem lê HTTP — quem tem os dois, use o que preferir.
 
 Três detalhes que o front garante e o backend **não deve assumir**:
 

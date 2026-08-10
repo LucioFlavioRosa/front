@@ -21,9 +21,8 @@ import type {
 export function mensagemDeErro(e: unknown): string {
   if (e instanceof ApiError) {
     if (e.naoAutorizado) return 'Sua sessão expirou. Entre de novo para salvar.'
-    // O 409 normalmente nao chega aqui: a tela oferece recarregar do servidor
-    // (state/erroAoSalvar.ts). Este texto e a saida de emergencia.
-    if (e.conflito) return 'Outra pessoa salvou esta ficha antes.'
+    // O ramo do 409 saiu junto com o 409 de ficha: a escrita nao responde mais
+    // esse codigo, e um texto para uma resposta impossivel so envelhece.
     if (e.invalido) return 'O servidor recusou os dados desta ficha. Confira os campos preenchidos.'
     return `Não foi possível salvar (erro ${e.status}). Suas edições continuam nesta tela.`
   }
@@ -32,30 +31,31 @@ export function mensagemDeErro(e: unknown): string {
 
 /**
  * `onSalva` recebe as variaveis da chamada que o servidor aceitou E a resposta
- * dele — a resposta traz a `versao` nova, que precisa voltar para o state ou o
- * proximo salvamento da mesma ficha conflita consigo mesmo. E por ele
- * que a ficha vira "sem mudancas" no store — no nivel do hook, pela mesma razao
- * dos callbacks de CTS abaixo: sair da tela antes da resposta nao pode fazer o
- * app achar que a ficha continua nao salva.
+ * dele — a resposta traz a auditoria nova (quem gravou e quando), que precisa
+ * voltar para o state ou a ficha continua mostrando a alteracao ANTERIOR. E por
+ * ele que a ficha vira "sem mudancas" no store — no nivel do hook, pela mesma
+ * razao dos callbacks de CTS abaixo: sair da tela antes da resposta nao pode
+ * fazer o app achar que a ficha continua nao salva.
  */
 interface OpcoesSalvar<V> {
   onSalva?: (vars: V, resposta: RespostaSalvar) => void
 }
 
 /**
- * Denuncia servidor que aceitou (2xx) e nao devolveu `versao`.
+ * Denuncia servidor que aceitou (2xx) e nao devolveu a auditoria.
  *
  * Nao vira toast: o salvamento DEU CERTO e o usuario nao tem o que fazer com a
- * informacao. Mas a ficha perde a protecao de conflito ate a proxima carga (ver
- * `FICHA_SALVA` no reducer), e isso nao pode acontecer em silencio para quem
- * mantem o sistema — foi exatamente um silencio desses que deixou o 409 inteiro
- * sem funcionar por semanas.
+ * informacao. Mas a ficha passa a exibir a alteracao ANTERIOR como se fosse a
+ * ultima — o unico aviso que sobrou sobre gravacao concorrente mostrando o nome
+ * errado —, e isso nao pode acontecer em silencio para quem mantem o sistema.
+ * Foi exatamente um silencio desses que deixou o 409 inteiro sem funcionar por
+ * semanas: o front nao mandava `versao`, ninguem via, e o teste mockava.
  */
 function conferirContrato(rota: string, dado: RespostaSalvar | undefined): void {
-  if (!dado?.versao) {
+  if (!dado?.atualizadoPor) {
     console.error(
-      `[contrato] PUT ${rota} respondeu 2xx sem "versao". A ficha fica sem ` +
-        'protecao de conflito (409) ate a tela recarregar.',
+      `[contrato] PUT ${rota} respondeu 2xx sem "atualizadoPor". A ficha vai ` +
+        'mostrar a alteracao anterior ate a tela recarregar.',
     )
   }
 }

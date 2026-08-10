@@ -1,52 +1,29 @@
 /**
- * O que a tela faz quando uma gravacao falha.
+ * O que a tela faz quando uma gravacao falha: toast, e a edicao continua aqui.
  *
- * Quase tudo vira toast (a edicao continua na tela, o usuario tenta de novo).
- * O 409 e diferente: dizer "recarregue" num toast nao ajudava, porque recarregar
- * a pagina NAO trazia a versao nova — os efeitos de seed so preenchem fatia
- * vazia e o rascunho reidratava o estado antigo. Entao o 409 abre a confirmacao
- * que realmente resolve: descartar o local e resemear do servidor.
+ * Este modulo existia por causa de UM caso — o 409. Dizer "recarregue" num toast
+ * nao resolvia, porque recarregar a pagina nao trazia a versao nova (os efeitos
+ * de seed so preenchem fatia vazia, e o rascunho reidratava o estado antigo);
+ * entao ele abria a confirmacao de descartar o local e resemear do servidor.
+ *
+ * O 409 de ficha SAIU (R6 — ver `domain/auditoria.ts`). A escrita de cadastro
+ * nao responde mais esse codigo, e um ramo para uma resposta impossivel e pior
+ * que ramo nenhum: ninguem consegue testa-lo, e ele envelhece afirmando algo
+ * falso sobre o servidor.
+ *
+ * O fluxo de "recarregar do servidor" continua vivo e nao foi perdido junto: ele
+ * e oferecido pelo `CadastroContext` quando um RASCUNHO local diverge do que a
+ * rede acabou de trazer, que e a outra situacao em que ele resolve de verdade.
+ *
+ * O hook permanece — as quatro telas o chamam, e ter um so lugar para "o que
+ * fazer quando o Salvar falha" e o que faz as quatro concordarem no dia em que
+ * houver um caso novo.
  */
 import { useCallback } from 'react'
-import { ApiError } from '@/comum/api/client'
 import { mensagemDeErro } from '@/cadastro/api/mutations'
 import { useApp } from '@/comum/state/AppContext'
-import { useCadastro } from '@/cadastro/state/CadastroContext'
-import { useRecarregarDoServidor } from '@/cadastro/state/recarregar'
 
-export function useErroAoSalvar(unidadeId: string | undefined) {
-  const { toast, askConfirm } = useApp()
-  const recarregarDoServidor = useRecarregarDoServidor()
-  const { sujas, hierEditada } = useCadastro()
-
-  return useCallback(
-    (erro: unknown) => {
-      if (!(erro instanceof ApiError) || !erro.conflito || !unidadeId) {
-        toast(mensagemDeErro(erro))
-        return
-      }
-      // O recarregar descarta TUDO o que e local nesta unidade, nao so as
-      // fichas: as correcoes de hierarquia vao junto e precisam ser ditas.
-      const n = sujas.length
-      const fichas =
-        n === 0
-          ? ''
-          : n === 1
-            ? 'a ficha que você ainda não salvou'
-            : `as ${n} fichas que você ainda não salvou`
-      const perdas = [fichas, hierEditada ? 'as correções de hierarquia' : '']
-        .filter(Boolean)
-        .join(' e ')
-      askConfirm({
-        titulo: 'Outra pessoa salvou esta ficha antes',
-        texto:
-          'O servidor tem uma versão mais nova desta ficha. Recarregar traz a versão dele e ' +
-          `descarta ${perdas || 'as edições locais'} nesta unidade. ` +
-          'Cancelar mantém tudo como está — dá para copiar o que você digitou antes de recarregar.',
-        confirmarLabel: 'Recarregar do servidor',
-        onConfirm: () => void recarregarDoServidor(unidadeId),
-      })
-    },
-    [toast, askConfirm, recarregarDoServidor, sujas.length, hierEditada, unidadeId],
-  )
+export function useErroAoSalvar(_unidadeId: string | undefined) {
+  const { toast } = useApp()
+  return useCallback((erro: unknown) => toast(mensagemDeErro(erro)), [toast])
 }

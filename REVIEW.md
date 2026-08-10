@@ -85,10 +85,15 @@ o valor recém-gravado e a origem Databricks se perderia.
 
 ### 3. Reverter uma edição apaga o registro dela
 
-Voltar um campo ao valor original **remove** o override; voltar um campo de obra
-ao valor da obra-base tira a chave do `obrasOverride`. Sem isso o backend
+Voltar um campo ao valor original **remove** o override. Sem isso o backend
 receberia uma trilha dizendo "X virou X" e o botão Salvar ficaria aceso para
 sempre (a assinatura da ficha inclui a trilha).
+
+Nas **obras** isso mudou: elas não têm mais obra-base para comparar, e o mapa
+carrega a obra inteira como o servidor a mandou. Apagar chave dali criaria buraco
+— o campo voltaria vazio na tela e o `PUT` gravaria NULL numa coluna que tinha
+valor. O "digitou de volta o original" continua funcionando sem truque: valor
+igual, assinatura igual, ficha limpa.
 → `cadastroReducer.test.ts`, bloco "reverter uma edição desfaz o registro dela".
 
 ### 4. Callback que mexe no store fica no nível do hook
@@ -108,9 +113,10 @@ Daí: **callback que mexe no store fica no nível do hook**
 (`useMutation({ onSuccess })` em `api/mutations.ts`); callback que só mostra toast
 pode ficar no `mutate(vars, {...})` da página.
 
-É a mesma razão pela qual a `versao` devolvida pelo PUT volta ao store por
-`onSuccess` do hook, e não pela página.
-→ `escrita.test.tsx`, bloco "o ciclo da versao".
+É a mesma razão pela qual a **auditoria** devolvida pelo PUT (`atualizadoEm`,
+`atualizadoPor`) volta ao store por `onSuccess` do hook, e não pela página. Ela
+substituiu a `versao`, que fazia o mesmo caminho quando havia 409 de ficha.
+→ `escrita.test.tsx`, bloco "o ciclo da auditoria".
 
 ### 5. O rascunho entra **no lugar** do seed
 
@@ -138,7 +144,9 @@ versão anterior" e "rascunho feito sobre dado que já mudou".
 `state/recarregar.ts`: apaga o rascunho → **aguarda** `resetQueries` → sobe a
 geração, que entra na `key` do `CadastroProvider` e o remonta do zero. É a única
 forma de trocar dado já semeado (ver item 1). Um refetch sozinho não faria nada.
-Usado no 409 e quando o rascunho recuperado é mais velho que o servidor.
+Usado quando o rascunho recuperado é mais velho que o servidor. Era usado também
+no 409 de ficha, que saiu (R6) — o gatilho do rascunho é o que restou, e é o que
+os testes exercitam.
 
 ### 7. A régua da cidade muda o que a ficha cobra
 

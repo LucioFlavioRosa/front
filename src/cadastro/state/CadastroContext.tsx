@@ -46,6 +46,7 @@ import {
 import type { FichaCidade, FichaCts, FichaEte, FichaSubBacia } from '@/cadastro/api/escrita'
 import { gravarRascunho, lerRascunho, limparRascunho } from '@/cadastro/state/rascunho'
 import { useApp } from '@/comum/state/AppContext'
+import type { Auditoria } from '@/cadastro/domain/auditoria'
 import { useRecarregarDoServidor } from '@/cadastro/state/recarregar'
 
 const now = () => new Date().toISOString()
@@ -95,7 +96,7 @@ interface CadastroValue {
   hierEditada: boolean
   estaSuja: (chave: ChaveFicha) => boolean
   /** Chamado quando o servidor aceita uma ficha, com o corpo que foi enviado. */
-  marcarSalva: (chave: ChaveFicha, ficha: unknown, versao?: string) => void
+  marcarSalva: (chave: ChaveFicha, ficha: unknown, auditoria?: Partial<Auditoria>) => void
   // Corpo do PUT de cada tela. Vem daqui (e nao montado na pagina) para o que
   // o botao envia ser exatamente o que o controle de "tem mudanca?" compara.
   fichaDaSub: (subId: string) => FichaSubBacia | null
@@ -404,8 +405,8 @@ export function CadastroProvider({
       // A assinatura vem do corpo QUE FOI ENVIADO, nao do estado atual: se o
       // usuario continuou digitando enquanto o PUT voava, essas teclas seguem
       // como nao salvas — que e a verdade.
-      marcarSalva: (chave: ChaveFicha, ficha: unknown, versao?: string) =>
-        dispatch({ type: 'FICHA_SALVA', chave, assinatura: assinatura(ficha), versao }),
+      marcarSalva: (chave: ChaveFicha, ficha: unknown, auditoria?: Partial<Auditoria>) =>
+        dispatch({ type: 'FICHA_SALVA', chave, assinatura: assinatura(ficha), auditoria }),
     }),
     [],
   )

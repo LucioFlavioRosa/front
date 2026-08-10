@@ -15,10 +15,12 @@
  * (Sim = CTS orcada a parte; Nao = demanda somada a sub-bacia pareada), nao dado
  * de cadastro — vive na tela de simulacao, que nao faz parte deste app.
  */
-import type { Obra, SubBaciaDb, SubBaciaParams } from '@/cadastro/domain/subbacia'
-import { CAMPOS_PARAMS, CAMPOS_POR_OBRA, mkObrasDe, pendDe } from '@/cadastro/domain/subbacia'
+import type { Auditoria } from '@/cadastro/domain/auditoria'
 
-export interface Cts {
+import type { Obra, SubBaciaDb, SubBaciaParams } from '@/cadastro/domain/subbacia'
+import { CAMPOS_PARAMS, CAMPOS_POR_OBRA, mkObras, pendDe } from '@/cadastro/domain/subbacia'
+
+export interface Cts extends Auditoria {
   id: string
   nome: string
   /** Sub-bacia pareada 1:1 — a area da CTS se sobrepoe a dela. */
@@ -31,17 +33,6 @@ export interface Cts {
   params: SubBaciaParams
   /** Overrides das 4 obras-base, por indice (o resto herda a base). */
   obrasOverride: Record<string, Partial<Obra>>
-  /**
-   * Impressao do conteudo da ficha no momento em que o servidor a entregou.
-   *
-   * Viaja de volta no PUT e e o que dispara o 409: se outra pessoa gravou no
-   * intervalo, a versao que o servidor tem nao e mais esta.
-   *
-   * NAO entra na assinatura de "ficha suja" — ver `assinatura()` em `fichas.ts`.
-   * Aquela mede o que o USUARIO mudou; esta muda sozinha a cada gravacao, e
-   * inclui-la deixaria toda ficha suja para sempre depois de salvar.
-   */
-  versao: string
 }
 
 /** De-para da sobreposicao (tabela `subbacia-cts`). */
@@ -77,30 +68,29 @@ export interface CtsPayload {
 }
 
 /**
- * As 4 obras-base de toda CTS. O "Coletor de tempo seco" e a ancora de coleta
- * (o equivalente da "Ligacao de esgoto" da sub-bacia: e ele que liga o
- * faturamento); os tres de transporte espelham os da sub-bacia.
+ * Quantos componentes de obra toda CTS tem — quatro, contra os cinco da
+ * sub-bacia. Espelha `pendencias.OBRAS_CTS`; ver `OBRAS_POR_SUBBACIA`.
  */
-// prettier-ignore
-export const BASE_OBRAS_CTS: Obra[] = [
-  { nome: 'Coletor de tempo seco', un: 'm', qtd: '0', preco: '1.480,00', opex: '0', tPred: '0', dur: '0', anoObrig: '0', proibAte: '0', wacc: '0,091' },
-  { nome: 'Coletor tronco', un: 'm', qtd: '0', preco: '1.200,00', opex: '0', tPred: '0', dur: '0', anoObrig: '0', proibAte: '0', wacc: '0,091' },
-  { nome: 'Estação elevatória (EEE)', un: 'un', qtd: '0', preco: '0', opex: '0', tPred: '0', dur: '0', anoObrig: '0', proibAte: '0', wacc: '' },
-  { nome: 'Linha de recalque (LR)', un: 'm', qtd: '0', preco: '900,00', opex: '0', tPred: '0', dur: '15', anoObrig: '0', proibAte: '0', wacc: '0,067' },
-]
+export const OBRAS_POR_CTS = 4
 
-/** Resolve as 4 obras aplicando os overrides da CTS sobre a base. */
-export function mkObrasCts(override: Record<string, Partial<Obra>>): Obra[] {
-  return mkObrasDe(BASE_OBRAS_CTS, override)
-}
+/**
+ * As obras da CTS: as MESMAS de `mkObras`, porque a diferenca era a base.
+ *
+ * Havia aqui `BASE_OBRAS_CTS`, quatro obras literais — e ela guardava uma
+ * armadilha propria: usava o vocabulario da SUB-BACIA (`Coletor tronco`,
+ * `Estação elevatória (EEE)`) enquanto `componentes_cts_capex` chama os mesmos
+ * componentes de `Tronco` e `EEE`. Agora o nome vem do banco, por tabela, e a
+ * divergencia de vocabulario deixa de ser problema de alguem.
+ */
+export const mkObrasCts = mkObras
 
 /** Campos que uma CTS precisa ter preenchidos: params + 4 obras. */
-export const CTS_CAMPOS = CAMPOS_PARAMS + BASE_OBRAS_CTS.length * CAMPOS_POR_OBRA
+export const CTS_CAMPOS = CAMPOS_PARAMS + OBRAS_POR_CTS * CAMPOS_POR_OBRA
 
 /** Idem, com os 2 campos de populacao quando a cidade mede a meta por ela. */
 export const camposDaCts = (porPopulacao: boolean) => CTS_CAMPOS + (porPopulacao ? 2 : 0)
 
 /** Pendencias da CTS — mesma regra da sub-bacia, com 4 obras (wacc nao conta). */
 export function ctsPend(c: Cts, porPopulacao = false): number {
-  return pendDe(c.params, mkObrasCts(c.obrasOverride), porPopulacao)
+  return pendDe(c.params, mkObrasCts(c.obrasOverride), porPopulacao, OBRAS_POR_CTS)
 }

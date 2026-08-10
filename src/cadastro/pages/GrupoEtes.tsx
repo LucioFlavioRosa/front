@@ -4,6 +4,7 @@ import { CascadeTree, type TreeNode } from '@/cadastro/components/CascadeTree'
 import { FieldRow } from '@/cadastro/components/FieldRow'
 import { Carregando, ErroCarga, Vazio } from '@/comum/components/Estado'
 import { MarcaSalvamento } from '@/cadastro/components/MarcaSalvamento'
+import { UltimaAlteracao } from '@/cadastro/components/UltimaAlteracao'
 import { GrupoHeader } from '@/cadastro/pages/GrupoHeader'
 import { chipPendencias } from '@/cadastro/lib/chip'
 import { useApp } from '@/comum/state/AppContext'
@@ -40,7 +41,7 @@ export function GrupoEtes() {
   } = useCadastro()
   const erroAoSalvar = useErroAoSalvar(unidadeId)
   const salvarM = useSalvarEte(unidadeId, {
-    onSalva: ({ eteId, ficha }, r) => marcarSalva(chaveEte(eteId), ficha, r?.versao),
+    onSalva: ({ eteId, ficha }, r) => marcarSalva(chaveEte(eteId), ficha, r),
   })
 
   const [selEte, setSelEte] = useState('')
@@ -181,6 +182,7 @@ export function GrupoEtes() {
         >
           {g4Chip.label}
         </span>
+        <UltimaAlteracao auditoria={cur} />
         <MarcaSalvamento sujo={eteSuja} />
         <button
           type="button"

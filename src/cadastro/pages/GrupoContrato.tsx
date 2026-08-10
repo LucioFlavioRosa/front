@@ -4,6 +4,7 @@ import { CascadeTree, type TreeNode } from '@/cadastro/components/CascadeTree'
 import { FieldRow } from '@/cadastro/components/FieldRow'
 import { Carregando, ErroCarga, Vazio } from '@/comum/components/Estado'
 import { MarcaSalvamento } from '@/cadastro/components/MarcaSalvamento'
+import { UltimaAlteracao } from '@/cadastro/components/UltimaAlteracao'
 import { GrupoHeader } from '@/cadastro/pages/GrupoHeader'
 import { fieldStyle } from '@/cadastro/lib/fieldState'
 import { chipPendencias } from '@/cadastro/lib/chip'
@@ -48,7 +49,7 @@ export function GrupoContrato() {
   } = useCadastro()
   const erroAoSalvar = useErroAoSalvar(unidadeId)
   const salvarM = useSalvarCidade(unidadeId, {
-    onSalva: ({ cidId, ficha }, r) => marcarSalva(chaveCidade(cidId), ficha, r?.versao),
+    onSalva: ({ cidId, ficha }, r) => marcarSalva(chaveCidade(cidId), ficha, r),
   })
 
   const [selCid, setSelCid] = useState('')
@@ -177,6 +178,7 @@ export function GrupoContrato() {
         >
           {g2Chip.label}
         </span>
+        <UltimaAlteracao auditoria={cur} />
         <MarcaSalvamento sujo={cidSuja} />
         <button
           type="button"

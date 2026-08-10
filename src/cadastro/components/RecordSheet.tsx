@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react'
 import type { ChipStatus } from '@/cadastro/lib/chip'
 import { MarcaSalvamento } from '@/cadastro/components/MarcaSalvamento'
+import { UltimaAlteracao } from '@/cadastro/components/UltimaAlteracao'
+import type { Auditoria } from '@/cadastro/domain/auditoria'
 import styles from './RecordSheet.module.css'
 
 export interface RecordSheetProps {
@@ -8,6 +10,20 @@ export interface RecordSheetProps {
   titulo: ReactNode
   /** Nome amigavel ao lado do titulo mono. */
   nome?: string
+  /**
+   * Quem gravou esta ficha por ultimo, e quando.
+   *
+   * E o que substituiu o 409 (R6 — ver `domain/auditoria.ts`): o servidor nao
+   * recusa mais a gravacao de quem leu a ficha antes de um colega salvar, entao
+   * este e o unico lugar em que uma pessoa descobre que outra mexeu. Fica no
+   * cabecalho da ficha, e nao numa aba de historico, porque a pergunta ("alguem
+   * mexeu nisto?") aparece na hora de editar, e nao na de investigar.
+   *
+   * Ausente ou vazia nao mostra linha nenhuma. Ficha vinda da planilha e nunca
+   * gravada pela tela nao tem autor, e escrever "nunca alterada" afirmaria algo
+   * que o dado nao sustenta: a coluna so existe desde a migracao.
+   */
+  auditoria?: Auditoria
   chip?: ChipStatus
   onSalvar?: () => void
   salvarLabel?: string
@@ -28,6 +44,7 @@ export function RecordSheet({
   subtitulo,
   titulo,
   nome,
+  auditoria,
   chip,
   onSalvar,
   salvarLabel = 'Salvar',
@@ -44,6 +61,7 @@ export function RecordSheet({
           <div className={styles.titulo}>
             {titulo} {nome && <span className={styles.nome}>{nome}</span>}
           </div>
+          <UltimaAlteracao auditoria={auditoria} />
         </div>
         <div className={styles.actions}>
           {chip && (

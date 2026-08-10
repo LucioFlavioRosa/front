@@ -174,6 +174,68 @@ describe('disparo', () => {
   })
 })
 
+describe('rodada idêntica que já existe (R5)', () => {
+  /** Deixa a tela pronta para disparar, com a unidade escolhida. */
+  async function pronta() {
+    renderApp('/simular')
+    await escolherUnidade()
+    await waitFor(() => {
+      const b = screen.getByRole('button', { name: 'Iniciar simulação' }) as HTMLButtonElement
+      expect(b.disabled).toBe(false)
+    })
+  }
+
+  it('concluída: avisa e oferece o link, em vez de acompanhar o que já terminou', async () => {
+    // O servidor deduplica para uma rodada publicada quando o pedido é idêntico,
+    // é da mesma pessoa e o cadastro não mudou desde então. Abrir o modal de
+    // progresso de algo concluído ontem seria teatro — e antes desta mudança a
+    // tela navegava em silêncio, sem dizer que não havia criado nada.
+    estado.respostas['/runs'] = {
+      runId: 'run_de_ontem',
+      status: 'SUCESSO',
+      jaExistia: true,
+    }
+    await pronta()
+    fireEvent.click(screen.getByRole('button', { name: 'Iniciar simulação' }))
+
+    expect(await screen.findByText(/Já existe uma simulação idêntica a esta/)).toBeTruthy()
+    const link = screen.getByRole('link', { name: /Abrir a simulação que já existe/ })
+    expect(link.getAttribute('href')).toBe('/resultados/run_de_ontem')
+    // Nada a acompanhar: sem modal de progresso. (O `apiFake` não registra GETs,
+    // então o polling não dá para afirmar aqui — mas ele só começa com um
+    // `runId` no estado, e é justamente esse estado que este caminho não seta.)
+    expect(screen.queryByRole('dialog')).toBeNull()
+  })
+
+  it('EM VOO continua abrindo o acompanhamento — ali há execução acontecendo', async () => {
+    // Duplo clique e retry do navegador caem aqui, e o comportamento certo é o
+    // de sempre: o segundo clique leva ao mesmo lugar, acompanhando a rodada.
+    estado.respostas['/runs'] = { runId: 'run_em_voo', status: 'RODANDO', jaExistia: true }
+    dados['/runs/run_em_voo/status'] = { runId: 'run_em_voo', status: 'RODANDO', progresso: 30 }
+    await pronta()
+    fireEvent.click(screen.getByRole('button', { name: 'Iniciar simulação' }))
+
+    expect(await screen.findByRole('dialog')).toBeTruthy()
+    expect(screen.queryByText(/Já existe uma simulação idêntica/)).toBeNull()
+  })
+
+  it('servidor sem `jaExistia` segue o caminho normal', async () => {
+    // Compatibilidade com backend anterior: campo ausente é "não sei", e "não
+    // sei" não pode virar um aviso afirmando que a rodada já existia.
+    estado.respostas['/runs'] = { runId: 'run_novo_0001', status: 'RODANDO' }
+    dados['/runs/run_novo_0001/status'] = {
+      runId: 'run_novo_0001',
+      status: 'RODANDO',
+      progresso: 10,
+    }
+    await pronta()
+    fireEvent.click(screen.getByRole('button', { name: 'Iniciar simulação' }))
+
+    expect(await screen.findByRole('dialog')).toBeTruthy()
+    expect(screen.queryByText(/Já existe uma simulação idêntica/)).toBeNull()
+  })
+})
+
 describe('rodada que falha', () => {
   it('status ERRO fecha o "em andamento" e oferece ajustar, não cancelar', async () => {
     // Antes so CANCELADA terminava: uma rodada que falhou ficava "em andamento"

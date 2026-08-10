@@ -10,7 +10,24 @@ import type { CorpoNovaRodada, Prontidao } from '@/simulacao/domain/simulacao'
 
 export interface RespostaNovaRodada {
   runId: string
-  status: 'PENDENTE' | 'RODANDO'
+  /**
+   * Pode ser `SUCESSO`: quando o servidor deduplica para uma rodada CONCLUIDA
+   * (R5), ele devolve o status REAL dela. Dizer `PENDENTE` faria esta tela abrir
+   * o modal de acompanhamento de algo que terminou ontem.
+   */
+  status: 'PENDENTE' | 'RODANDO' | 'SUCESSO'
+  /**
+   * O servidor nao criou rodada: devolveu uma que ja existia, com o mesmo pedido
+   * e do mesmo usuario — em voo (duplo clique, retry) ou concluida.
+   *
+   * Vem no CORPO, e nao pelo codigo 200 vs 201, porque `comum/api/client.ts`
+   * devolve o JSON e descarta o status. Ler o codigo exigiria mudar o transporte
+   * inteiro para saber o que o corpo ja diz.
+   *
+   * Opcional: servidor anterior a esta mudanca nao manda o campo, e ausencia
+   * significa "nao sei", que a tela trata como o caminho normal.
+   */
+  jaExistia?: boolean
 }
 
 export interface StatusRodada {

@@ -59,6 +59,11 @@ export const handlersSimulacao = [
       unidadeId: id,
       unidadeNome: u.nome,
       pendencias: pendenciasDe(id),
+      // O mock nao tem ficha com componente faltando: as fixtures trazem as 5 e
+      // as 4 completas, como o banco real. Lista vazia e a resposta honesta —
+      // inventar uma aqui faria o checklist de desenvolvimento mostrar um erro
+      // que o dado nao tem.
+      faltando: [],
     })
   }),
 
@@ -83,7 +88,11 @@ export const handlersSimulacao = [
 
     const runId = `run_novo_${String(++seq).padStart(4, '0')}`
     rodadas.set(runId, { runId, status: 'RODANDO', progresso: 0, inicio: Date.now() })
-    return HttpResponse.json({ runId, status: 'RODANDO' }, { status: 201 })
+    // `jaExistia: false` sempre: este mock NAO deduplica, e nao deve fingir que
+    // sim — a dedupe de rodada concluida (R5) depende de historico publicado e do
+    // carimbo de alteracao do cadastro, que so o backend tem. O caminho do
+    // `jaExistia: true` e exercitado no teste de tela, com a resposta declarada.
+    return HttpResponse.json({ runId, status: 'RODANDO', jaExistia: false }, { status: 201 })
   }),
 
   http.get(`${BASE}/runs/:runId/status`, ({ params }) => {

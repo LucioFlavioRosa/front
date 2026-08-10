@@ -91,21 +91,68 @@
       },
       "obrasOverride": {
         "0": {
+          "nome": "Ligação de esgoto",
+          "un": "ligação",
           "qtd": "761,6",
           "preco": "2.500,14",
           "opex": "49.847",
           "tPred": "10",
-          "dur": "15"
+          "dur": "15",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,091"
+        },
+        "1": {
+          "nome": "Rede coletora",
+          "un": "m",
+          "qtd": "2.472,6",
+          "preco": "449,99",
+          "opex": "35.659",
+          "tPred": "4",
+          "dur": "6",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,091"
+        },
+        "2": {
+          "nome": "Coletor tronco",
+          "un": "m",
+          "qtd": "0",
+          "preco": "1.200,00",
+          "opex": "0",
+          "tPred": "0",
+          "dur": "0",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,091"
+        },
+        "3": {
+          "nome": "Estação elevatória (EEE)",
+          "un": "un",
+          "qtd": "0",
+          "preco": "0",
+          "opex": "0",
+          "tPred": "0",
+          "dur": "0",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": ""
         },
         "4": {
+          "nome": "Linha de recalque (LR)",
+          "un": "m",
           "qtd": "436,3",
           "preco": "900,03",
           "opex": "11.390",
           "tPred": "7",
-          "dur": "12"
+          "dur": "12",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,067"
         }
       },
-      "versao": "v-b1_1_1"
+      "atualizadoEm": "2026-08-10T14:32:00+00:00",
+      "atualizadoPor": "ana@aegea"
     },
     "b2_1_1": {
       "id": "b2_1_1",
@@ -140,15 +187,68 @@
       },
       "obrasOverride": {
         "0": {
+          "nome": "Ligação de esgoto",
+          "un": "ligação",
           "qtd": "38,3",
           "preco": "2.497,70",
           "opex": "2.738",
           "tPred": "11",
           "dur": "9",
+          "anoObrig": "0",
+          "proibAte": "0",
           "wacc": "0,078"
+        },
+        "1": {
+          "nome": "Rede coletora",
+          "un": "m",
+          "qtd": "2.472,6",
+          "preco": "449,99",
+          "opex": "35.659",
+          "tPred": "4",
+          "dur": "6",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,091"
+        },
+        "2": {
+          "nome": "Coletor tronco",
+          "un": "m",
+          "qtd": "0",
+          "preco": "1.200,00",
+          "opex": "0",
+          "tPred": "0",
+          "dur": "0",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,091"
+        },
+        "3": {
+          "nome": "Estação elevatória (EEE)",
+          "un": "un",
+          "qtd": "0",
+          "preco": "0",
+          "opex": "0",
+          "tPred": "0",
+          "dur": "0",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": ""
+        },
+        "4": {
+          "nome": "Linha de recalque (LR)",
+          "un": "m",
+          "qtd": "0",
+          "preco": "900,00",
+          "opex": "0",
+          "tPred": "0",
+          "dur": "15",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,067"
         }
       },
-      "versao": "v-b2_1_1"
+      "atualizadoEm": "2026-08-09T09:05:00+00:00",
+      "atualizadoPor": "bruno@aegea"
     },
     "b2_1_2": {
       "id": "b2_1_2",
@@ -183,14 +283,68 @@
       },
       "obrasOverride": {
         "0": {
+          "nome": "Ligação de esgoto",
+          "un": "ligação",
           "qtd": "92",
           "preco": "2.500,40",
           "opex": "6.193",
           "tPred": "1",
-          "dur": "7"
+          "dur": "7",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,091"
+        },
+        "1": {
+          "nome": "Rede coletora",
+          "un": "m",
+          "qtd": "2.472,6",
+          "preco": "449,99",
+          "opex": "35.659",
+          "tPred": "4",
+          "dur": "6",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,091"
+        },
+        "2": {
+          "nome": "Coletor tronco",
+          "un": "m",
+          "qtd": "0",
+          "preco": "1.200,00",
+          "opex": "0",
+          "tPred": "0",
+          "dur": "0",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,091"
+        },
+        "3": {
+          "nome": "Estação elevatória (EEE)",
+          "un": "un",
+          "qtd": "0",
+          "preco": "0",
+          "opex": "0",
+          "tPred": "0",
+          "dur": "0",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": ""
+        },
+        "4": {
+          "nome": "Linha de recalque (LR)",
+          "un": "m",
+          "qtd": "0",
+          "preco": "900,00",
+          "opex": "0",
+          "tPred": "0",
+          "dur": "15",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,067"
         }
       },
-      "versao": "v-b2_1_2"
+      "atualizadoEm": "",
+      "atualizadoPor": ""
     },
     "b2_1_3": {
       "id": "b2_1_3",
@@ -225,14 +379,68 @@
       },
       "obrasOverride": {
         "0": {
+          "nome": "Ligação de esgoto",
+          "un": "ligação",
           "qtd": "113",
           "preco": "2.501,00",
           "opex": "7.900",
           "tPred": "2",
-          "dur": "8"
+          "dur": "8",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,091"
+        },
+        "1": {
+          "nome": "Rede coletora",
+          "un": "m",
+          "qtd": "2.472,6",
+          "preco": "449,99",
+          "opex": "35.659",
+          "tPred": "4",
+          "dur": "6",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,091"
+        },
+        "2": {
+          "nome": "Coletor tronco",
+          "un": "m",
+          "qtd": "0",
+          "preco": "1.200,00",
+          "opex": "0",
+          "tPred": "0",
+          "dur": "0",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,091"
+        },
+        "3": {
+          "nome": "Estação elevatória (EEE)",
+          "un": "un",
+          "qtd": "0",
+          "preco": "0",
+          "opex": "0",
+          "tPred": "0",
+          "dur": "0",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": ""
+        },
+        "4": {
+          "nome": "Linha de recalque (LR)",
+          "un": "m",
+          "qtd": "0",
+          "preco": "900,00",
+          "opex": "0",
+          "tPred": "0",
+          "dur": "15",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,067"
         }
       },
-      "versao": "v-b2_1_3"
+      "atualizadoEm": "2026-08-09T09:05:00+00:00",
+      "atualizadoPor": "bruno@aegea"
     },
     "b2_1_4": {
       "id": "b2_1_4",
@@ -266,20 +474,69 @@
         "popA": "406"
       },
       "obrasOverride": {
+        "0": {
+          "nome": "Ligação de esgoto",
+          "un": "ligação",
+          "qtd": "244",
+          "preco": "2.497,70",
+          "opex": "2.738",
+          "tPred": "11",
+          "dur": "9",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,091"
+        },
+        "1": {
+          "nome": "Rede coletora",
+          "un": "m",
+          "qtd": "2.472,6",
+          "preco": "449,99",
+          "opex": "35.659",
+          "tPred": "4",
+          "dur": "6",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,091"
+        },
+        "2": {
+          "nome": "Coletor tronco",
+          "un": "m",
+          "qtd": "0",
+          "preco": "1.200,00",
+          "opex": "0",
+          "tPred": "3",
+          "dur": "8",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,091"
+        },
         "3": {
+          "nome": "Estação elevatória (EEE)",
+          "un": "un",
           "qtd": "",
           "preco": "",
           "opex": "",
           "tPred": "",
-          "dur": ""
+          "dur": "",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": ""
         },
-        "2": {
+        "4": {
+          "nome": "Linha de recalque (LR)",
+          "un": "m",
           "qtd": "0",
-          "dur": "8",
-          "tPred": "3"
+          "preco": "900,00",
+          "opex": "0",
+          "tPred": "0",
+          "dur": "15",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,067"
         }
       },
-      "versao": "v-b2_1_4"
+      "atualizadoEm": "2026-08-10T14:32:00+00:00",
+      "atualizadoPor": "ana@aegea"
     },
     "b3_1_1": {
       "id": "b3_1_1",
@@ -312,8 +569,70 @@
         "popU": "499",
         "popA": "272"
       },
-      "obrasOverride": {},
-      "versao": "v-b3_1_1"
+      "obrasOverride": {
+        "0": {
+          "nome": "Ligação de esgoto",
+          "un": "ligação",
+          "qtd": "244",
+          "preco": "2.497,70",
+          "opex": "2.738",
+          "tPred": "11",
+          "dur": "9",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,091"
+        },
+        "1": {
+          "nome": "Rede coletora",
+          "un": "m",
+          "qtd": "2.472,6",
+          "preco": "449,99",
+          "opex": "35.659",
+          "tPred": "4",
+          "dur": "6",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,091"
+        },
+        "2": {
+          "nome": "Coletor tronco",
+          "un": "m",
+          "qtd": "0",
+          "preco": "1.200,00",
+          "opex": "0",
+          "tPred": "0",
+          "dur": "0",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,091"
+        },
+        "3": {
+          "nome": "Estação elevatória (EEE)",
+          "un": "un",
+          "qtd": "0",
+          "preco": "0",
+          "opex": "0",
+          "tPred": "0",
+          "dur": "0",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": ""
+        },
+        "4": {
+          "nome": "Linha de recalque (LR)",
+          "un": "m",
+          "qtd": "0",
+          "preco": "900,00",
+          "opex": "0",
+          "tPred": "0",
+          "dur": "15",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,067"
+        }
+      },
+      "atualizadoEm": "2026-08-09T09:05:00+00:00",
+      "atualizadoPor": "bruno@aegea"
     },
     "b3_1_2": {
       "id": "b3_1_2",
@@ -346,8 +665,70 @@
         "popU": "531",
         "popA": "291"
       },
-      "obrasOverride": {},
-      "versao": "v-b3_1_2"
+      "obrasOverride": {
+        "0": {
+          "nome": "Ligação de esgoto",
+          "un": "ligação",
+          "qtd": "244",
+          "preco": "2.497,70",
+          "opex": "2.738",
+          "tPred": "11",
+          "dur": "9",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,091"
+        },
+        "1": {
+          "nome": "Rede coletora",
+          "un": "m",
+          "qtd": "2.472,6",
+          "preco": "449,99",
+          "opex": "35.659",
+          "tPred": "4",
+          "dur": "6",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,091"
+        },
+        "2": {
+          "nome": "Coletor tronco",
+          "un": "m",
+          "qtd": "0",
+          "preco": "1.200,00",
+          "opex": "0",
+          "tPred": "0",
+          "dur": "0",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,091"
+        },
+        "3": {
+          "nome": "Estação elevatória (EEE)",
+          "un": "un",
+          "qtd": "0",
+          "preco": "0",
+          "opex": "0",
+          "tPred": "0",
+          "dur": "0",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": ""
+        },
+        "4": {
+          "nome": "Linha de recalque (LR)",
+          "un": "m",
+          "qtd": "0",
+          "preco": "900,00",
+          "opex": "0",
+          "tPred": "0",
+          "dur": "15",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,067"
+        }
+      },
+      "atualizadoEm": "2026-08-10T14:32:00+00:00",
+      "atualizadoPor": "ana@aegea"
     },
     "b3_2_1": {
       "id": "b3_2_1",
@@ -381,12 +762,69 @@
         "popA": "515"
       },
       "obrasOverride": {
+        "0": {
+          "nome": "Ligação de esgoto",
+          "un": "ligação",
+          "qtd": "244",
+          "preco": "2.497,70",
+          "opex": "2.738",
+          "tPred": "11",
+          "dur": "9",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,091"
+        },
         "1": {
+          "nome": "Rede coletora",
+          "un": "m",
           "qtd": "",
-          "preco": ""
+          "preco": "",
+          "opex": "35.659",
+          "tPred": "4",
+          "dur": "6",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,091"
+        },
+        "2": {
+          "nome": "Coletor tronco",
+          "un": "m",
+          "qtd": "0",
+          "preco": "1.200,00",
+          "opex": "0",
+          "tPred": "0",
+          "dur": "0",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,091"
+        },
+        "3": {
+          "nome": "Estação elevatória (EEE)",
+          "un": "un",
+          "qtd": "0",
+          "preco": "0",
+          "opex": "0",
+          "tPred": "0",
+          "dur": "0",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": ""
+        },
+        "4": {
+          "nome": "Linha de recalque (LR)",
+          "un": "m",
+          "qtd": "0",
+          "preco": "900,00",
+          "opex": "0",
+          "tPred": "0",
+          "dur": "15",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,067"
         }
       },
-      "versao": "v-b3_2_1"
+      "atualizadoEm": "2026-08-09T09:05:00+00:00",
+      "atualizadoPor": "bruno@aegea"
     }
   }
 }

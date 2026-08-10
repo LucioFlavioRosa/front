@@ -17,28 +17,30 @@
  *  - o corpo carrega a ficha INTEIRA, nao um patch: salvar e idempotente;
  *  - `overrides` viaja junto com a ficha para a trilha de auditoria ser gravada
  *    na MESMA transacao do dado (senao um erro parcial deixa dado sem trilha);
- *  - 400/422 = conteudo recusado; 409 = alguem salvou a mesma ficha antes;
- *    401/403 = sessao (ver auth/sessao.ts).
+ *  - 400/422 = conteudo recusado; 401/403 = sessao (ver auth/sessao.ts).
+ *
+ * NAO ha mais 409 na escrita de ficha. Ele existia quando o corpo levava
+ * `versao` e o servidor recusava a gravacao de quem tinha lido antes; hoje o
+ * servidor aceita e REGISTRA quem gravou (`atualizadoEm`/`atualizadoPor`). O 409
+ * de SIMULACAO continua existindo, e e outro assunto.
  */
 import type { Cidade, Fator, Meta } from '@/cadastro/domain/contrato'
 import type { Ete } from '@/cadastro/domain/ete'
 import type { Obra, SubBaciaDb, SubBaciaParams } from '@/cadastro/domain/subbacia'
 import type { Override } from '@/cadastro/state/cadastroReducer'
 
-/** O que TODA ficha carrega, seja qual for a tela. */
+/**
+ * O que TODA ficha carrega, seja qual for a tela.
+ *
+ * Aqui havia tambem `versao`, que o corpo devolvia para o servidor conferir e
+ * responder 409. Ela saiu inteira (R6): o corpo NAO carrega mais nada sobre
+ * concorrencia, e a ultima alteracao vem do servidor no `GET` e na resposta do
+ * `PUT` — nunca daqui para la. Autoria que o cliente pudesse escolher nao seria
+ * auditoria.
+ */
 export interface ComOverrides {
   /** Trilha de auditoria dos dados do Databricks sobrescritos nesta ficha. */
   overrides: Override[]
-  /**
-   * A versao que o servidor entregou no `GET`. E o que dispara o 409 quando
-   * outra pessoa gravou a mesma ficha no intervalo.
-   *
-   * Fica no TOPO do corpo, e nao dentro de `cidade`/`ete`, por dois motivos: e
-   * onde o backend a le (`corpo.get("versao")`), e assim ha um so lugar de onde
-   * `assinatura()` precisa remove-la para o controle de "ficha suja" nao
-   * enxergar uma mudanca que o usuario nao fez.
-   */
-  versao: string
 }
 
 export interface FichaSubBacia extends ComOverrides {
@@ -69,15 +71,16 @@ export interface FichaCts extends ComOverrides {
 /**
  * O que o servidor devolve em qualquer PUT de ficha.
  *
- * `versao` e a NOVA impressao do conteudo, ja com a gravacao aplicada. Ela tem de
- * voltar para o state: sem isso o cliente continuaria mandando a versao lida no
- * GET, e o salvamento SEGUINTE tomaria 409 contra a alteracao que ele mesmo
- * acabou de fazer.
+ * A auditoria volta JA COM ESTA GRAVACAO APLICADA, e tem de entrar no state pelo
+ * mesmo caminho que a `versao` usava. Sem isso a ficha continuaria exibindo
+ * "ultima alteracao: fulano, ontem" no segundo seguinte a voce salvar, ate
+ * alguem recarregar a tela — e o campo que substituiu o 409 nasceria mentindo.
  */
 export interface RespostaSalvar {
   id: string
   overridesGravados: number
-  versao: string
+  atualizadoEm: string
+  atualizadoPor: string
 }
 
 /** Recorta do mapa global de overrides os que pertencem a uma ficha. */

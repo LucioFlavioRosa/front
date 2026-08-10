@@ -4,7 +4,6 @@
  * Valores impuros (timestamp) chegam prontos no payload das actions.
  */
 import {
-  BASE_OBRAS,
   camposDaSub,
   cidadePorSub,
   subPend,
@@ -13,11 +12,13 @@ import {
   type SubBaciaDb,
   type SubBaciaParams,
   type SupNode,
+  OBRAS_POR_SUBBACIA,
 } from '@/cadastro/domain/subbacia'
+import { auditoriaDe, type Auditoria } from '@/cadastro/domain/auditoria'
 import { reguaDe, type Regua } from '@/cadastro/domain/baseComercial'
 import { g2Pend, type Cidade, type Fator, type Meta } from '@/cadastro/domain/contrato'
 import { etePend, isNova, type Ete } from '@/cadastro/domain/ete'
-import { BASE_OBRAS_CTS, camposDaCts, ctsPend, type Cts, type ParCts } from '@/cadastro/domain/cts'
+import { camposDaCts, ctsPend, OBRAS_POR_CTS, type Cts, type ParCts } from '@/cadastro/domain/cts'
 import type {
   CidadeH,
   SistemaH,
@@ -149,7 +150,7 @@ export type Action =
   | { type: 'SET_HIER_SIS_NOME'; sisId: string; value: string; at: string }
   | { type: 'SET_HIER_TOPO_JUSANTE'; index: number; value: string; at: string }
   // o servidor aceitou uma ficha: ela passa a ser o novo "sem mudancas"
-  | { type: 'FICHA_SALVA'; chave: ChaveFicha; assinatura: string; versao?: string }
+  | { type: 'FICHA_SALVA'; chave: ChaveFicha; assinatura: string; auditoria?: Partial<Auditoria> }
 
 /**
  * Acrescenta/atualiza um override, sempre preservando o valor ORIGINAL.
@@ -177,26 +178,37 @@ function withOverride(
 }
 
 /**
- * Mesma ideia para as obras: a ficha manda so o que difere da obra-base, entao
- * um campo digitado de volta ao valor da base sai do mapa — e o indice sai
- * junto quando nao sobra nada nele.
+ * Grava o campo digitado na obra daquele indice.
+ *
+ * Antes esta funcao APAGAVA o campo quando o valor digitado era igual ao da
+ * obra-base, e apagava o indice inteiro quando nao sobrava campo nenhum. Fazia
+ * sentido enquanto `obrasOverride` era mesmo um override: o que nao estivesse la
+ * seria completado pela base literal, dos dois lados.
+ *
+ * As bases sairam (R1/R2). O mapa agora carrega a obra INTEIRA, como o servidor
+ * a mandou, e apagar campo dele nao economizaria payload: criaria buraco. O
+ * campo voltaria vazio na tela, contaria pendencia e o `PUT` gravaria NULL numa
+ * coluna que tinha valor.
+ *
+ * E o "digitou de volta o valor original" continua funcionando sem truque
+ * nenhum: se o valor e o mesmo, o objeto fica identico ao que veio, a assinatura
+ * bate com a de `salvas`, e a ficha nao aparece como suja. Quem decide isso e a
+ * comparacao de conteudo (`assinatura` em `state/fichas.ts`) — nunca foi preciso
+ * apagar chave para consegui-lo.
+ *
+ * O indice que nao existe no mapa continua nao existindo: a tela so renderiza as
+ * obras que vieram, entao nao ha como digitar num indice ausente. Cria-lo aqui
+ * seria a base literal de volta, uma linha por vez.
  */
 function withObraOverride(
   override: Record<string, Partial<Obra>>,
-  base: Obra[],
   index: number,
   key: keyof Obra,
   value: string,
 ): Record<string, Partial<Obra>> {
   const i = String(index)
-  const atual = { ...(override[i] ?? {}) }
-  if (value === base[index]?.[key]) delete atual[key]
-  else atual[key] = value
-
-  const proximo = { ...override }
-  if (Object.keys(atual).length === 0) delete proximo[i]
-  else proximo[i] = atual
-  return proximo
+  if (!(i in override)) return override
+  return { ...override, [i]: { ...override[i], [key]: value } }
 }
 
 /**
@@ -273,27 +285,27 @@ export function reducer(state: State, action: Action): State {
 
     case 'FICHA_SALVA': {
       const salvas = { ...state.salvas, [action.chave]: action.assinatura }
-      // A versao NOVA volta para a entidade. Sem isto o proximo PUT da mesma
-      // ficha mandaria a versao lida no GET, que a gravacao anterior tornou
-      // obsoleta — 409 contra a propria alteracao.
+      // A auditoria NOVA volta para a entidade: quem acabou de salvar tem de ver
+      // o proprio nome na ficha, e nao o de quem salvou antes dele.
       //
-      // SERVIDOR 2xx SEM `versao` é quebra de contrato, e há três saídas ruins:
+      // SERVIDOR 2xx SEM auditoria é quebra de contrato, e há duas saídas ruins:
       //
-      //  a) manter a versão antiga → o próximo salvamento toma 409 e a tela diz
-      //     "outra pessoa salvou esta ficha". Ninguém salvou. Erro que MENTE é
-      //     pior que proteção ausente: ensina a ignorar o aviso — e este aviso é
-      //     o único que separa duas pessoas se sobrescrevendo.
+      //  a) manter a auditoria antiga → a ficha exibe "última alteração: fulano,
+      //     ontem" logo depois de VOCÊ salvar. O único aviso que sobrou sobre
+      //     gravação concorrente passa a apontar a pessoa errada, e aviso que
+      //     MENTE é pior que aviso ausente: ensina a ignorá-lo.
       //  b) marcar a ficha como NÃO salva → mas o servidor ACEITOU. Dizer que
       //     não salvou faz a pessoa salvar de novo um dado que já está no banco.
-      //  c) esquecer a versão → o próximo PUT vai sem ela, o backend tolera
-      //     (`_exigir_versao` deixa passar quando ausente) e o salvamento
-      //     funciona. O preço: aquela ficha fica sem proteção de conflito até a
-      //     próxima carga da tela, que a recupera do GET.
       //
-      // (c), com a perda registrada no console (`conferirContrato` em
-      // api/mutations.ts). É a única que não mente ao usuário, e degrada para o
-      // comportamento anterior ao 409 em vez de para um erro falso.
-      return { ...state, salvas, ...comVersao(state, action.chave, action.versao ?? '') }
+      // Nenhuma das duas: sem auditoria na resposta, a ficha fica com os campos
+      // VAZIOS — que é o que a tela mostra para ficha nunca gravada, e é a
+      // afirmação mais fraca possível ("não sei"), em vez de uma errada. A perda
+      // vai para o console (`conferirContrato` em api/mutations.ts).
+      return {
+        ...state,
+        salvas,
+        ...comAuditoria(state, action.chave, auditoriaDe(action.auditoria)),
+      }
     }
 
     case 'SET_SUB_PARAM': {
@@ -316,7 +328,6 @@ export function reducer(state: State, action: Action): State {
             ...sub,
             obrasOverride: withObraOverride(
               sub.obrasOverride,
-              BASE_OBRAS,
               action.index,
               action.key,
               action.value,
@@ -373,7 +384,6 @@ export function reducer(state: State, action: Action): State {
             ...cts,
             obrasOverride: withObraOverride(
               cts.obrasOverride,
-              BASE_OBRAS_CTS,
               action.index,
               action.key,
               action.value,
@@ -556,22 +566,22 @@ export interface Derivado {
  * escolhida, devolve null — e null nao acrescenta campo nem pendencia.
  */
 /**
- * Grava a versao nova na entidade que a `chave` aponta.
+ * Grava a auditoria nova na entidade que a `chave` aponta.
  *
  * Devolve so a fatia mudada, para o `case` acima ficar legivel. Chave
- * desconhecida devolve `{}`: perder a versao e ruim, mas quebrar o salvamento
- * por causa de um tipo de ficha novo seria pior.
+ * desconhecida devolve `{}`: a ficha exibir uma alteracao desatualizada e ruim,
+ * mas quebrar o salvamento por causa de um tipo de ficha novo seria pior.
  */
-function comVersao(state: State, chave: ChaveFicha, versao: string): Partial<State> {
+function comAuditoria(state: State, chave: ChaveFicha, a: Auditoria): Partial<State> {
   const [tipo, id] = chave.split(':')
   if (tipo === 'sub' && state.subs?.[id])
-    return { subs: { ...state.subs, [id]: { ...state.subs[id], versao } } }
+    return { subs: { ...state.subs, [id]: { ...state.subs[id], ...a } } }
   if (tipo === 'cts' && state.ctss?.[id])
-    return { ctss: { ...state.ctss, [id]: { ...state.ctss[id], versao } } }
+    return { ctss: { ...state.ctss, [id]: { ...state.ctss[id], ...a } } }
   if (tipo === 'ete' && state.etes)
-    return { etes: state.etes.map((e) => (e.id === id ? { ...e, versao } : e)) }
+    return { etes: state.etes.map((e) => (e.id === id ? { ...e, ...a } : e)) }
   if (tipo === 'cid' && state.cidades)
-    return { cidades: state.cidades.map((c) => (c.id === id ? { ...c, versao } : c)) }
+    return { cidades: state.cidades.map((c) => (c.id === id ? { ...c, ...a } : c)) }
   return {}
 }
 
@@ -655,11 +665,11 @@ export function derive(state: State): Derivado {
       cidades: state.cidades!.length,
       sistemas: state.hier!.sistemas.length,
       subBacias: subsList.length,
-      obras: subsList.length * 5,
+      obras: subsList.length * OBRAS_POR_SUBBACIA,
       metas: state.metas!.length,
       etes: state.etes!.length,
       cts: ctsList.length,
-      ctsObras: ctsList.length * BASE_OBRAS_CTS.length,
+      ctsObras: ctsList.length * OBRAS_POR_CTS,
     },
   }
 }

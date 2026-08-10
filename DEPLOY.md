@@ -187,14 +187,14 @@ novo entra ali e aparece na sub-bacia e na CTS.
 
 ### Obras (`obrasOverride`)
 
-Cada componente tem estas colunas. A ficha manda **só o que difere da obra-base**
-(`BASE_OBRAS` / `BASE_OBRAS_CTS` em `src/cadastro/domain/`), por índice:
+Cada componente tem estas colunas. A ficha carrega a obra **inteira**, por
+índice — `{"0": {...}, "1": {...}}`, na posição do componente:
 
 | Coluna               | Chave      | Obrigatória?                                      |
 | -------------------- | ---------- | ------------------------------------------------- |
 | componente           | `nome`     | fixa (não editável)                               |
 | quantidade           | `qtd`      | sim                                               |
-| unidade              | `un`       | fixa (vem da obra-base)                           |
+| unidade              | `un`       | fixa (vem do banco, não editável)                 |
 | preco_unitario       | `preco`    | sim                                               |
 | **capex**            | —          | **calculado** (`qtd × preco`), não vai no payload |
 | opex                 | `opex`     | sim                                               |
@@ -203,6 +203,25 @@ Cada componente tem estas colunas. A ficha manda **só o que difere da obra-base
 | obra_obrigatoria_ano | `anoObrig` | sim — **código**, ver abaixo                      |
 | obra_proibida_ate    | `proibAte` | sim — **código**, ver abaixo                      |
 | wacc                 | `wacc`     | **não** — vazio = usa o WACC médio da unidade     |
+
+> **Não há obra-base, dos dois lados.** Havia: duas listas literais de 5 e 4
+> obras, uma em `src/cadastro/domain/` e outra em `cadastro_escrita.py`, e o
+> `obrasOverride` era mesmo um override sobre elas. As duas saíram (R1/R2).
+>
+> O que elas produziam, medido: um `PUT` numa ficha sem o componente gravado
+> escrevia `Linha de recalque (LR) | qtd 0 | preco 900 | dur 15 | wacc 0,067` —
+> números que ninguém digitou e que o banco não tem, indo para a simulação com
+> cara de cadastro. A tela mostrava 5 linhas onde havia 4, e a quinta era
+> invenção.
+>
+> Três consequências para quem integra:
+>
+> 1. o `GET` manda `nome` e `un` junto dos números — a linha inteira vem do banco;
+> 2. o `PUT` **recusa** (422) a ficha cujo banco tem menos que 5 (ou 4)
+>    componentes: completá-los seria inventá-los;
+> 3. `GET /unidades/:uid/prontidao` devolve `faltando[]` dizendo **qual**
+>    componente falta em qual ficha — a tela não teria como saber, porque a linha
+>    que falta não chega no payload.
 
 As duas janelas são código, não um ano qualquer:
 
@@ -242,7 +261,31 @@ PUT    /unidades/:uid/sub-bacias/:subId   { params, db, obrasOverride, overrides
 PUT    /unidades/:uid/contrato/:cidId     { cidade, metas, fator, overrides }
 PUT    /unidades/:uid/etes/:eteId         { ete, overrides }
 PUT    /unidades/:uid/cts/:ctsId          { params, db, obrasOverride, overrides }
+
+resposta (todas): { id, overridesGravados, atualizadoEm, atualizadoPor }
 ```
+
+**Auditoria da ficha.** As quatro fichas trazem no `GET` — e a resposta do `PUT`
+devolve — dois campos que o corpo **nunca envia**:
+
+| campo           | forma                                            |
+| --------------- | ------------------------------------------------ |
+| `atualizadoEm`  | ISO-8601 com fuso, ou `""` se nunca foi gravada  |
+| `atualizadoPor` | login de quem gravou, ou `""`                    |
+
+Três regras, e as três importam:
+
+1. **O autor vem do TOKEN**, nunca do corpo. Um cliente que pudesse escolher o
+   nome que assina transformaria a auditoria em decoração.
+2. **A resposta do PUT traz o carimbo novo**, já com aquela gravação aplicada.
+   Sem isso a ficha continuaria exibindo "última alteração: fulano, ontem" no
+   segundo seguinte a você salvar, até alguém recarregar.
+3. **Vazio, e não nulo.** A tela trata todo campo de ficha como texto e chama
+   `.trim()`; um `null` ali derruba a tela inteira, não só o campo. E ficha nunca
+   gravada pela tela não ganha data inventada — as 4.850 sub-bacias vieram da
+   planilha, e a coluna só existe desde a migração `006_auditoria_cadastro.sql`.
+
+Isto **substituiu o 409 de edição de cadastro** (R6): ver §6.
 
 > **Não há criar nem remover CTS.** A CTS é um **nó do sistema**, como a sub-bacia:
 > a posição dela vem da topologia (`sistema_topologia`), com jusante próprio. O motor
@@ -298,8 +341,11 @@ Códigos que a UI já distingue (`src/comum/api/client.ts`, `mensagemDeErro`):
 | --------- | ---------------------------------------------------------------------------------------------------- |
 | 400 / 422 | "O servidor recusou os dados desta ficha."                                                           |
 | 401 / 403 | "Sua sessão expirou." + dispara o fluxo de re-login                                                  |
-| 409       | Pergunta se pode **recarregar do servidor** (descarta o estado local desta unidade e semeia de novo) |
 | outros    | "Não foi possível salvar (erro N)."                                                                  |
+
+O `409` saiu desta tabela junto com o 409 de ficha. O fluxo de **recarregar do
+servidor** continua existindo, com o outro gatilho que sempre teve: rascunho
+local recuperado sobre dado que mudou no servidor.
 
 ---
 
@@ -375,10 +421,17 @@ senão um refetch de fundo apagaria o que a pessoa está digitando.
 
 ## 6. Pendências conhecidas (não bloqueiam o deploy, mas o backend precisa saber)
 
-- **Concorrência**: não há versão/ETag. Duas pessoas na mesma ficha: a última
-  sobrescreve, e o 409 só aparece se o backend detectar o conflito por conta
-  própria. Quando existir versão por ficha, o front já tem o fluxo de 409 pronto
-  — falta enviar a versão junto e comparar.
+- **Concorrência**: duas pessoas na mesma ficha continuam podendo sobrescrever
+  uma à outra, e **sem aviso no momento da gravação**. Houve uma proteção — a
+  `versao` da ficha viajava no PUT e o servidor respondia 409 —, e ela saiu por
+  decisão do dono do produto (R6): comparava o hash da ficha INTEIRA, então quem
+  editava um campo perdia o trabalho porque um colega editara outro.
+
+  A compensação é a auditoria visível: toda ficha traz `atualizadoEm` e
+  `atualizadoPor`, e a tela mostra "última alteração: ana@aegea, 10/08 14:32". O
+  sinal passou a ser posterior e legível, em vez de imediato e cego. Se um dia o
+  conflito de verdade precisar ser barrado, o caminho não é ressuscitar o hash da
+  ficha inteira — é comparar por CAMPO.
 - **A hierarquia não tem gravação.** A tela do Grupo 01 deixa corrigir dado do
   Databricks (e monta a trilha de override), mas não há endpoint para mandar
   isso — a tela avisa o usuário, e as correções ficam só no rascunho da aba.

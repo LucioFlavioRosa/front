@@ -1,0 +1,9 @@
+/* Discreto de proposito: nao e alerta, e contexto. Quem precisa dele vai
+   procura-lo — e quem esta preenchendo a ficha nao pode ser interrompido por
+   uma informacao que, na maioria das vezes, so diz "foi voce mesmo". */
+.linha {
+  display: block;
+  font-size: 11px;
+  color: var(--text-400);
+  white-space: nowrap;
+}

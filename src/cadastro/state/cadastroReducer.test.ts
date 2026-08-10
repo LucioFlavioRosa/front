@@ -19,8 +19,6 @@ import {
   type State,
 } from '@/cadastro/state/cadastroReducer'
 import { assinatura, chaveSub, fichaSub, hierAlterada, sujas } from '@/cadastro/state/fichas'
-import { BASE_OBRAS } from '@/cadastro/domain/subbacia'
-import { BASE_OBRAS_CTS } from '@/cadastro/domain/cts'
 
 const AT = '2026-01-01T00:00:00.000Z'
 
@@ -417,10 +415,11 @@ describe('reverter uma edição desfaz o registro dela', () => {
     expect(hierAlterada(s2)).toBe(false)
   })
 
-  it('SET_OBRA_FIELD de volta ao valor da obra-base some do mapa de overrides', () => {
+  it('SET_OBRA_FIELD de volta ao valor do SERVIDOR limpa a ficha', () => {
     const s0 = seededState()
-    // Índice 4 (Linha de recalque): é o que b2_1_4 não sobrescreve no mock.
-    const base = BASE_OBRAS[4].qtd
+    // O valor original é o que veio no payload — não mais o de uma obra-base.
+    // As duas literais saíram (R1/R2), e a comparação passou a ser com o dado.
+    const doServidor = s0.subs!['b2_1_4'].obrasOverride['4'].qtd!
     const s1 = reducer(s0, {
       type: 'SET_OBRA_FIELD',
       subId: 'b2_1_4',
@@ -429,23 +428,27 @@ describe('reverter uma edição desfaz o registro dela', () => {
       value: '77',
     })
     expect(s1.subs!['b2_1_4'].obrasOverride['4'].qtd).toBe('77')
+    expect(sujas(s1)).toEqual(['sub:b2_1_4'])
 
     const s2 = reducer(s1, {
       type: 'SET_OBRA_FIELD',
       subId: 'b2_1_4',
       index: 4,
       key: 'qtd',
-      value: base,
+      value: doServidor,
     })
-    // O índice inteiro sai quando não sobra nenhum campo alterado nele: a ficha
-    // manda só o que difere da base.
-    expect(s2.subs!['b2_1_4'].obrasOverride['4']).toBeUndefined()
+    // O índice NÃO some mais, e nenhum campo é apagado: o mapa carrega a obra
+    // inteira, e tirar campo dele criaria buraco — o campo voltaria vazio na
+    // tela e o PUT gravaria NULL numa coluna que tinha valor.
+    expect(s2.subs!['b2_1_4'].obrasOverride['4'].qtd).toBe(doServidor)
+    // Quem responde "está suja?" é a comparação de conteúdo, e ela dá conta
+    // sozinha: valor igual ao do servidor, assinatura igual, ficha limpa.
     expect(sujas(s2)).toEqual([])
   })
 
-  it('SET_CTS_OBRA_FIELD idem, contra a base de 4 obras da CTS', () => {
+  it('SET_CTS_OBRA_FIELD idem, nas 4 obras da CTS', () => {
     const s0 = seededState()
-    const base = BASE_OBRAS_CTS[1].preco
+    const doServidor = s0.ctss!['cts_b3_1_1'].obrasOverride['1'].preco!
     const s1 = reducer(s0, {
       type: 'SET_CTS_OBRA_FIELD',
       ctsId: 'cts_b3_1_1',
@@ -453,20 +456,38 @@ describe('reverter uma edição desfaz o registro dela', () => {
       key: 'preco',
       value: '9',
     })
+    expect(sujas(s1)).toEqual(['cts:cts_b3_1_1'])
     const s2 = reducer(s1, {
       type: 'SET_CTS_OBRA_FIELD',
       ctsId: 'cts_b3_1_1',
       index: 1,
       key: 'preco',
-      value: base,
+      value: doServidor,
     })
-    expect(s2.ctss!['cts_b3_1_1'].obrasOverride['1']).toBeUndefined()
+    expect(s2.ctss!['cts_b3_1_1'].obrasOverride['1'].preco).toBe(doServidor)
     expect(sujas(s2)).toEqual([])
+  })
+
+  it('SET_OBRA_FIELD num índice que a ficha não tem NÃO cria a obra', () => {
+    // Seria a base literal de volta, uma linha por vez: a obra nasceria do que o
+    // cliente mandou, e não do que o banco tem. A tela só renderiza o que veio,
+    // então este caminho só se alcança por engano de código.
+    const s0 = seededState()
+    const antes = s0.subs!['b2_1_4'].obrasOverride
+    const s1 = reducer(s0, {
+      type: 'SET_OBRA_FIELD',
+      subId: 'b2_1_4',
+      index: 9,
+      key: 'qtd',
+      value: '1',
+    })
+    expect(s1.subs!['b2_1_4'].obrasOverride).toBe(antes)
+    expect(sujas(s1)).toEqual([])
   })
 
   it('reverter um campo não apaga os outros do mesmo índice', () => {
     const s0 = seededState()
-    const base = BASE_OBRAS[0].qtd
+    const base = s0.subs!['b2_1_4'].obrasOverride['0'].qtd!
     const s1 = reducer(s0, {
       type: 'SET_OBRA_FIELD',
       subId: 'b2_1_4',
@@ -488,7 +509,12 @@ describe('reverter uma edição desfaz o registro dela', () => {
       key: 'qtd',
       value: base,
     })
-    expect(s3.subs!['b2_1_4'].obrasOverride['0']).toEqual({ opex: '500' })
+    // O índice guarda a obra INTEIRA, e não só o que foi editado. O que este
+    // caso protege continua valendo: reverter `qtd` não leva `opex` junto.
+    const obra = s3.subs!['b2_1_4'].obrasOverride['0']
+    expect(obra.qtd).toBe(base)
+    expect(obra.opex).toBe('500')
+    expect(obra.nome).toBe(s0.subs!['b2_1_4'].obrasOverride['0'].nome)
   })
 })
 

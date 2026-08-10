@@ -5,6 +5,32 @@ import { AppProvider } from '@/comum/state/AppContext'
 import { ObrasTable } from '@/cadastro/components/ObrasTable'
 import { mkObras, type Obra } from '@/cadastro/domain/subbacia'
 import { mkObrasCts } from '@/cadastro/domain/cts'
+import subbacias from '@/mocks/fixtures/subbacias.json'
+import ctsFx from '@/mocks/fixtures/cts.json'
+
+/**
+ * As obras saem de uma ficha DE VERDADE, e não mais de `obrasSub()`.
+ *
+ * Enquanto a base literal existia, `{}` rendia as cinco obras-base e servia de
+ * ponto de partida para todo caso aqui. A base saiu (R1/R2): sem payload não há
+ * obra nenhuma, que é justamente o comportamento novo — a tela mostra o que o
+ * servidor mandou e nada mais. `b1_1_1` é a ficha completa da fixture.
+ */
+const sobrepor = (
+  payload: Record<string, Partial<Obra>>,
+  over: Record<string, Partial<Obra>>,
+) =>
+  Object.fromEntries(
+    Object.entries(payload).map(([i, o]) => [i, { ...o, ...(over[i] ?? {}) }]),
+  )
+
+const obrasSub = (over: Record<string, Partial<Obra>> = {}) =>
+  mkObras(sobrepor(subbacias.subs.b1_1_1.obrasOverride as Record<string, Partial<Obra>>, over))
+
+const obrasCts = (over: Record<string, Partial<Obra>> = {}) =>
+  mkObrasCts(
+    sobrepor(ctsFx.ctss.cts_b2_1_1.obrasOverride as Record<string, Partial<Obra>>, over),
+  )
 
 /**
  * COLUNAS DA TABELA DE OBRAS — o contrato visível do plano de obras.
@@ -58,12 +84,12 @@ afterEach(cleanup)
 
 describe('colunas', () => {
   it('estão na ordem que a simulação espera', () => {
-    renderTabela(mkObras({}))
+    renderTabela(obrasSub())
     expect(cabecalhos()).toEqual(COLUNAS)
   })
 
   it('a CTS usa exatamente as mesmas colunas', () => {
-    renderTabela(mkObrasCts({}))
+    renderTabela(obrasCts())
     expect(cabecalhos()).toEqual(COLUNAS)
     // 4 componentes na CTS, contra 5 da sub-bacia.
     expect(screen.getAllByRole('row')).toHaveLength(5) // 1 cabeçalho + 4 obras
@@ -72,30 +98,31 @@ describe('colunas', () => {
 
 describe('CAPEX', () => {
   it('é quantidade × preço unitário, e não é campo digitável', () => {
-    renderTabela(mkObras({}))
-    // Ligação de esgoto: 244 × 2.497,70 = 609.438,80 → arredondado na exibição.
-    expect(texto(screen.getAllByRole('row')[1])).toContain('R$ 609.439')
+    // Os números são os da FICHA, e não os de uma base literal: `b1_1_1` traz
+    // 761,6 ligações a 2.500,14 = 1.904.106,62, arredondado na exibição.
+    renderTabela(obrasSub())
+    expect(texto(screen.getAllByRole('row')[1])).toContain('R$ 1.904.107')
     expect(screen.queryByLabelText(/CAPEX/)).toBeNull()
   })
 
   it('acompanha a quantidade digitada', () => {
     // A tabela é controlada: quem recalcula é o store, então o teste passa a
     // obra já com a quantidade nova — é o que a tela recebe depois do onChange.
-    renderTabela(mkObras({ '0': { qtd: '100', preco: '1.000,00' } }))
+    renderTabela(obrasSub({ '0': { qtd: '100', preco: '1.000,00' } }))
     expect(texto(screen.getAllByRole('row')[1])).toContain('R$ 100.000')
   })
 })
 
 describe('restrições de janela', () => {
   it('tempo após predecessoras vazio aparece pendente', () => {
-    renderTabela(mkObras({ '1': { tPred: '' } }))
+    renderTabela(obrasSub({ '1': { tPred: '' } }))
     expect(
       celulaDe('Tempo após as predecessoras, em meses', 'Rede coletora').style.border,
     ).toContain('dashed')
   })
 
   it('editar uma restrição avisa o store com a chave certa', () => {
-    const onChange = renderTabela(mkObras({}))
+    const onChange = renderTabela(obrasSub())
     fireEvent.change(celulaDe('Ano em que a obra é obrigatória', 'Coletor tronco'), {
       target: { value: '2027' },
     })
@@ -105,7 +132,7 @@ describe('restrições de janela', () => {
 
 describe('leitura da tabela', () => {
   it('o cabeçalho leva rótulo e unidade para o leitor de tela', () => {
-    renderTabela(mkObras({}))
+    renderTabela(obrasSub())
     const opex = screen.getAllByRole('columnheader')[5]
     // As duas linhas ficam no mesmo <th>: quem usa leitor de tela ouve
     // "OPEX R$/ano" ao entrar na coluna, não só "OPEX".
@@ -114,7 +141,7 @@ describe('leitura da tabela', () => {
   })
 
   it('campos do mesmo tipo têm a mesma largura (a tabela não fica serrilhada)', () => {
-    renderTabela(mkObras({}))
+    renderTabela(obrasSub())
     const largura = (rotulo: string) => celulaDe(rotulo, 'Rede coletora').style.width
     expect(largura('Quantidade')).toBe(largura('OPEX em R$ por ano'))
     expect(largura('Tempo após as predecessoras, em meses')).toBe(
@@ -128,7 +155,7 @@ describe('leitura da tabela', () => {
 
 describe('janelas de execução (códigos)', () => {
   it('a legenda explica o que 0 e -1 significam', () => {
-    renderTabela(mkObras({}))
+    renderTabela(obrasSub())
     const obrigatoria = screen.getByText(/Obrigatória em:/).parentElement?.textContent ?? ''
     expect(obrigatoria).toContain('não é obrigatória')
     expect(obrigatoria).toContain('obrigatória em qualquer ano')
@@ -137,13 +164,13 @@ describe('janelas de execução (códigos)', () => {
   })
 
   it('a obra-base já vem com 0: sem restrição é uma resposta, não um vazio', () => {
-    renderTabela(mkObras({}))
+    renderTabela(obrasSub())
     expect(celulaDe('Ano em que a obra é obrigatória', 'Rede coletora').value).toBe('0')
     expect(celulaDe('Ano até o qual a obra é proibida', 'Rede coletora').value).toBe('0')
   })
 
   it('apagar o código vira pendência — silêncio a simulação não sabe ler', () => {
-    renderTabela(mkObras({ '1': { anoObrig: '' } }))
+    renderTabela(obrasSub({ '1': { anoObrig: '' } }))
     expect(celulaDe('Ano em que a obra é obrigatória', 'Rede coletora').style.border).toContain(
       'dashed',
     )
@@ -160,7 +187,7 @@ const linhaDe = (nome: string) =>
 describe('obra de terceiros', () => {
   it('ganha selo na linha e a legenda explica a combinação', () => {
     // Coletor tronco com quantidade 0 e 8 meses de execução.
-    renderTabela(mkObras({ '2': { qtd: '0', dur: '8' } }))
+    renderTabela(obrasSub({ '2': { qtd: '0', dur: '8' } }))
     expect(linhaDe('Coletor tronco')).toContain('de terceiros')
 
     const legenda = screen.getByText(/Obra de terceiros:/).parentElement?.textContent ?? ''
@@ -168,18 +195,21 @@ describe('obra de terceiros', () => {
   })
 
   it('sem prazo não ganha selo: aí a obra só não entra no plano', () => {
-    renderTabela(mkObras({ '2': { qtd: '0', dur: '0' } }))
+    renderTabela(obrasSub({ '2': { qtd: '0', dur: '0' } }))
     expect(linhaDe('Coletor tronco')).not.toContain('de terceiros')
   })
 
   it('o selo some quando a obra volta a ter CAPEX', () => {
-    renderTabela(mkObras({ '2': { qtd: '120', dur: '8' } }))
+    renderTabela(obrasSub({ '2': { qtd: '120', dur: '8' } }))
     expect(linhaDe('Coletor tronco')).not.toContain('de terceiros')
   })
 
-  it('vale para qualquer linha, inclusive a que já vem assim da base', () => {
-    // Linha de recalque nasce com quantidade 0 e 15 meses de execução.
-    renderTabela(mkObras({}))
+  it('vale para qualquer linha, e vem do dado — não de um índice privilegiado', () => {
+    // Antes este caso apontava para a linha que "já nasce assim da base": a
+    // Linha de recalque, que a base literal criava com quantidade 0 e 15 meses.
+    // Sem base, nenhuma linha nasce de nada — a combinação vem do cadastro, e é
+    // ela que o teste monta.
+    renderTabela(obrasSub({ '4': { qtd: '0', dur: '15' } }))
     expect(linhaDe('Linha de recalque (LR)')).toContain('de terceiros')
   })
 })

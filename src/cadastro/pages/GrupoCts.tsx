@@ -78,7 +78,7 @@ export function GrupoCts() {
   } = useCadastro()
   const erroAoSalvar = useErroAoSalvar(unidadeId)
   const salvarM = useSalvarCts(unidadeId, {
-    onSalva: ({ ctsId, ficha }, r) => marcarSalva(chaveCts(ctsId), ficha, r?.versao),
+    onSalva: ({ ctsId, ficha }, r) => marcarSalva(chaveCts(ctsId), ficha, r),
   })
 
   const [selCts, setSelCts] = useState('')
@@ -428,6 +428,7 @@ export function GrupoCts() {
           }
           titulo={cur.id}
           nome={cur.nome}
+          auditoria={cur}
           chip={sheetChip}
           onSalvar={salvar}
           salvarLabel="Salvar CTS"

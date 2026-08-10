@@ -200,8 +200,12 @@ Nada aqui é surpresa escondida — está tudo detalhado no `DEPLOY.md`:
 
 - **Autenticação**: só o encaixe (`src/comum/auth/sessao.ts`). Falta escolher IdP/lib
   (provável Entra ID) e ligar no bootstrap.
-- **Concorrência**: sem versão/ETag por ficha. A UI já trata 409 (oferece
-  recarregar do servidor), mas quem detecta o conflito é o backend.
+- **Concorrência**: duas pessoas na mesma ficha se sobrescrevem, sem aviso na
+  hora de gravar. Houve um 409 por versão de ficha e ele saiu por decisão do dono
+  do produto (R6) — comparava o hash da ficha inteira, então cobrava conflito onde
+  quase nunca havia um. A compensação é a auditoria: toda ficha traz
+  `atualizadoEm`/`atualizadoPor` e a tela mostra "última alteração: ana@aegea,
+  10/08 14:32" (`src/cadastro/domain/auditoria.ts`).
 - **Hierarquia (Grupo 01) não grava**: o contrato de escrita não cobre a
   hierarquia. A tela avisa o usuário; as correções ficam no rascunho da aba.
 - **"Importar planilha"** no hub é um stub.

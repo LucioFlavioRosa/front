@@ -48,14 +48,56 @@
       },
       "obrasOverride": {
         "0": {
+          "nome": "Coletor de tempo seco",
+          "un": "m",
           "qtd": "412,5",
           "preco": "1.482,30",
           "opex": "9.140",
           "tPred": "6",
-          "dur": "8"
+          "dur": "8",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,091"
+        },
+        "1": {
+          "nome": "Coletor tronco",
+          "un": "m",
+          "qtd": "0",
+          "preco": "1.200,00",
+          "opex": "0",
+          "tPred": "0",
+          "dur": "0",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,091"
+        },
+        "2": {
+          "nome": "Estação elevatória (EEE)",
+          "un": "un",
+          "qtd": "0",
+          "preco": "0",
+          "opex": "0",
+          "tPred": "0",
+          "dur": "0",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": ""
+        },
+        "3": {
+          "nome": "Linha de recalque (LR)",
+          "un": "m",
+          "qtd": "0",
+          "preco": "900,00",
+          "opex": "0",
+          "tPred": "0",
+          "dur": "15",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,067"
         }
       },
-      "versao": "v-cts_b2_1_1"
+      "atualizadoEm": "2026-08-10T14:32:00+00:00",
+      "atualizadoPor": "ana@aegea"
     },
     "cts_b2_1_4": {
       "id": "cts_b2_1_4",
@@ -91,21 +133,56 @@
       },
       "obrasOverride": {
         "0": {
+          "nome": "Coletor de tempo seco",
+          "un": "m",
           "qtd": "738,2",
           "preco": "1.479,60",
           "opex": "",
           "tPred": "9",
-          "dur": "11"
+          "dur": "11",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,091"
         },
         "1": {
+          "nome": "Coletor tronco",
+          "un": "m",
           "qtd": "",
           "preco": "1.200,00",
           "opex": "0",
           "tPred": "0",
-          "dur": "0"
+          "dur": "0",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,091"
+        },
+        "2": {
+          "nome": "Estação elevatória (EEE)",
+          "un": "un",
+          "qtd": "0",
+          "preco": "0",
+          "opex": "0",
+          "tPred": "0",
+          "dur": "0",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": ""
+        },
+        "3": {
+          "nome": "Linha de recalque (LR)",
+          "un": "m",
+          "qtd": "0",
+          "preco": "900,00",
+          "opex": "0",
+          "tPred": "0",
+          "dur": "15",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,067"
         }
       },
-      "versao": "v-cts_b2_1_4"
+      "atualizadoEm": "2026-08-09T09:05:00+00:00",
+      "atualizadoPor": "bruno@aegea"
     },
     "cts_b3_1_1": {
       "id": "cts_b3_1_1",
@@ -141,14 +218,56 @@
       },
       "obrasOverride": {
         "0": {
+          "nome": "Coletor de tempo seco",
+          "un": "m",
           "qtd": "1.106,4",
           "preco": "1.483,10",
           "opex": "24.318",
           "tPred": "5",
-          "dur": ""
+          "dur": "",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,091"
+        },
+        "1": {
+          "nome": "Coletor tronco",
+          "un": "m",
+          "qtd": "0",
+          "preco": "1.200,00",
+          "opex": "0",
+          "tPred": "0",
+          "dur": "0",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,091"
+        },
+        "2": {
+          "nome": "Estação elevatória (EEE)",
+          "un": "un",
+          "qtd": "0",
+          "preco": "0",
+          "opex": "0",
+          "tPred": "0",
+          "dur": "0",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": ""
+        },
+        "3": {
+          "nome": "Linha de recalque (LR)",
+          "un": "m",
+          "qtd": "0",
+          "preco": "900,00",
+          "opex": "0",
+          "tPred": "0",
+          "dur": "15",
+          "anoObrig": "0",
+          "proibAte": "0",
+          "wacc": "0,067"
         }
       },
-      "versao": "v-cts_b3_1_1"
+      "atualizadoEm": "2026-08-10T14:32:00+00:00",
+      "atualizadoPor": "ana@aegea"
     }
   },
   "inconsistencias": []
