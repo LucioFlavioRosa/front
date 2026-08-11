@@ -251,12 +251,27 @@ export interface ComponenteFaltando {
 }
 
 /** Prontidao do cadastro da unidade — quem manda no bloqueio da rodada. */
+/**
+ * O TAMANHO da unidade — o problema que a simulacao vai resolver.
+ *
+ * `obras` sao os componentes de CAPEX de sub-bacia e CTS: as candidatas que o
+ * motor escolhe construir ou nao. E a ordem de grandeza que diz se a rodada e de
+ * minutos ou de meia hora, e ela so aparecia DEPOIS de a rodada existir.
+ */
+export interface TamanhoDaUnidade {
+  cidades: number
+  sistemas: number
+  obras: number
+}
+
 export interface Prontidao {
   unidadeId: string
   unidadeNome: string
   pendencias: number
   /** Opcional: servidor antigo nao manda, e a tela nao pode quebrar por isso. */
   faltando?: ComponenteFaltando[]
+  /** Opcional pela mesma razao — a tela mostra travessao quando nao vem. */
+  tamanho?: TamanhoDaUnidade
 }
 
 /**

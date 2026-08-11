@@ -263,6 +263,81 @@ describe('rodada que falha', () => {
   })
 })
 
+describe('o tamanho da unidade no resumo', () => {
+  /**
+   * Ele responde "que unidade é essa?" ANTES de rodar. Sem isto, o porte do
+   * problema só aparecia depois — e escolher entre a Serrana (710 obras) e a
+   * Leste (11.525) era escolher no escuro.
+   */
+  it('aparece assim que a unidade é escolhida', async () => {
+    dados['/unidades/u-jacarei/prontidao'] = {
+      ...PRONTA,
+      tamanho: { cidades: 11, sistemas: 8, obras: 52 },
+    }
+    renderApp('/simular')
+    await escolherUnidade()
+
+    const resumo = await screen.findByRole('complementary', { name: 'Resumo da rodada' })
+    expect(await within(resumo).findByText('11 cidades · 8 sistemas · 52 obras')).toBeTruthy()
+  })
+
+  it('vem logo depois da unidade, e não no fim da lista', async () => {
+    dados['/unidades/u-jacarei/prontidao'] = {
+      ...PRONTA,
+      tamanho: { cidades: 11, sistemas: 8, obras: 52 },
+    }
+    renderApp('/simular')
+    await escolherUnidade()
+
+    const resumo = await screen.findByRole('complementary', { name: 'Resumo da rodada' })
+    await within(resumo).findByText('11 cidades · 8 sistemas · 52 obras')
+    const chaves = within(resumo)
+      .getAllByRole('term')
+      .map((t) => t.textContent)
+    expect(chaves.slice(0, 2)).toEqual(['Unidade', 'Tamanho'])
+  })
+
+  it('separa o milhar, porque 11525 não se lê', async () => {
+    dados['/unidades/u-jacarei/prontidao'] = {
+      ...PRONTA,
+      tamanho: { cidades: 67, sistemas: 474, obras: 11525 },
+    }
+    renderApp('/simular')
+    await escolherUnidade()
+
+    const resumo = await screen.findByRole('complementary', { name: 'Resumo da rodada' })
+    expect(await within(resumo).findByText(/11\.525 obras/)).toBeTruthy()
+  })
+
+  it('usa singular quando é um só', async () => {
+    dados['/unidades/u-jacarei/prontidao'] = {
+      ...PRONTA,
+      tamanho: { cidades: 1, sistemas: 1, obras: 1 },
+    }
+    renderApp('/simular')
+    await escolherUnidade()
+
+    const resumo = await screen.findByRole('complementary', { name: 'Resumo da rodada' })
+    expect(await within(resumo).findByText('1 cidade · 1 sistema · 1 obra')).toBeTruthy()
+  })
+
+  it('servidor que NÃO manda `tamanho` não quebra a tela', async () => {
+    // `PRONTA` não tem o campo — é o contrato antigo. A linha some, e o resto do
+    // resumo continua inteiro: o campo é opcional de propósito, para o front não
+    // depender da ordem em que os dois lados sobem.
+    renderApp('/simular')
+    await escolherUnidade()
+
+    const resumo = await screen.findByRole('complementary', { name: 'Resumo da rodada' })
+    await within(resumo).findByText('Águas de Jacareí')
+    const chaves = within(resumo)
+      .getAllByRole('term')
+      .map((t) => t.textContent)
+    expect(chaves).not.toContain('Tamanho')
+    expect(chaves).toContain('Solver')
+  })
+})
+
 describe('resumo', () => {
   it('lista os parâmetros na ordem em que serão enviados', async () => {
     renderApp('/simular')

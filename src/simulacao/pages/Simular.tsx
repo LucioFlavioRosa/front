@@ -15,6 +15,7 @@ import {
   validar,
   type EstadoSimulacao,
   type Penalidade,
+  type TamanhoDaUnidade,
 } from '@/simulacao/domain/simulacao'
 import { Ajuda, Campo, Interruptor, Opcao, Rotulo, Secao } from '@/simulacao/components/campos'
 import styles from './Simular.module.css'
@@ -619,6 +620,13 @@ export function Simular() {
           <h2 className={styles.resumoTitulo}>Resumo</h2>
           <dl className={styles.resumoLista}>
             <Item k="Unidade" v={prontidao.data?.unidadeNome ?? '—'} alerta={!e.unidadeId} />
+            {/* O TAMANHO logo abaixo do nome, e não no fim: ele qualifica a
+                unidade que se acabou de escolher, e é o que separa "rodar a
+                Serrana" de "rodar a Leste" — 710 obras contra 11.525. Aparece só
+                quando o servidor manda; um servidor antigo não quebra a tela. */}
+            {prontidao.data?.tamanho && (
+              <Item k="Tamanho" v={textoDoTamanho(prontidao.data.tamanho)} calc />
+            )}
             <Item k="Orçamento total" v={`R$ ${orc.total.toLocaleString('pt-BR')} Mi`} calc />
             <Item k="Janela de CAPEX" v={orc.janelaTexto} calc />
             <Item
@@ -715,6 +723,23 @@ export function Simular() {
       )}
     </div>
   )
+}
+
+/**
+ * `"5 cidades · 28 sistemas · 710 obras"` — o porte da unidade, numa linha.
+ *
+ * Singular e plural porque "1 cidades" numa tela que o usuário lê o dia inteiro
+ * é o tipo de descuido que faz duvidar do resto do número. Milhar com separador
+ * pt-BR: `11525` custa a ler, `11.525` não.
+ */
+function textoDoTamanho({ cidades, sistemas, obras }: TamanhoDaUnidade): string {
+  const n = (v: number) => v.toLocaleString('pt-BR')
+  const plural = (v: number, um: string, muitos: string) => `${n(v)} ${v === 1 ? um : muitos}`
+  return [
+    plural(cidades, 'cidade', 'cidades'),
+    plural(sistemas, 'sistema', 'sistemas'),
+    plural(obras, 'obra', 'obras'),
+  ].join(' · ')
 }
 
 function Item({ k, v, calc, alerta }: { k: string; v: string; calc?: boolean; alerta?: boolean }) {

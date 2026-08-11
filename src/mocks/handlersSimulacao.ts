@@ -9,6 +9,9 @@
  * ninguem descobriria que o polling nao funciona.
  */
 import { http, HttpResponse } from 'msw'
+import ctsRaw from '@/mocks/fixtures/cts.json'
+import estruturaRaw from '@/mocks/fixtures/estrutura.json'
+import subbaciasRaw from '@/mocks/fixtures/subbacias.json'
 import unidadesRaw from '@/mocks/fixtures/unidades.json'
 import type { CorpoNovaRodada } from '@/simulacao/domain/simulacao'
 
@@ -19,6 +22,11 @@ interface UnidadeRaw {
   nome: string
 }
 const unidades = unidadesRaw as unknown as UnidadeRaw[]
+
+type Fichas = Record<string, { obrasOverride?: Record<string, unknown> }>
+const estrutura = estruturaRaw as unknown as { cidades?: unknown[]; sistemas?: unknown[] }
+const subbacias = subbaciasRaw as unknown as { subs?: Fichas }
+const cts = ctsRaw as unknown as { ctss?: Fichas }
 
 /**
  * Pendencias por unidade. A primeira e completa (roda); as demais tem pendencia,
@@ -50,6 +58,24 @@ function avanca(r: RodadaEmVoo): RodadaEmVoo {
   return r
 }
 
+/**
+ * O tamanho da unidade, CONTADO das fixtures — nao inventado.
+ *
+ * As fixtures descrevem um cadastro so, e o mock o serve para qualquer unidade;
+ * e a mesma simplificacao que o resto deste arquivo faz. Numeros redondos
+ * escritos a mao dariam a mesma tela e esconderiam o dia em que a fixture mudar
+ * e a contagem parar de bater com ela.
+ */
+function tamanhoDasFixtures() {
+  const obras = (fichas: Record<string, { obrasOverride?: Record<string, unknown> }>) =>
+    Object.values(fichas).reduce((n, f) => n + Object.keys(f.obrasOverride ?? {}).length, 0)
+  return {
+    cidades: (estrutura.cidades ?? []).length,
+    sistemas: (estrutura.sistemas ?? []).length,
+    obras: obras(subbacias.subs ?? {}) + obras(cts.ctss ?? {}),
+  }
+}
+
 export const handlersSimulacao = [
   http.get(`${BASE}/unidades/:id/prontidao`, ({ params }) => {
     const id = String(params.id)
@@ -64,6 +90,7 @@ export const handlersSimulacao = [
       // inventar uma aqui faria o checklist de desenvolvimento mostrar um erro
       // que o dado nao tem.
       faltando: [],
+      tamanho: tamanhoDasFixtures(),
     })
   }),
 
