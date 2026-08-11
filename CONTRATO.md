@@ -693,11 +693,24 @@ publicada. Reexecução é assunto de um endpoint separado, sujeito à regra da 
   "status": "RODANDO", // PENDENTE | RODANDO | SUCESSO | FALHOU_QUALIDADE | ERRO | CANCELADA
   "progresso": 42, // 0 a 100
   "erro": null, // mensagem quando status = ERRO ou FALHOU_QUALIDADE
+  "pedidaEm": "2026-08-11T15:02:11Z", // ISO-8601; quando a rodada foi pedida
+  "fila": {
+    // só enquanto PENDENTE ou RODANDO
+    "vivos": 2, // executores que bateram ponto há pouco
+    "capacidade": 4, // soma das vagas dos executores vivos
+    "ocupadas": 4,
+    "posicao": 2, // rodadas PENDENTES na frente desta; 0 = é a próxima
+    "motivo": "Todas as 4 vagas estão ocupadas. Há 2 simulação(ões) na frente desta.",
+    "atencao": false, // true quando a espera exige alguém agir
+  },
 }
 ```
 
-O front faz polling a cada 1,2 s **enquanto** o status for `PENDENTE` ou
-`RODANDO`, e para sozinho nos demais. O modal nomeia a etapa a partir do
+O front faz polling **enquanto** o status for `PENDENTE` ou `RODANDO`, e para
+sozinho nos demais. Dois ritmos, e a diferença é de escala: **1,2 s no modal** da
+nova simulação (uma rodada só, com alguém parado olhando a barra) e **5 s no
+histórico**, que pergunta por cada rodada em voo da lista — a 1,2 s, dez rodadas
+na fila seriam oito requests por segundo. O modal nomeia a etapa a partir do
 `progresso` (lendo dados → montando o modelo → resolvendo → materializando), então
 um progresso que salta de 0 para 100 funciona, mas perde a informação útil.
 
@@ -705,50 +718,56 @@ um progresso que salta de 0 para 100 funciona, mas perde a informação útil.
 portão. A tela trata os dois como término, mas o texto de `erro` é o que explica
 a diferença ao usuário — mande o motivo da reprovação aqui.
 
+**O bloco `fila` responde POR QUE a rodada está onde está**, e existe porque a
+frase que ele substituiu — "na fila, esperando um executor" — cobria dois mundos
+opostos: todas as vagas ocupadas (espere) e nenhum executor de pé (isto nunca vai
+rodar). Quem olhava a tela não tinha como distinguir, e em produção o segundo caso
+é silencioso: a fila cresce e ninguém descobre.
+
+O `motivo` vem **pronto do servidor**, e não montado na tela, porque só o servidor
+vê a fila inteira. `atencao: true` é o que exige alguém agir — nenhum executor
+ativo, ou lease vencido — e é o que a tela destaca; o resto é informação de
+espera normal. Os dois lugares que mostram isso são o modal da nova simulação e o
+card de rodada em voo do histórico.
+
+**`pedidaEm` é o que torna a espera legível.** Sem ele, "esperando" com dois
+segundos e "esperando" com quarenta minutos são a mesma frase, e não há como
+distinguir lento de travado. A tela também destaca por conta própria quando a
+espera passa de 5 minutos e o `motivo` continua tranquilo — um "deve começar em
+instantes" que dura vinte minutos é o caso que ninguém reporta, justamente porque
+a frase continua parecendo normal.
+
 ### 4.4 `POST /runs/{run_id}/cancelar`
 
-<!-- somente-backend -->
+Sem corpo, e sem corpo na resposta. O usuário desiste de uma rodada que ainda não
+terminou.
 
-**Não é chamado pelo front hoje** — e a marcação acima diz isso ao
-`contrato.test.ts`, que exige que todo endpoint documentado tenha chamador. Sai
-da marcação no dia em que o botão voltar.
+| `run_status`          | resposta | efeito                                   |
+| --------------------- | -------- | ---------------------------------------- |
+| `PENDENTE`, `RODANDO` | `204`    | vira `CANCELADA`, e o job é interrompido |
+| qualquer estado final | `409`    | não há o que cancelar; a rodada já parou |
+| id inexistente        | `404`    | —                                        |
 
-> **Ainda não disponível — responde `501`.** `controle.run_status` tem
-> `CHECK (status IN ('PENDENTE','RODANDO','SUCESSO','FALHOU_QUALIDADE','ERRO'))`,
-> e `CANCELADA` viola o CHECK: o UPDATE falharia. Responder `204` sem cancelar
-> seria pior que responder erro — a tela fecharia dizendo "cancelado" e o cluster
-> continuaria processando e cobrando, com a rodada aparecendo concluída minutos
-> depois.
->
-> Enquanto a migração não roda, **o front não oferece o botão**. Quando `CANCELADA`
-> entrar no CHECK e o job souber interromper a execução, o endpoint passa a
-> responder `204` e o botão volta — os dois na mesma entrega, nunca um sem o outro.
+O `409` é o que sustenta a condição do botão na tela: ele só aparece sob
+`!terminal`, porque cancelar uma rodada que já terminou — bem ou mal — seria um
+botão que mente. Os dois lados dizem a mesma coisa, e é de propósito: o front
+evita o clique, o backend recusa a corrida em que o status virou no meio.
 
-**Quando a migração entrar**, o endpoint responde `204` e o front religa em três
-pontos. Os três na mesma entrega: cada um sozinho mente.
+**Marcar o status não basta.** O cancelamento tem de alcançar quem está
+executando; só gravar `CANCELADA` faria o front parar de perguntar enquanto o
+cluster continua processando e cobrando, e a rodada apareceria concluída minutos
+depois — o resultado seria pior que não ter o botão. Em `PENDENTE` basta tirá-la
+da fila; em `RODANDO`, o executor precisa notar o cancelamento e largar o
+trabalho.
 
-```ts
-// simulacao/api/endpoints.ts
-cancelar: (runId: string) => api.post<void>(`/runs/${runId}/cancelar`),
-
-// simulacao/api/queries.ts — invalidar o status é a parte que se esquece: sem
-// isso o modal segue exibindo RODANDO depois do cancelamento aceito.
-export function useCancelarRodada() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (runId: string) => simulacao.cancelar(runId),
-    onSuccess: (_d, runId) =>
-      void qc.invalidateQueries({ queryKey: chavesSimulacao.status(runId) }),
-  })
-}
-
-// simulacao/pages/Simular.tsx — o botão volta sob `!terminal`: cancelar uma
-// rodada que já terminou também é um botão que mente.
-```
-
-Está aqui em texto, e não como código sem chamador no repositório, porque função
-que ninguém usa envelhece sem que ninguém perceba — e o `knip` a acusa a cada
-execução até alguém a apagar sem saber por que existia.
+> **Histórico, porque explica a forma desta seção.** O endpoint respondeu `501`
+> por um tempo: `controle.run_status` tinha
+> `CHECK (status IN ('PENDENTE','RODANDO','SUCESSO','FALHOU_QUALIDADE','ERRO'))`
+> e `CANCELADA` violava o CHECK — o UPDATE falharia. Nesse período o front **não
+> oferecia o botão**, porque botão que sempre dá erro ensina o usuário a
+> desconfiar da tela inteira. A migração `008_lease_e_executores.sql` pôs
+> `CANCELADA` no CHECK, e endpoint e botão voltaram na mesma entrega. A regra que
+> vale para o resto: cada um sozinho mente.
 
 ### 4.5 `POST /runs/{run_id}/reexecutar` — retry
 

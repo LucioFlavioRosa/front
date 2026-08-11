@@ -644,3 +644,29 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* A frase que explica a espera. Discreta quando é normal — a etapa acima já
+   carrega a atenção — e destacada quando exige alguém agir. */
+.fila {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--texto-2, #64748b);
+}
+
+/* `atencao` do backend: nenhum executor de pé, ou lease vencido. Não é "a rodada
+   demora", é "ninguém vai executá-la" — e essa diferença tem de saltar. */
+.filaAtencao {
+  margin: 6px 0 0;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #7c2d12;
+  background: #fff7ed;
+  border: 1px solid #fdba74;
+}
+
+.decorrido {
+  font-weight: 400;
+  opacity: 0.85;
+}

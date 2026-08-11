@@ -40,7 +40,7 @@ function pendenciasDe(id: string): number {
 
 interface RodadaEmVoo {
   runId: string
-  status: 'RODANDO' | 'SUCESSO' | 'CANCELADA'
+  status: 'PENDENTE' | 'RODANDO' | 'SUCESSO' | 'CANCELADA'
   progresso: number
   inicio: number
 }
@@ -48,14 +48,50 @@ interface RodadaEmVoo {
 const rodadas = new Map<string, RodadaEmVoo>()
 let seq = 0
 
+/**
+ * Quanto tempo a rodada passa na fila antes de um executor pega-la.
+ *
+ * Existe para o estado PENDENTE ser ALCANCAVEL em desenvolvimento. O mock nascia
+ * RODANDO, entao o bloco `fila` — a razao de o backend ter ganhado o campo —
+ * nunca aparecia em tela, e quem mexesse nela nao teria como ver o que fez.
+ */
+const MS_NA_FILA = 1500
+
 /** Progresso pelo tempo decorrido — sem timer, para nao vazar entre testes. */
 function avanca(r: RodadaEmVoo): RodadaEmVoo {
-  if (r.status !== 'RODANDO') return r
+  if (r.status !== 'PENDENTE' && r.status !== 'RODANDO') return r
   const decorrido = Date.now() - r.inicio
-  const p = Math.min(100, Math.round(decorrido / 60))
-  r.progresso = p
-  if (p >= 100) r.status = 'SUCESSO'
+  if (decorrido < MS_NA_FILA) {
+    r.status = 'PENDENTE'
+    r.progresso = 0
+    return r
+  }
+  r.status = 'RODANDO'
+  r.progresso = Math.min(100, Math.round((decorrido - MS_NA_FILA) / 60))
+  if (r.progresso >= 100) r.status = 'SUCESSO'
   return r
+}
+
+/**
+ * O bloco `fila`, com UM executor de pe e uma vaga.
+ *
+ * Nao ha simulacao de fila cheia nem de executor ausente aqui: seriam estados
+ * inventados por um mock que nao tem executor nenhum de verdade. O que ele
+ * garante e o formato e o caminho — a tela recebe o campo, escolhe o tom e
+ * mostra a frase. Os outros dois motivos vem prontos do backend.
+ */
+function filaDe(r: RodadaEmVoo) {
+  return {
+    vivos: 1,
+    capacidade: 1,
+    ocupadas: r.status === 'RODANDO' ? 1 : 0,
+    posicao: 0,
+    motivo:
+      r.status === 'RODANDO'
+        ? 'Em execução.'
+        : 'Há 1 vaga(s) livre(s) — deve começar em instantes.',
+    atencao: false,
+  }
 }
 
 /**
@@ -114,23 +150,29 @@ export const handlersSimulacao = [
     }
 
     const runId = `run_novo_${String(++seq).padStart(4, '0')}`
-    rodadas.set(runId, { runId, status: 'RODANDO', progresso: 0, inicio: Date.now() })
+    rodadas.set(runId, { runId, status: 'PENDENTE', progresso: 0, inicio: Date.now() })
     // `jaExistia: false` sempre: este mock NAO deduplica, e nao deve fingir que
     // sim — a dedupe de rodada concluida (R5) depende de historico publicado e do
     // carimbo de alteracao do cadastro, que so o backend tem. O caminho do
     // `jaExistia: true` e exercitado no teste de tela, com a resposta declarada.
-    return HttpResponse.json({ runId, status: 'RODANDO', jaExistia: false }, { status: 201 })
+    return HttpResponse.json({ runId, status: 'PENDENTE', jaExistia: false }, { status: 201 })
   }),
 
   http.get(`${BASE}/runs/:runId/status`, ({ params }) => {
     const r = rodadas.get(String(params.runId))
     if (!r) return new HttpResponse(null, { status: 404 })
     const atual = avanca(r)
+    const emVoo = atual.status === 'PENDENTE' || atual.status === 'RODANDO'
     return HttpResponse.json({
       runId: atual.runId,
       status: atual.status,
       progresso: atual.progresso,
       erro: null,
+      pedidaEm: new Date(atual.inicio).toISOString(),
+      // O bloco `fila` so existe enquanto ela nao terminou, como no backend. Um
+      // mock que o mandasse sempre esconderia o dia em que a tela passasse a
+      // depender dele numa rodada concluida.
+      fila: emVoo ? filaDe(atual) : undefined,
     })
   }),
 

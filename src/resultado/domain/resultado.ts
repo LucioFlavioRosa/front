@@ -53,7 +53,14 @@ export interface ParametrosRodada {
  * perdia a rodada de vista, e a tela mais operacional do produto era cega para o
  * estado operacional.
  */
-export type StatusRodada = StatusSolver | 'PENDENTE' | 'RODANDO' | 'ERRO'
+/**
+ * `CANCELADA` entra aqui junto com o botão de cancelar: enquanto o endpoint
+ * respondia 501 o valor era inalcançável, e a migração 008 o pôs no CHECK de
+ * `controle.run_status`. Sem ele no tipo, a rodada cancelada cairia no ramo final
+ * do card e diria "Na fila, ainda não começou a rodar" — sobre algo que alguém
+ * mandou parar.
+ */
+export type StatusRodada = StatusSolver | 'PENDENTE' | 'RODANDO' | 'ERRO' | 'CANCELADA'
 
 export interface RunResumo {
   runId: string

@@ -1,5 +1,8 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useExcluirRun, useRuns } from '@/resultado/api/queries'
+import { RITMO_LISTA, chavesRodada, useStatusRodada } from '@/comum/api/rodada'
+import { decorrido, demorandoDemais } from '@/comum/domain/espera'
 import { Carregando, ErroCarga, Vazio } from '@/comum/components/Estado'
 import { useCrumbs } from '@/resultado/state/Crumbs'
 import { useApp } from '@/comum/state/AppContext'
@@ -212,14 +215,7 @@ function CardRodada({
       </div>
 
       {emVoo ? (
-        <p className={styles.aviso}>
-          {r.status === 'ERRO'
-            ? (r.erro ??
-              'A execução falhou e o job não informou a causa. O histórico guarda a rodada para reexecução.')
-            : r.status === 'RODANDO'
-              ? `Em execução — ${r.progresso ?? 0}% concluído. O resultado aparece aqui quando o job publicar.`
-              : 'Na fila, esperando um executor. Ainda não começou a rodar.'}
-        </p>
+        <AvisoEmVoo run={r} />
       ) : semResultado ? (
         <p className={styles.aviso}>
           O solver não encontrou um plano viável com estes parâmetros — não há resultados para
@@ -281,6 +277,77 @@ function CardRodada({
         </button>
       </div>
     </li>
+  )
+}
+
+/**
+ * O que está acontecendo com uma rodada que ainda não publicou.
+ *
+ * A frase era fixa — "Na fila, esperando um executor" — e cobria dois mundos
+ * opostos: todas as vagas ocupadas (espere) e NENHUM executor de pé (isto nunca
+ * vai rodar). Em produção o segundo caso é silencioso, e esta é a tela em que
+ * alguém repara: o modal da nova simulação some quando se fecha a aba, o
+ * histórico fica.
+ *
+ * COMPONENTE PRÓPRIO porque o hook só pode existir na rodada em voo. A lista tem
+ * dezenas de publicadas, e nenhuma delas deve disparar request — chamar
+ * `useStatusRodada` dentro do `CardRodada` faria exatamente isso, já que hook não
+ * roda sob condição.
+ *
+ * O hook vem de `comum/`, e não de `simulacao/`: foi esta tela que tornou o
+ * `GET /runs/{id}/status` uma pergunta de duas áreas, e a fronteira do ESLint
+ * recusou o atalho de importar da outra — o que estava certo.
+ */
+function AvisoEmVoo({ run: r }: { run: RunResumo }) {
+  const qc = useQueryClient()
+  const status = useStatusRodada(r.runId, RITMO_LISTA)
+  const atual = status.data?.status ?? r.status
+  const fila = status.data?.fila
+
+  // A lista foi buscada uma vez e não se atualiza sozinha. Sem isto, a rodada que
+  // termina enquanto alguém olha a tela fica em "Em execução — 100%" para sempre,
+  // com o resultado já gravado logo ali, e só um F5 revelaria.
+  useEffect(() => {
+    if (atual !== 'PENDENTE' && atual !== 'RODANDO') {
+      void qc.invalidateQueries({ queryKey: chavesRodada.lista })
+    }
+  }, [atual, qc])
+
+  // `pedidaEm` do status é a fonte melhor; `dataHora` da lista é a mesma coluna
+  // (`solicitado_em`) e serve enquanto o primeiro request não voltou.
+  const pedidaEm = status.data?.pedidaEm ?? r.dataHora
+  const emExecucao = atual === 'RODANDO'
+  const esperando = atual === 'PENDENTE' || emExecucao
+  const progresso = status.data?.progresso ?? r.progresso ?? 0
+
+  const texto =
+    atual === 'ERRO'
+      ? (status.data?.erro ??
+        r.erro ??
+        'A execução falhou e o job não informou a causa. O histórico guarda a rodada para reexecução.')
+      : atual === 'CANCELADA'
+        ? 'Cancelada antes de terminar — não há resultado para abrir. Para rodar de novo, crie uma nova simulação.'
+        : // Em execução o `motivo` do backend é só "Em execução.", que o selo de
+          // status já diz e sem o progresso; a exceção é o lease vencido, que vem
+          // com `atencao` e é a única coisa aqui que a lista não teria como saber.
+          emExecucao && !fila?.atencao
+          ? `Em execução — ${progresso}% concluído. O resultado aparece aqui quando o job publicar.`
+          : (fila?.motivo ?? 'Na fila. Ainda não começou a rodar.')
+
+  // O relógio e o destaque só valem enquanto a rodada ESPERA. Numa que já parou,
+  // o tempo desde o pedido não é espera nenhuma — "pedida há 54h" sobre uma
+  // rodada que falhou anteontem é ruído, e com cara de alerta é ruído que assusta.
+  //
+  // Sem o bloco `fila` (servidor anterior a ele), o relógio sozinho ainda
+  // distingue lento de travado, que é o mínimo que esta tela deve a quem olha.
+  const espera = esperando ? decorrido(pedidaEm) : ''
+  const alerta = esperando && (!!fila?.atencao || (!emExecucao && demorandoDemais(pedidaEm)))
+
+  return (
+    <p className={alerta ? styles.avisoAtencao : styles.aviso}>
+      {texto}
+      {espera && <span className={styles.espera}> · pedida {espera}</span>}
+    </p>
   )
 }
 

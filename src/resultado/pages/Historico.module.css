@@ -191,6 +191,29 @@
   padding: 10px 12px;
 }
 
+/* A espera que EXIGE alguém agir: nenhum executor de pé, lease vencido, ou tempo
+   parado além do que a fila explica. Mais forte que o `.aviso` amarelo, que é o
+   tom de "isto está em andamento" e se lê de relance sem nada a fazer. */
+.avisoAtencao {
+  margin: 14px 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-weight: 600;
+  color: #7c2d12;
+  background: #fff7ed;
+  border: 1px solid #fdba74;
+}
+
+/* O relógio anda junto da frase, mas não compete com ela: quem lê quer primeiro
+   o motivo, e o tempo é o que qualifica esse motivo. */
+.espera {
+  font-weight: 400;
+  opacity: 0.85;
+  white-space: nowrap;
+}
+
 .metricas {
   margin: 16px 0 0;
   padding: 0;

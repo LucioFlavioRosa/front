@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useRegionais, useUnidades } from '@/comum/api/organizacao'
-import { useCriarRodada, useProntidao, useStatusRodada } from '@/simulacao/api/queries'
+import { useCancelarRodada, useCriarRodada, useProntidao } from '@/simulacao/api/queries'
+import { useStatusRodada, type FilaDaRodada } from '@/comum/api/rodada'
+import { decorrido, demorandoDemais } from '@/comum/domain/espera'
 import { useApp } from '@/comum/state/AppContext'
 import {
   aceitaFoco,
@@ -57,6 +59,7 @@ export function Simular() {
   const unidades = useUnidades(e.regionalId || null)
   const prontidao = useProntidao(e.unidadeId || undefined)
   const criar = useCriarRodada()
+  const cancelar = useCancelarRodada()
   const status = useStatusRodada(runId)
 
   const set = <K extends keyof EstadoSimulacao>(k: K, v: EstadoSimulacao[K]) =>
@@ -97,6 +100,22 @@ export function Simular() {
         setRunId(r.runId)
       },
       onError: () => toast('Não foi possível iniciar a rodada. Tente de novo.'),
+    })
+  }
+
+  /**
+   * Desiste da rodada em voo.
+   *
+   * Nao fecha o modal por conta propria: quem o fecha e o `emVoo` abaixo, quando
+   * o status recarregado voltar `CANCELADA`. Fechar aqui, no otimismo, mostraria
+   * a tela liberada enquanto o cluster ainda estaria processando se o cancelamento
+   * tivesse falhado — e a rodada apareceria concluida minutos depois.
+   */
+  function cancelarRodada() {
+    if (!runId) return
+    cancelar.mutate(runId, {
+      onSuccess: () => toast('Rodada cancelada.'),
+      onError: () => toast('Não foi possível cancelar a rodada. Ela continua no servidor.'),
     })
   }
 
@@ -717,6 +736,10 @@ export function Simular() {
           terminal={terminal}
           falhou={st === 'ERRO' || st === 'FALHOU_QUALIDADE'}
           erro={status.data?.erro ?? undefined}
+          fila={status.data?.fila}
+          pedidaEm={status.data?.pedidaEm}
+          cancelando={cancelar.isPending}
+          onCancelar={cancelarRodada}
           onFechar={() => setRunId(undefined)}
           onHistorico={() => navigate('/resultados')}
         />
@@ -806,6 +829,10 @@ function ModalProgresso({
   terminal,
   falhou,
   erro,
+  fila,
+  pedidaEm,
+  cancelando,
+  onCancelar,
   onFechar,
   onHistorico,
 }: {
@@ -813,6 +840,11 @@ function ModalProgresso({
   terminal: boolean
   falhou: boolean
   erro?: string
+  /** Ausente quando a rodada já terminou, e quando o servidor é anterior a isto. */
+  fila?: FilaDaRodada
+  pedidaEm?: string | null
+  cancelando: boolean
+  onCancelar: () => void
   onFechar: () => void
   onHistorico: () => void
 }) {
@@ -853,6 +885,14 @@ function ModalProgresso({
       ? 'Simulação concluída'
       : 'Simulação em andamento'
 
+  const espera = decorrido(pedidaEm)
+  // Duas origens para o mesmo destaque, e elas cobrem coisas diferentes.
+  // `atencao` é o que o backend SABE (nenhum executor de pé, lease vencido);
+  // `demorandoDemais` é o que só o relógio sabe — "deve começar em instantes" há
+  // vinte minutos é um motivo tranquilo que parou de ser verdade, e é justamente
+  // o caso que ninguém reporta porque a frase continua parecendo normal.
+  const alerta = !!fila?.atencao || demorandoDemais(pedidaEm)
+
   return (
     <div className={styles.overlay} role="dialog" aria-modal="true" aria-labelledby="prog-t">
       <div className={styles.modal} ref={caixa} tabIndex={-1}>
@@ -862,6 +902,17 @@ function ModalProgresso({
         <p className={styles.modalEtapa} aria-live="polite">
           {falhou ? (erro ?? 'O servidor não conseguiu concluir esta rodada.') : etapaDe(progresso)}
         </p>
+        {/* POR QUE ela está esperando, e há quanto tempo.
+            A etapa acima diz o que o job FARIA; ela não distingue "vai começar em
+            instantes" de "não há executor nenhum de pé". Quem olha precisa dos
+            dois, e o segundo é o que o dono do produto marcou como inegociável em
+            produção. `fila` é opcional: servidor antigo simplesmente não mostra. */}
+        {!falhou && fila && (
+          <p className={alerta ? styles.filaAtencao : styles.fila} role="status">
+            {fila.motivo}
+            {espera && <span className={styles.decorrido}> · pedida {espera}</span>}
+          </p>
+        )}
         <div
           className={styles.progresso}
           role="progressbar"
@@ -878,16 +929,23 @@ function ModalProgresso({
           </p>
         )}
         <div className={styles.modalAcoes}>
-          {/* O botao "Cancelar rodada" NAO esta aqui, e isso e temporario.
-              `POST /runs/{id}/cancelar` responde 501: `controle.run_status` tem um
-              CHECK sem `CANCELADA`, e o backend prefere dizer a verdade a fingir
-              que cancelou enquanto o cluster segue processando e cobrando.
-              Botao que sempre da erro e pior que botao ausente — ensina o usuario
-              a desconfiar da tela inteira.
-
-              Quando a migracao entrar, ele volta com a condicao que ja tinha:
-              `!terminal`, porque cancelar uma rodada que ja terminou (bem ou mal)
-              tambem seria um botao que mente. Ver CONTRATO.md §4.4. */}
+          {/* Cancelar aparece sob `!terminal`, e so ai: cancelar uma rodada que ja
+              terminou — bem ou mal — seria um botao que mente, e o backend
+              responde 409. Ele esteve ausente da tela enquanto
+              `POST /runs/{id}/cancelar` respondia 501, porque botao que sempre da
+              erro ensina o usuario a desconfiar da tela inteira; a migracao 008
+              pos `CANCELADA` no CHECK de `controle.run_status` e o endpoint passou
+              a cancelar de verdade. Ver CONTRATO.md §4.4. */}
+          {!terminal && (
+            <button
+              type="button"
+              className={styles.modalCancelar}
+              onClick={onCancelar}
+              disabled={cancelando}
+            >
+              {cancelando ? 'Cancelando…' : 'Cancelar rodada'}
+            </button>
+          )}
           {falhou && (
             <button type="button" className={styles.modalCancelar} onClick={onFechar}>
               Ajustar parâmetros

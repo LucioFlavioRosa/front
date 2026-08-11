@@ -30,14 +30,6 @@ export interface RespostaNovaRodada {
   jaExistia?: boolean
 }
 
-export interface StatusRodada {
-  runId: string
-  status: 'PENDENTE' | 'RODANDO' | 'SUCESSO' | 'FALHOU_QUALIDADE' | 'ERRO' | 'CANCELADA'
-  /** 0 a 100. O modal mostra a etapa a partir dele. */
-  progresso: number
-  erro?: string | null
-}
-
 export const simulacao = {
   /**
    * Pendencias do cadastro da unidade — o que bloqueia a rodada.
@@ -50,10 +42,18 @@ export const simulacao = {
 
   criar: (corpo: CorpoNovaRodada) => api.post<RespostaNovaRodada>('/runs', corpo),
 
-  status: (runId: string) => api.get<StatusRodada>(`/runs/${runId}/status`),
+  // `GET /runs/{id}/status` NAO esta aqui: ele subiu para `comum/api/rodada.ts`
+  // quando o card do historico passou a mostrar por que a rodada espera. Duas
+  // areas perguntam a mesma coisa ao mesmo endpoint, e a fronteira do ESLint
+  // recusa — com razao — que uma importe da outra.
 
-  // NAO ha `cancelar` aqui: o endpoint responde 501 enquanto `CANCELADA` nao
-  // entra no CHECK de `controle.run_status`, e o botao saiu da tela. O codigo
-  // exato para religar os tres pontos esta no CONTRATO.md §4.4 — em texto, e nao
-  // como funcao sem chamador que o `knip` acusa e ninguem sabe se ainda vale.
+  /**
+   * Desiste de uma rodada que ainda nao terminou. `204`, sem corpo.
+   *
+   * Esteve fora daqui enquanto o endpoint respondia `501`: `controle.run_status`
+   * tinha um CHECK sem `CANCELADA`, e o UPDATE falharia. A migracao 008 pos o
+   * valor no CHECK e o endpoint passou a cancelar de verdade — os dois na mesma
+   * entrega, como o CONTRATO.md §4.4 exigia, porque cada um sozinho mente.
+   */
+  cancelar: (runId: string) => api.post<void>(`/runs/${runId}/cancelar`),
 }

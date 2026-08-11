@@ -1,10 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { chavesRodada } from '@/comum/api/rodada'
 import { simulacao } from '@/simulacao/api/endpoints'
 import type { CorpoNovaRodada } from '@/simulacao/domain/simulacao'
 
 const chavesSimulacao = {
   prontidao: (unidadeId: string) => ['unidades', unidadeId, 'prontidao'] as const,
-  status: (runId: string) => ['runs', runId, 'status'] as const,
 }
 
 /**
@@ -37,26 +37,25 @@ export function useCriarRodada() {
   return useMutation({
     mutationFn: (corpo: CorpoNovaRodada) => simulacao.criar(corpo),
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ['runs', 'lista'] })
+      void qc.invalidateQueries({ queryKey: chavesRodada.lista })
     },
   })
 }
 
 /**
- * Acompanha a rodada em voo.
+ * Cancela uma rodada em voo.
  *
- * `refetchInterval` so enquanto ela nao terminou — parar de perguntar quando a
- * resposta nao muda mais e o minimo de respeito com o backend. E `enabled` so
- * com `runId`, entao nao ha polling nenhum antes de o usuario iniciar.
+ * Invalidar o STATUS e a parte que se esquece: sem isso o modal segue exibindo
+ * RODANDO depois de o cancelamento ter sido aceito, e o usuario clica de novo.
+ * A lista tambem, porque o card do historico mostra o mesmo estado.
  */
-export function useStatusRodada(runId: string | undefined) {
-  return useQuery({
-    queryKey: chavesSimulacao.status(runId ?? '—'),
-    queryFn: () => simulacao.status(runId as string),
-    enabled: !!runId,
-    refetchInterval: (q) => {
-      const s = q.state.data?.status
-      return s === 'PENDENTE' || s === 'RODANDO' ? 1200 : false
+export function useCancelarRodada() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (runId: string) => simulacao.cancelar(runId),
+    onSuccess: (_d, runId) => {
+      void qc.invalidateQueries({ queryKey: chavesRodada.status(runId) })
+      void qc.invalidateQueries({ queryKey: chavesRodada.lista })
     },
   })
 }

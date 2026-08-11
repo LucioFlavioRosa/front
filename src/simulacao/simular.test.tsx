@@ -236,6 +236,100 @@ describe('rodada idêntica que já existe (R5)', () => {
   })
 })
 
+describe('por que a rodada está esperando', () => {
+  /** Deixa a tela pronta e dispara, com o status que o caso quer observar. */
+  async function disparar(status: Record<string, unknown>) {
+    estado.respostas['/runs'] = { runId: 'run_fila', status: 'PENDENTE' }
+    dados['/runs/run_fila/status'] = { runId: 'run_fila', progresso: 0, ...status }
+    renderApp('/simular')
+    await escolherUnidade()
+    await waitFor(() => {
+      const b = screen.getByRole('button', { name: 'Iniciar simulação' }) as HTMLButtonElement
+      expect(b.disabled).toBe(false)
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Iniciar simulação' }))
+    return screen.findByRole('dialog')
+  }
+
+  it('mostra o motivo que o servidor mandou, com o tempo decorrido', async () => {
+    // A etapa ("Lendo dados da unidade…") diz o que o job FARIA; ela não
+    // distingue "vai começar em instantes" de "não há executor nenhum de pé".
+    const modal = await disparar({
+      status: 'PENDENTE',
+      pedidaEm: new Date(Date.now() - 90_000).toISOString(),
+      fila: {
+        vivos: 2,
+        capacidade: 4,
+        ocupadas: 4,
+        posicao: 2,
+        motivo: 'Todas as 4 vagas estão ocupadas. Há 2 simulação(ões) na frente desta.',
+        atencao: false,
+      },
+    })
+
+    const linha = await within(modal).findByText(/Todas as 4 vagas estão ocupadas/)
+    expect(linha.textContent).toMatch(/pedida há 1 min/)
+  })
+
+  it('espera longa com motivo tranquilo também vira alerta', async () => {
+    // "Deve começar em instantes" há vinte minutos é o caso que ninguém reporta,
+    // porque a frase continua parecendo normal — e `atencao` vem `false`, já que
+    // do lado do servidor há vaga livre mesmo.
+    const modal = await disparar({
+      status: 'PENDENTE',
+      pedidaEm: new Date(Date.now() - 20 * 60_000).toISOString(),
+      fila: {
+        vivos: 1,
+        capacidade: 4,
+        ocupadas: 0,
+        posicao: 0,
+        motivo: 'Há 4 vaga(s) livre(s) — deve começar em instantes.',
+        atencao: false,
+      },
+    })
+
+    const linha = await within(modal).findByText(/deve começar em instantes/)
+    expect(linha.className).toMatch(/filaAtencao/)
+  })
+
+  it('servidor sem o bloco `fila` não mostra linha nenhuma', async () => {
+    // Compatibilidade: campo ausente é "não sei", e "não sei" não pode virar uma
+    // frase afirmando qualquer coisa sobre a fila.
+    const modal = await disparar({ status: 'PENDENTE', progresso: 5 })
+    expect(await within(modal).findByText(/Lendo dados da unidade/)).toBeTruthy()
+    expect(within(modal).queryByText(/vaga\(s\) livre\(s\)/)).toBeNull()
+    expect(within(modal).queryByText(/pedida há/)).toBeNull()
+  })
+})
+
+describe('cancelar a rodada', () => {
+  it('o botão chama o endpoint e some quando a rodada volta CANCELADA', async () => {
+    // Esteve fora da tela enquanto o endpoint respondia 501: botão que sempre dá
+    // erro ensina o usuário a desconfiar da tela inteira. Voltou com a migração
+    // 008, e sob `!terminal` — ver CONTRATO.md §4.4.
+    estado.respostas['/runs'] = { runId: 'run_c', status: 'RODANDO' }
+    dados['/runs/run_c/status'] = { runId: 'run_c', status: 'RODANDO', progresso: 20 }
+    renderApp('/simular')
+    await escolherUnidade()
+    await waitFor(() => {
+      const b = screen.getByRole('button', { name: 'Iniciar simulação' }) as HTMLButtonElement
+      expect(b.disabled).toBe(false)
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Iniciar simulação' }))
+
+    const modal = await screen.findByRole('dialog')
+    fireEvent.click(await within(modal).findByRole('button', { name: 'Cancelar rodada' }))
+    // A próxima leitura do status já responde CANCELADA — e é ELA que fecha o
+    // modal, não o clique. Fechar no otimismo mostraria a tela liberada enquanto
+    // o cluster ainda processaria, se o cancelamento tivesse falhado; é por isso
+    // que o `useCancelarRodada` invalida o status em vez de a tela se fechar.
+    dados['/runs/run_c/status'] = { runId: 'run_c', status: 'CANCELADA', progresso: 20 }
+
+    await waitFor(() => expect(estado.posts.map(([p]) => p)).toContain('/runs/run_c/cancelar'))
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+  })
+})
+
 describe('rodada que falha', () => {
   it('status ERRO fecha o "em andamento" e oferece ajustar, não cancelar', async () => {
     // Antes so CANCELADA terminava: uma rodada que falhou ficava "em andamento"
