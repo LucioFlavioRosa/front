@@ -467,7 +467,19 @@ const ETAPAS = [
   { ate: 100, texto: 'Materializando as tabelas de resultado…' },
 ] as const
 
-export function etapaDe(progresso: number): string {
+/**
+ * A etapa que o job está executando, pelo progresso.
+ *
+ * `naFila` existe porque PENDENTE **não é progresso zero** — é ausência de
+ * execução. Sem ele, uma rodada que ainda não começou exibia "Lendo dados da
+ * unidade…", afirmando uma atividade que não estava acontecendo e contradizendo,
+ * na linha logo abaixo, o motivo da fila ("todas as vagas estão ocupadas").
+ *
+ * O texto daqui não repete o motivo: quem explica a espera é o bloco `fila`, que
+ * é o único que conhece executores e posição. Este diz só que não começou.
+ */
+export function etapaDe(progresso: number, naFila = false): string {
+  if (naFila) return 'Ainda não começou — está na fila.'
   if (progresso >= 100) return 'Concluída — disponível no histórico.'
   return ETAPAS.find((e) => progresso < e.ate)?.texto ?? ETAPAS[0].texto
 }

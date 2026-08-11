@@ -310,4 +310,19 @@ describe('rótulos', () => {
     expect(etapaDe(95)).toContain('Materializando')
     expect(etapaDe(100)).toContain('Concluída')
   })
+
+  it('na fila NÃO anuncia etapa nenhuma — nada está executando', () => {
+    // PENDENTE nao e progresso zero: e ausencia de execucao. Dizer "Lendo dados
+    // da unidade" ali afirma uma atividade que nao acontece, e contradiz o motivo
+    // da fila que aparece na linha seguinte do mesmo modal.
+    expect(etapaDe(0, true)).not.toContain('Lendo dados')
+    expect(etapaDe(0, true)).toContain('fila')
+  })
+
+  it('o texto da fila não repete o motivo, que é do backend', () => {
+    // Quem explica a espera e o bloco `fila`, o unico que conhece executores e
+    // posicao. Duas frases dizendo a mesma coisa envelheceriam separadas.
+    const t = etapaDe(0, true)
+    expect(t).not.toMatch(/executor|vaga/i)
+  })
 })

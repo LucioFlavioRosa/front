@@ -296,9 +296,35 @@ describe('por que a rodada está esperando', () => {
     // Compatibilidade: campo ausente é "não sei", e "não sei" não pode virar uma
     // frase afirmando qualquer coisa sobre a fila.
     const modal = await disparar({ status: 'PENDENTE', progresso: 5 })
-    expect(await within(modal).findByText(/Lendo dados da unidade/)).toBeTruthy()
-    expect(within(modal).queryByText(/vaga\(s\) livre\(s\)/)).toBeNull()
+    expect(await within(modal).findByText(/Ainda não começou/)).toBeTruthy()
+    expect(within(modal).queryByText(/vaga/i)).toBeNull()
     expect(within(modal).queryByText(/pedida há/)).toBeNull()
+  })
+
+  it('a etapa não diz "Lendo dados" enquanto a rodada está na fila', async () => {
+    // A contradição que isto impede: a etapa anunciando leitura de dados duas
+    // linhas acima do motivo dizendo que todas as vagas estão ocupadas.
+    const modal = await disparar({
+      status: 'PENDENTE',
+      progresso: 0,
+      fila: {
+        vivos: 1,
+        capacidade: 1,
+        ocupadas: 1,
+        posicao: 0,
+        motivo: 'A única vaga está ocupada. Esta é a próxima a entrar.',
+        atencao: false,
+      },
+    })
+
+    expect(await within(modal).findByText(/A única vaga está ocupada/)).toBeTruthy()
+    expect(within(modal).queryByText(/Lendo dados da unidade/)).toBeNull()
+    expect(within(modal).getByText(/Ainda não começou/)).toBeTruthy()
+  })
+
+  it('assim que passa a RODANDO, a etapa volta a nomear o trabalho', async () => {
+    const modal = await disparar({ status: 'RODANDO', progresso: 5 })
+    expect(await within(modal).findByText(/Lendo dados da unidade/)).toBeTruthy()
   })
 })
 

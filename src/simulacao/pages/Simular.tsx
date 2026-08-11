@@ -744,6 +744,7 @@ export function Simular() {
           erro={status.data?.erro ?? undefined}
           fila={status.data?.fila}
           pedidaEm={status.data?.pedidaEm}
+          naFila={st === 'PENDENTE'}
           cancelando={cancelar.isPending}
           onCancelar={cancelarRodada}
           onFechar={() => setRunId(undefined)}
@@ -849,6 +850,7 @@ function ModalProgresso({
   erro,
   fila,
   pedidaEm,
+  naFila,
   cancelando,
   onCancelar,
   onFechar,
@@ -861,6 +863,8 @@ function ModalProgresso({
   /** Ausente quando a rodada já terminou, e quando o servidor é anterior a isto. */
   fila?: FilaDaRodada
   pedidaEm?: string | null
+  /** PENDENTE: nada está executando ainda, e a etapa não pode dizer que sim. */
+  naFila: boolean
   cancelando: boolean
   onCancelar: () => void
   onFechar: () => void
@@ -918,7 +922,9 @@ function ModalProgresso({
           {titulo}
         </h2>
         <p className={styles.modalEtapa} aria-live="polite">
-          {falhou ? (erro ?? 'O servidor não conseguiu concluir esta rodada.') : etapaDe(progresso)}
+          {falhou
+            ? (erro ?? 'O servidor não conseguiu concluir esta rodada.')
+            : etapaDe(progresso, naFila)}
         </p>
         {/* POR QUE ela está esperando, e há quanto tempo.
             A etapa acima diz o que o job FARIA; ela não distingue "vai começar em
