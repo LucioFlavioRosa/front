@@ -98,7 +98,8 @@ export async function dadosDaUnidade(opcoes: OpcoesDados = {}): Promise<Record<s
     id,
     regionalId: 'r-sudeste',
     nome,
-    resumo: { cidades: 8, sistemas: 8, subBacias: 8, obras: 40 },
+    // `obras` e o TOTAL: 8 sub-bacias x 5 + 3 CTS x 4 = 52.
+    resumo: { cidades: 8, sistemas: 8, subBacias: 8, cts: 3, etes: 2, obras: 52 },
     // Irrelevante nos testes de tela: o header usa a completude derivada do store.
     completude: 0,
     databricksConectado: true,

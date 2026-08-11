@@ -17,8 +17,8 @@ import {
   validar,
   type EstadoSimulacao,
   type Penalidade,
-  type TamanhoDaUnidade,
 } from '@/simulacao/domain/simulacao'
+import type { UnidadeResumo } from '@/comum/domain/organizacao'
 import { Ajuda, Campo, Interruptor, Opcao, Rotulo, Secao } from '@/simulacao/components/campos'
 import styles from './Simular.module.css'
 
@@ -64,6 +64,9 @@ export function Simular() {
 
   const set = <K extends keyof EstadoSimulacao>(k: K, v: EstadoSimulacao[K]) =>
     setE((s) => ({ ...s, [k]: v }))
+
+  /** A unidade escolhida, com o `resumo` que a lista do select já trouxe. */
+  const unidadeEscolhida = (unidades.data ?? []).find((u) => u.id === e.unidadeId)
 
   const orc = useMemo(() => derivarOrcamento(e), [e])
   const checklist = useMemo(() => validar(e, prontidao.data), [e, prontidao.data])
@@ -641,10 +644,13 @@ export function Simular() {
             <Item k="Unidade" v={prontidao.data?.unidadeNome ?? '—'} alerta={!e.unidadeId} />
             {/* O TAMANHO logo abaixo do nome, e não no fim: ele qualifica a
                 unidade que se acabou de escolher, e é o que separa "rodar a
-                Serrana" de "rodar a Leste" — 710 obras contra 11.525. Aparece só
-                quando o servidor manda; um servidor antigo não quebra a tela. */}
-            {prontidao.data?.tamanho && (
-              <Item k="Tamanho" v={textoDoTamanho(prontidao.data.tamanho)} calc />
+                Serrana" de "rodar a Leste" — 710 obras contra 11.525.
+                Sai do `resumo` da unidade, que a lista do select JÁ trouxe: não
+                custa request nenhum, e é o mesmo número que a seleção do cadastro
+                mostra. Antes vinha de um `tamanho` em `/prontidao` que o backend
+                nunca implementou, então a linha simplesmente não aparecia. */}
+            {unidadeEscolhida?.resumo && (
+              <Item k="Tamanho" v={textoDoTamanho(unidadeEscolhida.resumo)} calc />
             )}
             <Item k="Orçamento total" v={`R$ ${orc.total.toLocaleString('pt-BR')} Mi`} calc />
             <Item k="Janela de CAPEX" v={orc.janelaTexto} calc />
@@ -749,18 +755,30 @@ export function Simular() {
 }
 
 /**
- * `"5 cidades · 28 sistemas · 710 obras"` — o porte da unidade, numa linha.
+ * `"5 cidades · 28 sistemas · 92 sub-bacias · 3 CTS · 4 ETEs · 710 obras"` — o
+ * porte da unidade, numa linha.
+ *
+ * A ordem é a da árvore: cidade contém sistema, que contém sub-bacia, que tem CTS
+ * pareada; ETEs ao lado; e `obras` fecha porque é o número que resume o custo da
+ * rodada — o total, sub-bacia mais CTS.
+ *
+ * CTS aparece mesmo quando é zero. Ela é esparsa, e "0 CTS" responde uma pergunta
+ * que a ausência da palavra deixaria no ar: se a unidade não tem, ligar `USAR_CTS`
+ * nos parâmetros não muda nada, e é melhor descobrir isso aqui.
  *
  * Singular e plural porque "1 cidades" numa tela que o usuário lê o dia inteiro
- * é o tipo de descuido que faz duvidar do resto do número. Milhar com separador
- * pt-BR: `11525` custa a ler, `11.525` não.
+ * é o tipo de descuido que faz duvidar do resto dos números. Milhar com separador
+ * pt-BR: `11525` custa a ler, `11.525` não. CTS não flexiona.
  */
-function textoDoTamanho({ cidades, sistemas, obras }: TamanhoDaUnidade): string {
+function textoDoTamanho({ cidades, sistemas, subBacias, cts, etes, obras }: UnidadeResumo): string {
   const n = (v: number) => v.toLocaleString('pt-BR')
   const plural = (v: number, um: string, muitos: string) => `${n(v)} ${v === 1 ? um : muitos}`
   return [
     plural(cidades, 'cidade', 'cidades'),
     plural(sistemas, 'sistema', 'sistemas'),
+    plural(subBacias, 'sub-bacia', 'sub-bacias'),
+    `${n(cts)} CTS`,
+    plural(etes, 'ETE', 'ETEs'),
     plural(obras, 'obra', 'obras'),
   ].join(' · ')
 }

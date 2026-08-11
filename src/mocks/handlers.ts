@@ -82,7 +82,12 @@ function toUnidade(u: UnidadeRaw): Unidade {
       cidades: contadores.cidades,
       sistemas: contadores.sistemas,
       subBacias: contadores.subBacias,
-      obras: contadores.obras,
+      cts: contadores.cts,
+      etes: contadores.etes,
+      // O TOTAL, e nao so a metade da sub-bacia: e o tamanho do problema que o
+      // motor vai resolver. `contadores.obras` conta so as da sub-bacia porque o
+      // hub do cadastro da cartao proprio a CTS.
+      obras: contadores.obras + contadores.cts * 4,
     },
     completude,
     databricksConectado: u.databricksConectado,

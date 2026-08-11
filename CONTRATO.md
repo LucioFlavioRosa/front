@@ -592,6 +592,14 @@ aba e voltar.
 
 `pendencias > 0` bloqueia a rodada na UI.
 
+**O PORTE da unidade não vem daqui** — cidades, sistemas, sub-bacias, CTS, ETEs e
+obras estão em `Unidade.resumo`, no próprio registro da unidade (`DEPLOY.md` §3),
+que esta tela já carrega para montar o select. Não é economia de request: é evitar
+duas fontes para o mesmo fato. Houve um `tamanho` nesta resposta, e ele mostra
+por que a regra importa — o front consumia o campo, o contrato nunca o descreveu,
+o backend nunca o implementou, e a linha do resumo simplesmente não aparecia em
+produção. Só o mock a mostrava.
+
 ### 4.2 `POST /runs` — dispara a rodada
 
 Corpo completo. **Os nomes aqui são `snake_case`**, espelhando os parâmetros do

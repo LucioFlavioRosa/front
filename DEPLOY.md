@@ -110,6 +110,27 @@ GET /unidades/:id/hierarquia        -> { unidReg, superintendencias, cidades, si
 GET /unidades/:id/cts               -> { pares, ctss, inconsistencias }
 ```
 
+**`Unidade.resumo` — o porte da unidade.** Duas telas dependem dele: a seleção do
+cadastro e o **resumo da nova simulação**, que o usa para dizer se a rodada é de
+minutos ou de meia hora antes de disparar.
+
+```jsonc
+// Unidade Norte Litoral, medida na base de desenvolvimento
+"resumo": {
+  "cidades": 21,
+  "sistemas": 155,
+  "subBacias": 751,
+  "cts": 151, // esparsas — zero é comum, e a tela mostra "0 CTS"
+  "etes": 155,
+  "obras": 4359 // subBacias × 5 + cts × 4
+}
+```
+
+`obras` é o **total** de candidatas de CAPEX, as duas metades: a sub-bacia ancora
+5 componentes na "Ligação de esgoto", a CTS ancora 4 no "Coletor de tempo seco".
+Contar só a primeira subestima justamente o número que serve para julgar o
+tamanho do problema — e era o que acontecia.
+
 A ficha de coleta (sub-bacia e CTS, que são iguais) tem **dois blocos de origem
 diferente**, e a régua da meta da cidade (`Cidade.cob`) decide o que aparece:
 

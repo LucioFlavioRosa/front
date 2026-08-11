@@ -250,28 +250,21 @@ export interface ComponenteFaltando {
   detalhe: string
 }
 
-/** Prontidao do cadastro da unidade — quem manda no bloqueio da rodada. */
 /**
- * O TAMANHO da unidade — o problema que a simulacao vai resolver.
+ * Prontidao do cadastro da unidade — quem manda no bloqueio da rodada.
  *
- * `obras` sao os componentes de CAPEX de sub-bacia e CTS: as candidatas que o
- * motor escolhe construir ou nao. E a ordem de grandeza que diz se a rodada e de
- * minutos ou de meia hora, e ela so aparecia DEPOIS de a rodada existir.
+ * NAO ha `tamanho` aqui, e a ausencia e deliberada. Ele existiu, o backend nunca
+ * o implementou, e a linha do resumo simplesmente nao aparecia em producao. O
+ * porte da unidade ja viaja em `Unidade.resumo` — no proprio registro da unidade,
+ * que a tela carrega para montar o select. Dois contratos para o mesmo fato so
+ * teriam divergido.
  */
-export interface TamanhoDaUnidade {
-  cidades: number
-  sistemas: number
-  obras: number
-}
-
 export interface Prontidao {
   unidadeId: string
   unidadeNome: string
   pendencias: number
   /** Opcional: servidor antigo nao manda, e a tela nao pode quebrar por isso. */
   faltando?: ComponenteFaltando[]
-  /** Opcional pela mesma razao — a tela mostra travessao quando nao vem. */
-  tamanho?: TamanhoDaUnidade
 }
 
 /**

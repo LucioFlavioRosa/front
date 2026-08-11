@@ -362,29 +362,37 @@ describe('o tamanho da unidade no resumo', () => {
    * Ele responde "que unidade é essa?" ANTES de rodar. Sem isto, o porte do
    * problema só aparecia depois — e escolher entre a Serrana (710 obras) e a
    * Leste (11.525) era escolher no escuro.
+   *
+   * Sai do `resumo` da UNIDADE, e não de um campo em `/prontidao`. O campo em
+   * `/prontidao` existiu, o backend nunca o implementou, e a linha não aparecia
+   * em produção — o mock era o único lugar onde ela funcionava.
    */
-  it('aparece assim que a unidade é escolhida', async () => {
-    dados['/unidades/u-jacarei/prontidao'] = {
-      ...PRONTA,
-      tamanho: { cidades: 11, sistemas: 8, obras: 52 },
-    }
+  /** Troca o `resumo` da unidade que o select carrega. */
+  function comResumo(resumo: Record<string, number>) {
+    const u = (dados['/regionais/r-sudeste/unidades'] as { id: string }[])[0]
+    dados['/regionais/r-sudeste/unidades'] = [{ ...u, resumo }]
+  }
+
+  it('aparece assim que a unidade é escolhida, com as cinco contagens', async () => {
+    comResumo({ cidades: 11, sistemas: 8, subBacias: 9, cts: 3, etes: 2, obras: 57 })
     renderApp('/simular')
     await escolherUnidade()
 
     const resumo = await screen.findByRole('complementary', { name: 'Resumo da rodada' })
-    expect(await within(resumo).findByText('11 cidades · 8 sistemas · 52 obras')).toBeTruthy()
+    expect(
+      await within(resumo).findByText(
+        '11 cidades · 8 sistemas · 9 sub-bacias · 3 CTS · 2 ETEs · 57 obras',
+      ),
+    ).toBeTruthy()
   })
 
   it('vem logo depois da unidade, e não no fim da lista', async () => {
-    dados['/unidades/u-jacarei/prontidao'] = {
-      ...PRONTA,
-      tamanho: { cidades: 11, sistemas: 8, obras: 52 },
-    }
+    comResumo({ cidades: 11, sistemas: 8, subBacias: 9, cts: 3, etes: 2, obras: 57 })
     renderApp('/simular')
     await escolherUnidade()
 
     const resumo = await screen.findByRole('complementary', { name: 'Resumo da rodada' })
-    await within(resumo).findByText('11 cidades · 8 sistemas · 52 obras')
+    await within(resumo).findByText(/57 obras/)
     const chaves = within(resumo)
       .getAllByRole('term')
       .map((t) => t.textContent)
@@ -392,10 +400,7 @@ describe('o tamanho da unidade no resumo', () => {
   })
 
   it('separa o milhar, porque 11525 não se lê', async () => {
-    dados['/unidades/u-jacarei/prontidao'] = {
-      ...PRONTA,
-      tamanho: { cidades: 67, sistemas: 474, obras: 11525 },
-    }
+    comResumo({ cidades: 67, sistemas: 474, subBacias: 2305, cts: 0, etes: 31, obras: 11525 })
     renderApp('/simular')
     await escolherUnidade()
 
@@ -403,22 +408,40 @@ describe('o tamanho da unidade no resumo', () => {
     expect(await within(resumo).findByText(/11\.525 obras/)).toBeTruthy()
   })
 
-  it('usa singular quando é um só', async () => {
-    dados['/unidades/u-jacarei/prontidao'] = {
-      ...PRONTA,
-      tamanho: { cidades: 1, sistemas: 1, obras: 1 },
-    }
+  it('unidade sem CTS mostra "0 CTS", em vez de omitir', async () => {
+    // A CTS e esparsa. Omitir a palavra deixaria no ar se a unidade nao tem
+    // nenhuma ou se a tela nao sabe — e sem CTS, ligar USAR_CTS nao muda nada.
+    comResumo({ cidades: 4, sistemas: 5, subBacias: 6, cts: 0, etes: 1, obras: 30 })
     renderApp('/simular')
     await escolherUnidade()
 
     const resumo = await screen.findByRole('complementary', { name: 'Resumo da rodada' })
-    expect(await within(resumo).findByText('1 cidade · 1 sistema · 1 obra')).toBeTruthy()
+    expect(await within(resumo).findByText(/0 CTS/)).toBeTruthy()
   })
 
-  it('servidor que NÃO manda `tamanho` não quebra a tela', async () => {
-    // `PRONTA` não tem o campo — é o contrato antigo. A linha some, e o resto do
-    // resumo continua inteiro: o campo é opcional de propósito, para o front não
-    // depender da ordem em que os dois lados sobem.
+  it('singular nao vira "1 cidades"', async () => {
+    // Descuido que faz duvidar do resto dos numeros numa tela que se le o dia
+    // inteiro — e o backend comete o mesmo em "Todas as 1 vagas estao ocupadas".
+    comResumo({ cidades: 1, sistemas: 1, subBacias: 1, cts: 1, etes: 1, obras: 9 })
+    renderApp('/simular')
+    await escolherUnidade()
+
+    const resumo = await screen.findByRole('complementary', { name: 'Resumo da rodada' })
+    expect(
+      await within(resumo).findByText(
+        '1 cidade · 1 sistema · 1 sub-bacia · 1 CTS · 1 ETE · 9 obras',
+      ),
+    ).toBeTruthy()
+  })
+
+  it('servidor que NÃO manda `resumo` não quebra a tela', async () => {
+    // Contrato antigo: a unidade vem sem o bloco. A linha some e o resto do resumo
+    // continua inteiro — sem a guarda, `textoDoTamanho` desestruturaria
+    // `undefined` e derrubaria a página pelo error boundary, que é muito pior que
+    // uma linha a menos.
+    const u = (dados['/regionais/r-sudeste/unidades'] as Record<string, unknown>[])[0]
+    const { resumo: _fora, ...semResumo } = u
+    dados['/regionais/r-sudeste/unidades'] = [semResumo]
     renderApp('/simular')
     await escolherUnidade()
 
