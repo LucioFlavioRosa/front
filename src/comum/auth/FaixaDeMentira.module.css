@@ -1,0 +1,51 @@
+/* Acima de tudo (`--z-toast` é 50): o aviso de que a sessão não é real não pode
+   ficar atrás de um modal, que é justamente quando alguém tira print. */
+.faixa {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 6px 12px;
+  box-sizing: border-box;
+
+  /* Listra de obra: nenhuma tela do produto usa isto, e é esse o ponto. */
+  background: repeating-linear-gradient(45deg, #3b2f00, #3b2f00 12px, #4a3b00 12px, #4a3b00 24px);
+  color: #ffd75e;
+  font-size: 12px;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  border-top: 2px solid #ffd75e;
+}
+
+.aviso {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.campo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.select {
+  font: inherit;
+  color: #1a1400;
+  background: #ffd75e;
+  border: 0;
+  border-radius: 4px;
+  padding: 2px 6px;
+  cursor: pointer;
+}
+
+/* A faixa é `fixed`, então não ocupa espaço no fluxo. Sem este espaçador no fim
+   do documento, a última linha de uma tabela longa fica embaixo dela e não há
+   como rolar mais. */
+.espacador {
+  height: 34px;
+}
