@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { useExcluirRun, useRuns } from '@/resultado/api/queries'
 import { Carregando, ErroCarga, Vazio } from '@/comum/components/Estado'
 import { useCrumbs } from '@/resultado/state/Crumbs'
 import { useApp } from '@/comum/state/AppContext'
 import { brlMi, dataHora, deTotal, duracao, pct } from '@/resultado/lib/formato'
 import type { RunResumo } from '@/resultado/domain/resultado'
+import { DetalhesDaSimulacao } from '@/resultado/components/DetalhesDaSimulacao'
 import styles from './Historico.module.css'
 
 type Ordem = 'recentes' | 'vpl' | 'capex'
@@ -29,6 +29,8 @@ export function Historico() {
   const excluir = useExcluirRun()
   const { askConfirm, toast } = useApp()
   const [busca, setBusca] = useState('')
+  /** A rodada cujos metadados estão abertos. `null` = modal fechado. */
+  const [detalhes, setDetalhes] = useState<RunResumo | null>(null)
   const [ordem, setOrdem] = useState<Ordem>('recentes')
   useCrumbs([])
 
@@ -144,11 +146,13 @@ export function Historico() {
               run={r}
               melhorVpl={melhorVpl}
               onExcluir={() => pedirExclusao(r)}
+              onAbrirDetalhes={() => setDetalhes(r)}
               excluindo={excluir.isPending && excluir.variables === r.runId}
             />
           ))}
         </ul>
       )}
+      {detalhes && <DetalhesDaSimulacao run={detalhes} onFechar={() => setDetalhes(null)} />}
     </section>
   )
 }
@@ -157,11 +161,14 @@ function CardRodada({
   run: r,
   melhorVpl,
   onExcluir,
+  onAbrirDetalhes,
   excluindo,
 }: {
   run: RunResumo
   melhorVpl: number
   onExcluir: () => void
+  /** Abre os metadados da rodada. Antes daqui se ia direto para o resultado. */
+  onAbrirDetalhes: () => void
   excluindo: boolean
 }) {
   // TRES estados, e nao dois. A tela nasceu com "tem resultado" x "INFEASIBLE",
@@ -184,7 +191,12 @@ function CardRodada({
                 ★
               </span>
             )}
-            {r.nome}
+            {/* O nome é o gatilho, e não o card inteiro: o card contém o botão
+                Excluir, e um botão dentro de outro é HTML inválido — o clique em
+                Excluir dispararia os dois. */}
+            <button type="button" className={styles.abrir} onClick={onAbrirDetalhes}>
+              {r.nome || 'Simulação sem nome'}
+            </button>
           </h2>
           <p className={styles.meta}>
             <code className={styles.id}>{r.runId}</code> · {r.unidadeNome} · {dataHora(r.dataHora)}{' '}
@@ -251,15 +263,13 @@ function CardRodada({
       )}
 
       <div className={styles.acoes}>
-        {emVoo || semResultado ? (
-          <span className={styles.verDesabilitado} aria-disabled="true">
-            {emVoo ? 'ainda sem resultado' : 'sem resultados'}
-          </span>
-        ) : (
-          <Link to={`/resultados/${r.runId}`} className={styles.ver}>
-            Ver detalhes →
-          </Link>
-        )}
+        {/* NÃO navega mais direto. Abre os metadados, e é de lá que se vai ao
+            resultado — inclusive na rodada EM VOO e na INFEASIBLE, que antes não
+            tinham para onde ir e por isso não ofereciam nada. Justamente delas é
+            que se quer saber "com que parâmetros isso foi pedido?". */}
+        <button type="button" className={styles.ver} onClick={onAbrirDetalhes}>
+          Ver detalhes →
+        </button>
         <button
           type="button"
           className={styles.excluir}

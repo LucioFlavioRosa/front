@@ -18,7 +18,6 @@ vi.mock('@/comum/api/client', async (importOriginal) => {
 
 import { api, limparApi } from '@/testes/apiFake'
 import { renderApp } from '@/testes/renderApp'
-import { ApiError } from '@/comum/api/client'
 
 const salvarSub = () =>
   screen.getByRole('button', { name: 'Salvar sub-bacia' }) as HTMLButtonElement
@@ -104,63 +103,6 @@ describe('rascunho local (sessionStorage)', () => {
     // O valor volta do servidor (o mock não persiste), sem aviso de rascunho.
     expect(taxa().value).not.toBe('4.321')
     expect(screen.queryByText(/Rascunho desta sessão recuperado/)).toBeNull()
-  })
-})
-
-describe('conflito com o servidor (409)', () => {
-  it('oferece recarregar do servidor, e recarregar realmente troca o dado', async () => {
-    api.erroPut = new ApiError(409, 'Conflict', '/x', '')
-    renderApp('/unidade/u-jacarei/sub-bacias')
-    await screen.findByRole('button', { name: 'Salvar sub-bacia' })
-    const doServidor = taxa().value
-
-    fireEvent.change(taxa(), { target: { value: '1.111' } })
-    fireEvent.click(salvarSub())
-
-    // Antes era só um toast dizendo "recarregue" — e recarregar não trazia nada
-    // novo, porque o seed só preenche fatia vazia e o rascunho reidratava o
-    // estado antigo. Agora a própria tela faz a recarga de verdade.
-    expect(await screen.findByText('Outra pessoa salvou esta ficha antes')).toBeTruthy()
-    api.erroPut = null
-    fireEvent.click(screen.getByRole('button', { name: 'Recarregar do servidor' }))
-
-    await waitFor(() => expect(taxa().value).toBe(doServidor))
-    expect(salvarSub().disabled).toBe(true)
-    expect(screen.queryByText(/não salva/)).toBeNull()
-  })
-
-  it('o que foi descartado não volta pelo rascunho', async () => {
-    // Descartar remonta o provider, e o provider antigo grava uma última vez ao
-    // desmontar: sem cuidado, esse flush ressuscitava o rascunho descartado na
-    // próxima abertura da unidade.
-    api.erroPut = new ApiError(409, 'Conflict', '/x', '')
-    const tela = renderApp('/unidade/u-jacarei/sub-bacias')
-    await screen.findByRole('button', { name: 'Salvar sub-bacia' })
-    const doServidor = taxa().value
-
-    fireEvent.change(taxa(), { target: { value: '3.333' } })
-    fireEvent.click(salvarSub())
-    fireEvent.click(await screen.findByRole('button', { name: 'Recarregar do servidor' }))
-    await waitFor(() => expect(taxa().value).toBe(doServidor))
-
-    tela.unmount()
-    renderApp('/unidade/u-jacarei/sub-bacias')
-    await screen.findByRole('button', { name: 'Salvar sub-bacia' })
-    expect(taxa().value).toBe(doServidor)
-    expect(screen.queryByText(/Rascunho desta sessão recuperado/)).toBeNull()
-  })
-
-  it('cancelar mantém a edição na tela', async () => {
-    api.erroPut = new ApiError(409, 'Conflict', '/x', '')
-    renderApp('/unidade/u-jacarei/sub-bacias')
-    await screen.findByRole('button', { name: 'Salvar sub-bacia' })
-
-    fireEvent.change(taxa(), { target: { value: '2.222' } })
-    fireEvent.click(salvarSub())
-    fireEvent.click(await screen.findByRole('button', { name: 'Cancelar' }))
-
-    expect(taxa().value).toBe('2.222')
-    expect(salvarSub().disabled).toBe(false)
   })
 })
 
@@ -259,6 +201,18 @@ describe('hierarquia — edição sem Salvar', () => {
   })
 })
 
+/** O payload de sub-bacias como se outra pessoa tivesse gravado `fat`. */
+async function comOutroFat(fat: string) {
+  const subbacias = (await import('@/mocks/fixtures/subbacias.json')).default
+  return {
+    ...subbacias,
+    subs: {
+      ...subbacias.subs,
+      b2_1_4: { ...subbacias.subs.b2_1_4, db: { ...subbacias.subs.b2_1_4.db, fat } },
+    },
+  }
+}
+
 describe('rascunho feito sobre dado que já mudou', () => {
   it('avisa e oferece a versão do servidor', async () => {
     const tela = renderApp('/unidade/u-jacarei/sub-bacias')
@@ -267,17 +221,7 @@ describe('rascunho feito sobre dado que já mudou', () => {
     tela.unmount()
 
     // Outra pessoa mexeu na mesma unidade enquanto o rascunho dormia.
-    const subbacias = (await import('@/mocks/fixtures/subbacias.json')).default
-    api.respostas['/unidades/u-jacarei/sub-bacias'] = {
-      ...subbacias,
-      subs: {
-        ...subbacias.subs,
-        b2_1_4: {
-          ...subbacias.subs.b2_1_4,
-          db: { ...subbacias.subs.b2_1_4.db, fat: '99.999' },
-        },
-      },
-    }
+    api.respostas['/unidades/u-jacarei/sub-bacias'] = await comOutroFat('99.999')
 
     renderApp('/unidade/u-jacarei/sub-bacias')
     // Sem versão por ficha, o que dá para conferir é a impressão do payload.
@@ -288,6 +232,46 @@ describe('rascunho feito sobre dado que já mudou', () => {
     // que a outra pessoa gravou.
     await waitFor(() => expect(taxa().value).not.toBe('1.000'))
     expect(await screen.findByText('99.999')).toBeTruthy()
+  })
+
+  it('o que foi descartado não volta pelo rascunho', async () => {
+    // Descartar remonta o provider, e o provider antigo grava uma última vez ao
+    // desmontar: sem cuidado, esse flush ressuscitava o rascunho descartado na
+    // próxima abertura da unidade. (Este caso vinha do bloco do 409, que saiu
+    // com o 409 de ficha — a armadilha é do recarregar, não do conflito, e por
+    // isso mudou de gatilho em vez de sumir.)
+    const tela = renderApp('/unidade/u-jacarei/sub-bacias')
+    await screen.findByRole('button', { name: 'Salvar sub-bacia' })
+    const doServidor = taxa().value
+    fireEvent.change(taxa(), { target: { value: '3.333' } })
+    tela.unmount()
+
+    api.respostas['/unidades/u-jacarei/sub-bacias'] = await comOutroFat('99.999')
+    const segunda = renderApp('/unidade/u-jacarei/sub-bacias')
+    fireEvent.click(await screen.findByRole('button', { name: 'Recarregar do servidor' }))
+    await waitFor(() => expect(taxa().value).toBe(doServidor))
+
+    segunda.unmount()
+    delete api.respostas['/unidades/u-jacarei/sub-bacias']
+    renderApp('/unidade/u-jacarei/sub-bacias')
+    await screen.findByRole('button', { name: 'Salvar sub-bacia' })
+    expect(taxa().value).toBe(doServidor)
+    expect(screen.queryByText(/Rascunho desta sessão recuperado/)).toBeNull()
+  })
+
+  it('cancelar mantém a edição na tela', async () => {
+    const tela = renderApp('/unidade/u-jacarei/sub-bacias')
+    await screen.findByRole('button', { name: 'Salvar sub-bacia' })
+    fireEvent.change(taxa(), { target: { value: '2.222' } })
+    tela.unmount()
+
+    api.respostas['/unidades/u-jacarei/sub-bacias'] = await comOutroFat('99.999')
+    renderApp('/unidade/u-jacarei/sub-bacias')
+    fireEvent.click(await screen.findByRole('button', { name: 'Cancelar' }))
+
+    // Continuar editando por cima é escolha do usuário, e a tela a respeita.
+    expect(taxa().value).toBe('2.222')
+    expect(salvarSub().disabled).toBe(false)
   })
 
   it('rascunho sobre dado igual não incomoda ninguém', async () => {

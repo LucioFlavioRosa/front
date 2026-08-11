@@ -112,9 +112,9 @@ visualmente oculta como equivalente textual.
 **Estado:** as 6 fatias estão implementadas, e **o backend real existe**. Há dois
 modos, e confundi-los é o erro mais fácil de cometer aqui:
 
-| modo | como sobe | quem responde |
-|---|---|---|
-| **dev** | `npm run dev` | MSW, com as fixtures de `src/mocks` |
+| modo    | como sobe                                                                              | quem responde                                                            |
+| ------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| **dev** | `npm run dev`                                                                          | MSW, com as fixtures de `src/mocks`                                      |
 | **e2e** | `docker compose -f docker-compose.yml -f docker-compose.e2e.yml up` no repo do backend | FastAPI + Postgres com dado real da planilha, em `http://localhost:8080` |
 
 Os testes usam o `apiFake`, não o MSW nem a API real — ver `src/testes/apiFake.ts`.
@@ -200,8 +200,12 @@ Nada aqui é surpresa escondida — está tudo detalhado no `DEPLOY.md`:
 
 - **Autenticação**: só o encaixe (`src/comum/auth/sessao.ts`). Falta escolher IdP/lib
   (provável Entra ID) e ligar no bootstrap.
-- **Concorrência**: sem versão/ETag por ficha. A UI já trata 409 (oferece
-  recarregar do servidor), mas quem detecta o conflito é o backend.
+- **Concorrência**: duas pessoas na mesma ficha se sobrescrevem, sem aviso na
+  hora de gravar. Houve um 409 por versão de ficha e ele saiu por decisão do dono
+  do produto (R6) — comparava o hash da ficha inteira, então cobrava conflito onde
+  quase nunca havia um. A compensação é a auditoria: toda ficha traz
+  `atualizadoEm`/`atualizadoPor` e a tela mostra "última alteração: ana@aegea,
+  10/08 14:32" (`src/cadastro/domain/auditoria.ts`).
 - **Hierarquia (Grupo 01) não grava**: o contrato de escrita não cobre a
   hierarquia. A tela avisa o usuário; as correções ficam no rascunho da aba.
 - **"Importar planilha"** no hub é um stub.

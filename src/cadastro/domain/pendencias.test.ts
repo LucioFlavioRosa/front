@@ -3,7 +3,6 @@ import subbacias from '@/mocks/fixtures/subbacias.json'
 import contratoFx from '@/mocks/fixtures/contrato.json'
 import etesFx from '@/mocks/fixtures/etes.json'
 import {
-  BASE_OBRAS,
   camposDaSub,
   capex,
   deTerceiros,
@@ -16,7 +15,7 @@ import {
 import { cidadePend, g2Pend, type ContratoPayload } from '@/cadastro/domain/contrato'
 import { capacidadeOciosa, etePend, isNova, type Ete } from '@/cadastro/domain/ete'
 import ctsFx from '@/mocks/fixtures/cts.json'
-import { BASE_OBRAS_CTS, CTS_CAMPOS, ctsPend, mkObrasCts, type Cts } from '@/cadastro/domain/cts'
+import { CTS_CAMPOS, ctsPend, mkObrasCts, OBRAS_POR_CTS, type Cts } from '@/cadastro/domain/cts'
 
 const subs = subbacias.subs as unknown as Record<string, SubBacia>
 const contrato = contratoFx as ContratoPayload
@@ -92,11 +91,23 @@ describe('cidadePend() / g2Pend()', () => {
 })
 
 describe('mkObras() / capex()', () => {
-  it('aplica overrides sobre as 5 obras-base', () => {
+  it('monta as obras SÓ com o que o servidor mandou', () => {
+    // Havia aqui `BASE_OBRAS`, e `mkObras` mesclava o payload sobre ela. A base
+    // saiu (R1/R2): o `GET` passou a mandar `nome` e `un` junto dos números, e a
+    // linha inteira vem do banco.
     const obras = mkObras(subs['b1_1_1'].obrasOverride)
     expect(obras).toHaveLength(5)
-    expect(obras[0].qtd).toBe('761,6') // override
-    expect(obras[1].nome).toBe('Rede coletora') // base
+    expect(obras[0].qtd).toBe('761,6')
+    expect(obras[1].nome).toBe('Rede coletora') // veio no payload, não de literal
+  })
+
+  it('ficha com componente FALTANDO rende menos linhas — e conta a pendência', () => {
+    // O caso que a base literal escondia: ela completava a linha ausente com
+    // números de template, a tela mostrava 5 onde havia 4, e a ficha se
+    // declarava completa. Agora falta linha, e a falta pesa como obra em branco.
+    const { '2': _semTronco, ...quatro } = subs['b1_1_1'].obrasOverride
+    expect(mkObras(quatro)).toHaveLength(4)
+    expect(subPend({ ...subs['b1_1_1'], obrasOverride: quatro })).toBe(7)
   })
   it('CAPEX = quantidade × preço (calculado)', () => {
     expect(capex('4', '2.500,00')).toContain('10.000') // 4 × 2.500
@@ -106,10 +117,14 @@ describe('mkObras() / capex()', () => {
 
 describe('CTS — a irmã da sub-bacia', () => {
   it('tem 4 componentes, ancorados no coletor de tempo seco', () => {
-    expect(BASE_OBRAS_CTS).toHaveLength(4)
-    expect(BASE_OBRAS_CTS[0].nome).toBe('Coletor de tempo seco')
+    // Os nomes vêm do PAYLOAD, e não de uma base literal — a de CTS, aliás,
+    // usava o vocabulário da sub-bacia, e regravar a ficha trocava `Tronco` por
+    // `Coletor tronco` num banco em que o motor casa pelo nome.
+    const obras = mkObrasCts(ctss['cts_b2_1_1'].obrasOverride)
+    expect(obras).toHaveLength(OBRAS_POR_CTS)
+    expect(obras[0].nome).toBe('Coletor de tempo seco')
     // A CTS não tem "Ligação de esgoto"/"Rede coletora": o coletor ocupa o lugar das duas.
-    const nomes = BASE_OBRAS_CTS.map((o) => o.nome)
+    const nomes = obras.map((o) => o.nome)
     expect(nomes).not.toContain('Ligação de esgoto')
     expect(nomes).not.toContain('Rede coletora')
     // 6 params + 4 obras × 7 campos cobrados.
@@ -125,13 +140,14 @@ describe('CTS — a irmã da sub-bacia', () => {
     expect(ctsPend(ctss['cts_b3_1_1'])).toBe(3)
   })
 
-  it('mkObrasCts() aplica o override sobre a base', () => {
-    const obras = mkObrasCts(ctss['cts_b2_1_1'].obrasOverride)
+  it('mkObrasCts() devolve as 4 obras como o servidor as mandou', () => {
+    const payload = ctss['cts_b2_1_1'].obrasOverride
+    const obras = mkObrasCts(payload)
     expect(obras).toHaveLength(4)
     expect(obras[0].qtd).toBe('412,5')
-    // Sem override, a obra herda a base.
-    expect(obras[2].nome).toBe(BASE_OBRAS_CTS[2].nome)
-    expect(obras[2].preco).toBe(BASE_OBRAS_CTS[2].preco)
+    // Nada é herdado de lugar nenhum: cada campo é o que veio no índice.
+    expect(obras[2].nome).toBe(payload['2'].nome)
+    expect(obras[2].preco).toBe(payload['2'].preco)
   })
 })
 
@@ -158,7 +174,13 @@ describe('colunas de obra e pendência', () => {
     const base = subPend(sub)
     const comRestricoes = {
       ...sub,
-      obrasOverride: { ...sub.obrasOverride, '2': { anoObrig: '2027', proibAte: '2026' } },
+      // Sobrepõe a obra que veio, e não a substitui: sem a base literal, trocar
+      // o índice por um objeto de dois campos deixaria os outros cinco vazios —
+      // que é justamente o que a base escondia.
+      obrasOverride: {
+        ...sub.obrasOverride,
+        '2': { ...sub.obrasOverride['2'], anoObrig: '2027', proibAte: '2026' },
+      },
     }
     // Preencher restrição não tira pendência; deixá-la vazia não cria nenhuma.
     expect(subPend(comRestricoes)).toBe(base)
@@ -168,7 +190,7 @@ describe('colunas de obra e pendência', () => {
     const sub = subs['b1_1_1']
     const semTPred = {
       ...sub,
-      obrasOverride: { ...sub.obrasOverride, '2': { tPred: '' } },
+      obrasOverride: { ...sub.obrasOverride, '2': { ...sub.obrasOverride['2'], tPred: '' } },
     }
     expect(subPend(semTPred)).toBe(subPend(sub) + 1)
   })
@@ -180,7 +202,10 @@ describe('colunas de obra e pendência', () => {
 })
 
 describe('obra de terceiros (CAPEX 0 com prazo)', () => {
-  const obra = (over: Partial<(typeof BASE_OBRAS)[0]>) => ({ ...BASE_OBRAS[2], ...over })
+  // A obra sai do PAYLOAD, e não de uma base literal: é o índice 2 de uma ficha
+  // de verdade da fixture.
+  const modelo = mkObras(subs['b1_1_1'].obrasOverride)[2]
+  const obra = (over: Partial<typeof modelo>) => ({ ...modelo, ...over })
 
   it('quantidade 0 com execução > 0 = alguém faz, mas não é investimento da unidade', () => {
     expect(deTerceiros(obra({ qtd: '0', dur: '8' }))).toBe(true)

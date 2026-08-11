@@ -488,6 +488,23 @@
   color: var(--ok-text-2);
 }
 
+/* A rodada identica que ja existe (R5). Nao e erro nem alerta — e uma resposta:
+   o pedido foi entendido e ja havia sido atendido. Por isso usa o tom de AVISO, e
+   nao o vermelho de bloqueio: nada deu errado. */
+.jaExiste {
+  padding: 10px 12px;
+  border: 1px solid var(--pend-border-2);
+  border-radius: 10px;
+  background: var(--pend-bg);
+  color: var(--pend-text);
+  font-size: 11.5px;
+  line-height: 1.6;
+}
+.jaExiste a {
+  color: inherit;
+  font-weight: 700;
+}
+
 /* ---------- CTA ---------- */
 .iniciar,
 .iniciarTravado {

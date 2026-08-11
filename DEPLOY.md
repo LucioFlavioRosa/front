@@ -185,16 +185,61 @@ Quatro consequências para o backend:
 A lista de campos das duas telas vive em `src/cadastro/domain/baseComercial.ts` — campo
 novo entra ali e aparece na sub-bacia e na CTS.
 
+### Trilha de auditoria (`GET /unidades/:uid/alteracoes`)
+
+Quem mudou o quê, quando — a ficha inteira, e não só o bloco do Databricks.
+
+```jsonc
+{
+  "alteracoes": [
+    {
+      "tipo": "sub-bacia", // sub-bacia | cts | ete | cidade
+      "fichaId": "b1b25_1_1",
+      "campo": "obra:Rede coletora:qtd",
+      "de": "2.472,6", // null = não existia (foi criado)
+      "para": "3.000", // null = deixou de existir (foi removido)
+      "autor": "ana@aegea",
+      "quando": "2026-08-10T14:32:00+00:00",
+      "origem": "regional", // databricks | regional
+    },
+  ],
+  "cortado": false, // true = o servidor cortou no teto; NÃO é o histórico inteiro
+}
+```
+
+**`campo` usa a IDENTIDADE do registro, nunca a posição.** Três formas compostas:
+
+| forma                        | exemplo                  | por quê                                                       |
+| ---------------------------- | ------------------------ | ------------------------------------------------------------- |
+| `obra:<componente>:<campo>`  | `obra:Rede coletora:qtd` | a obra não tem id próprio; quem a identifica na tela é o nome |
+| `meta:<ano>:pct`             | `meta:2030:pct`          | a meta é identificada pelo ano                                |
+| `faixa:<cobertura>:paridade` | `faixa:80:paridade`      | a faixa, pela cobertura                                       |
+
+Por índice (`obra:2:qtd`) seria mais curto, não diria nada a quem abre a auditoria
+seis meses depois, e mudaria de significado se a ordem mudasse.
+
+**`origem` separa correção de preenchimento** — `databricks` é discordar de um
+número que veio de fora, `regional` é a Regional fazendo o próprio trabalho. A
+tela usa verbos diferentes ("corrigiu" / "alterou"), e é a distinção que a
+auditoria existe para fazer. Fica **gravada**, e não derivada do nome do campo:
+o conjunto do que vem do Databricks muda com o tempo, e uma trilha cuja leitura
+muda retroativamente não é trilha.
+
+A tela abre isto pela linha "última alteração" do cabeçalho da ficha. Os dois se
+completam: a linha responde "alguém mexeu depois de mim?" (a pergunta do momento
+da edição), o painel responde "de quanto para quanto, e por quem" (a que aparece
+meses depois).
+
 ### Obras (`obrasOverride`)
 
-Cada componente tem estas colunas. A ficha manda **só o que difere da obra-base**
-(`BASE_OBRAS` / `BASE_OBRAS_CTS` em `src/cadastro/domain/`), por índice:
+Cada componente tem estas colunas. A ficha carrega a obra **inteira**, por
+índice — `{"0": {...}, "1": {...}}`, na posição do componente:
 
 | Coluna               | Chave      | Obrigatória?                                      |
 | -------------------- | ---------- | ------------------------------------------------- |
 | componente           | `nome`     | fixa (não editável)                               |
 | quantidade           | `qtd`      | sim                                               |
-| unidade              | `un`       | fixa (vem da obra-base)                           |
+| unidade              | `un`       | fixa (vem do banco, não editável)                 |
 | preco_unitario       | `preco`    | sim                                               |
 | **capex**            | —          | **calculado** (`qtd × preco`), não vai no payload |
 | opex                 | `opex`     | sim                                               |
@@ -203,6 +248,25 @@ Cada componente tem estas colunas. A ficha manda **só o que difere da obra-base
 | obra_obrigatoria_ano | `anoObrig` | sim — **código**, ver abaixo                      |
 | obra_proibida_ate    | `proibAte` | sim — **código**, ver abaixo                      |
 | wacc                 | `wacc`     | **não** — vazio = usa o WACC médio da unidade     |
+
+> **Não há obra-base, dos dois lados.** Havia: duas listas literais de 5 e 4
+> obras, uma em `src/cadastro/domain/` e outra em `cadastro_escrita.py`, e o
+> `obrasOverride` era mesmo um override sobre elas. As duas saíram (R1/R2).
+>
+> O que elas produziam, medido: um `PUT` numa ficha sem o componente gravado
+> escrevia `Linha de recalque (LR) | qtd 0 | preco 900 | dur 15 | wacc 0,067` —
+> números que ninguém digitou e que o banco não tem, indo para a simulação com
+> cara de cadastro. A tela mostrava 5 linhas onde havia 4, e a quinta era
+> invenção.
+>
+> Três consequências para quem integra:
+>
+> 1. o `GET` manda `nome` e `un` junto dos números — a linha inteira vem do banco;
+> 2. o `PUT` **recusa** (422) a ficha cujo banco tem menos que 5 (ou 4)
+>    componentes: completá-los seria inventá-los;
+> 3. `GET /unidades/:uid/prontidao` devolve `faltando[]` dizendo **qual**
+>    componente falta em qual ficha — a tela não teria como saber, porque a linha
+>    que falta não chega no payload.
 
 As duas janelas são código, não um ano qualquer:
 
@@ -242,7 +306,49 @@ PUT    /unidades/:uid/sub-bacias/:subId   { params, db, obrasOverride, overrides
 PUT    /unidades/:uid/contrato/:cidId     { cidade, metas, fator, overrides }
 PUT    /unidades/:uid/etes/:eteId         { ete, overrides }
 PUT    /unidades/:uid/cts/:ctsId          { params, db, obrasOverride, overrides }
+
+resposta (todas): { id, alteracoesGravadas, atualizadoEm, atualizadoPor }
+
+GET    /unidades/:uid/alteracoes?tipo=&fichaId=&limite=
+       -> { alteracoes: [...], cortado: bool }
 ```
+
+**O corpo NÃO carrega a trilha de auditoria.** Ele carregava: um campo
+`overrides` com `{campo, valorAntigo, valorNovo, autor}`, montado pela tela. Saiu,
+e o motivo é o mesmo da `versao` — o cliente não é fonte confiável sobre si mesmo:
+
+- auditoria montada pelo auditado quebra em silêncio (um bug na tela, e o rastro
+  some sem sinal);
+- ela cobria **um quarto da ficha**: só o bloco do Databricks virava override, e
+  `params`, obras, cidade e ETE não deixavam rastro nenhum;
+- o `valorAntigo` era o valor lido no SEED, então duas edições na mesma sessão
+  gravavam `A → B` e depois `A → C`, quando o segundo salto foi `B → C`.
+
+Hoje o **servidor compara** o que está gravado com o que chega, campo a campo,
+antes de cada gravação. `alteracoesGravadas` diz quantas diferenças ele viu —
+zero é resposta legítima (salvar sem mudar nada não gera trilha).
+
+**Auditoria da ficha.** As quatro fichas trazem no `GET` — e a resposta do `PUT`
+devolve — dois campos que o corpo **nunca envia**:
+
+| campo           | forma                                           |
+| --------------- | ----------------------------------------------- |
+| `atualizadoEm`  | ISO-8601 com fuso, ou `""` se nunca foi gravada |
+| `atualizadoPor` | login de quem gravou, ou `""`                   |
+
+Três regras, e as três importam:
+
+1. **O autor vem do TOKEN**, nunca do corpo. Um cliente que pudesse escolher o
+   nome que assina transformaria a auditoria em decoração.
+2. **A resposta do PUT traz o carimbo novo**, já com aquela gravação aplicada.
+   Sem isso a ficha continuaria exibindo "última alteração: fulano, ontem" no
+   segundo seguinte a você salvar, até alguém recarregar.
+3. **Vazio, e não nulo.** A tela trata todo campo de ficha como texto e chama
+   `.trim()`; um `null` ali derruba a tela inteira, não só o campo. E ficha nunca
+   gravada pela tela não ganha data inventada — as 4.850 sub-bacias vieram da
+   planilha, e a coluna só existe desde a migração `006_auditoria_cadastro.sql`.
+
+A escrita de ficha **não tem controle otimista** (R6): ver §6.
 
 > **Não há criar nem remover CTS.** A CTS é um **nó do sistema**, como a sub-bacia:
 > a posição dela vem da topologia (`sistema_topologia`), com jusante próprio. O motor
@@ -276,11 +382,11 @@ um nó sem ficha só existe aqui, porque não há ficha para editar. Servir a li
 sem isso era o comportamento anterior — e foi assim que duas CTS ficaram meio
 existindo no cadastro real sem ninguém notar.
 
-**`overrides` viaja junto com a ficha de propósito**: é a trilha de auditoria de
-cada dado do Databricks sobrescrito (campo, valor antigo, valor novo, autor,
-timestamp). Gravar na mesma transação do dado evita dado corrigido sem trilha.
-Só entra na trilha o que **de fato** difere do valor do servidor: voltar o campo
-ao valor original apaga o registro, então "X virou X" não chega até vocês.
+**A trilha de auditoria não viaja no corpo do PUT.** O servidor compara o que
+está gravado com o que chega e registra a diferença na mesma transação do dado —
+dado corrigido sem trilha fica impossível. Só entra o que **de fato** difere:
+salvar sem mudar nada grava zero linhas (`alteracoesGravadas: 0` é resposta
+legítima). Para ler a trilha, `GET /unidades/:uid/alteracoes`, acima.
 
 Duas expectativas do lado da resposta:
 
@@ -294,12 +400,15 @@ Duas expectativas do lado da resposta:
 
 Códigos que a UI já distingue (`src/comum/api/client.ts`, `mensagemDeErro`):
 
-| Código    | O que a tela faz                                                                                     |
-| --------- | ---------------------------------------------------------------------------------------------------- |
-| 400 / 422 | "O servidor recusou os dados desta ficha."                                                           |
-| 401 / 403 | "Sua sessão expirou." + dispara o fluxo de re-login                                                  |
-| 409       | Pergunta se pode **recarregar do servidor** (descarta o estado local desta unidade e semeia de novo) |
-| outros    | "Não foi possível salvar (erro N)."                                                                  |
+| Código    | O que a tela faz                                    |
+| --------- | --------------------------------------------------- |
+| 400 / 422 | "O servidor recusou os dados desta ficha."          |
+| 401 / 403 | "Sua sessão expirou." + dispara o fluxo de re-login |
+| outros    | "Não foi possível salvar (erro N)."                 |
+
+O `409` saiu desta tabela junto com o 409 de ficha. O fluxo de **recarregar do
+servidor** continua existindo, com o outro gatilho que sempre teve: rascunho
+local recuperado sobre dado que mudou no servidor.
 
 ---
 
@@ -375,16 +484,22 @@ senão um refetch de fundo apagaria o que a pessoa está digitando.
 
 ## 6. Pendências conhecidas (não bloqueiam o deploy, mas o backend precisa saber)
 
-- **Concorrência**: não há versão/ETag. Duas pessoas na mesma ficha: a última
-  sobrescreve, e o 409 só aparece se o backend detectar o conflito por conta
-  própria. Quando existir versão por ficha, o front já tem o fluxo de 409 pronto
-  — falta enviar a versão junto e comparar.
+- **Concorrência**: duas pessoas na mesma ficha podem sobrescrever uma à outra,
+  e **sem aviso no momento da gravação**. É decisão do dono do produto (R6):
+  barrar por hash da ficha INTEIRA fazia quem editava um campo perder o trabalho
+  porque um colega editara outro.
+
+  O sinal é posterior e legível, e não imediato e cego: toda ficha traz
+  `atualizadoEm`/`atualizadoPor`, a tela mostra "última alteração: ana@aegea,
+  10/08 14:32", e o painel de histórico abre por ela. Se um dia o conflito
+  precisar ser barrado, o caminho é comparar por CAMPO — não o hash da ficha.
+
 - **A hierarquia não tem gravação.** A tela do Grupo 01 deixa corrigir dado do
-  Databricks (e monta a trilha de override), mas não há endpoint para mandar
-  isso — a tela avisa o usuário, e as correções ficam só no rascunho da aba.
-  Quando existir um `PUT /unidades/:uid/hierarquia` (corpo: a hierarquia inteira
-  - `overrides`), ela entra como as outras: vira uma ficha em
-    `src/cadastro/state/fichas.ts`, entra em `sujas` e ganha o botão Salvar.
+  Databricks, mas não há endpoint para mandar isso — a tela avisa o usuário, e as
+  correções ficam só no rascunho da aba. Quando existir um
+  `PUT /unidades/:uid/hierarquia` (corpo: a hierarquia inteira), ela entra como
+  as outras: vira uma ficha em `src/cadastro/state/fichas.ts`, entra em `sujas` e
+  ganha o botão Salvar.
 - **Importar planilha** é um stub: o botão no hub só mostra um aviso.
 - **O rascunho é da aba**: fechar a aba (não recarregar) descarta o que não foi
   salvo. O aviso do navegador ao fechar é o que existe hoje contra isso.

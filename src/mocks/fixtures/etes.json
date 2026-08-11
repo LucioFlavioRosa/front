@@ -14,7 +14,8 @@
       "terreno": "912.405",
       "modulos": "4",
       "wacc": "0,091",
-      "versao": "v-e1"
+      "atualizadoEm": "2026-08-10T14:32:00+00:00",
+      "atualizadoPor": "ana@aegea"
     },
     {
       "id": "e2",
@@ -30,7 +31,8 @@
       "terreno": "1.056.981",
       "modulos": "",
       "wacc": "0,091",
-      "versao": "v-e2"
+      "atualizadoEm": "2026-08-09T09:05:00+00:00",
+      "atualizadoPor": "bruno@aegea"
     },
     {
       "id": "e3",
@@ -46,7 +48,8 @@
       "terreno": "2.580.716",
       "modulos": "4",
       "wacc": "0,091",
-      "versao": "v-e3"
+      "atualizadoEm": "2026-08-10T14:32:00+00:00",
+      "atualizadoPor": "ana@aegea"
     },
     {
       "id": "e5",
@@ -62,7 +65,8 @@
       "terreno": "2.050.769",
       "modulos": "5",
       "wacc": "0,091",
-      "versao": "v-e5"
+      "atualizadoEm": "2026-08-09T09:05:00+00:00",
+      "atualizadoPor": "bruno@aegea"
     },
     {
       "id": "e6",
@@ -78,7 +82,8 @@
       "terreno": "0",
       "modulos": "0",
       "wacc": "0,071",
-      "versao": "v-e6"
+      "atualizadoEm": "2026-08-10T14:32:00+00:00",
+      "atualizadoPor": "ana@aegea"
     }
   ]
 }

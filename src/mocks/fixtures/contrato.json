@@ -5,56 +5,64 @@
       "nome": "Maricá",
       "fim": "2045",
       "cob": "ligacoes",
-      "versao": "v-c1"
+      "atualizadoEm": "2026-08-10T14:32:00+00:00",
+      "atualizadoPor": "ana@aegea"
     },
     {
       "id": "c2",
       "nome": "Saquarema",
       "fim": "2046",
       "cob": "ligacoes",
-      "versao": "v-c2"
+      "atualizadoEm": "2026-08-09T09:05:00+00:00",
+      "atualizadoPor": "bruno@aegea"
     },
     {
       "id": "c3",
       "nome": "Araruama",
       "fim": "2041",
       "cob": "",
-      "versao": "v-c3"
+      "atualizadoEm": "2026-08-10T14:32:00+00:00",
+      "atualizadoPor": "ana@aegea"
     },
     {
       "id": "c4",
       "nome": "Cabo Frio",
       "fim": "2041",
       "cob": "ligacoes",
-      "versao": "v-c4"
+      "atualizadoEm": "2026-08-09T09:05:00+00:00",
+      "atualizadoPor": "bruno@aegea"
     },
     {
       "id": "c5",
       "nome": "Iguaba",
       "fim": "",
       "cob": "",
-      "versao": "v-c5"
+      "atualizadoEm": "2026-08-10T14:32:00+00:00",
+      "atualizadoPor": "ana@aegea"
     },
     {
       "id": "c6",
       "nome": "Rio das Ostras",
       "fim": "2043",
       "cob": "populacao",
-      "versao": "v-c6"
+      "atualizadoEm": "2026-08-09T09:05:00+00:00",
+      "atualizadoPor": "bruno@aegea"
     },
     {
       "id": "c9",
       "nome": "Búzios",
       "fim": "2046",
       "cob": "ligacoes",
-      "versao": "v-c9"
+      "atualizadoEm": "2026-08-10T14:32:00+00:00",
+      "atualizadoPor": "ana@aegea"
     },
     {
       "id": "c10",
       "nome": "Silva Jardim",
       "fim": "2049",
       "cob": "economias",
-      "versao": "v-c10"
+      "atualizadoEm": "2026-08-09T09:05:00+00:00",
+      "atualizadoPor": "bruno@aegea"
     }
   ],
   "metas": [

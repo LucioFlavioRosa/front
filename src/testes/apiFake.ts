@@ -19,8 +19,8 @@
 export interface EstadoApi {
   /** Registro das chamadas: `vi.fn` com promise rejeitada vira unhandled rejection. */
   puts: Array<[string, any]>
-  /** Contador da versao devolvida pelo PUT (o servidor real muda a cada gravacao). */
-  versaoSeq: number
+  /** Contador do carimbo devolvido pelo PUT (o servidor real muda a cada gravacao). */
+  gravacaoSeq: number
   posts: Array<[string, any]>
   dels: string[]
   /** Respostas que sobrescrevem as fixtures — simula dado que mudou no servidor. */
@@ -28,8 +28,8 @@ export interface EstadoApi {
   /** Falha em toda LEITURA — a tela de erro com "Tentar de novo". */
   erroGet: Error | null
   erroPut: Error | null
-  /** PUT responde 2xx SEM `versao` — servidor quebrando o contrato. */
-  putSemVersao: boolean
+  /** PUT responde 2xx SEM auditoria — servidor quebrando o contrato. */
+  putSemAuditoria: boolean
   erroPost: Error | null
   /** Segura a resposta para o teste observar a tela COM a gravação em voo. */
   segurarPut: boolean
@@ -44,13 +44,13 @@ export const api: EstadoApi = estadoApi()
 function estadoApi(): EstadoApi {
   return {
     puts: [],
-    versaoSeq: 0,
+    gravacaoSeq: 0,
     posts: [],
     dels: [],
     respostas: {},
     erroGet: null,
     erroPut: null,
-    putSemVersao: false,
+    putSemAuditoria: false,
     erroPost: null,
     segurarPut: false,
     segurarPost: false,
@@ -138,12 +138,18 @@ export function apiFake(estado: EstadoApi, dados: Record<string, unknown>) {
       estado.puts.push([path, body])
       if (estado.segurarPut) await new Promise<void>((ok) => (estado.liberarPut = ok))
       if (estado.erroPut) throw estado.erroPut
-      // O servidor real devolve a versao NOVA. Devolver `{}` aqui — como este
-      // mock fazia — escondia que o front descartava a resposta e continuava
-      // mandando a versao velha no salvamento seguinte.
-      estado.versaoSeq += 1
+      // O servidor real devolve a auditoria JA COM ESTA GRAVACAO aplicada.
+      // Devolver `{}` aqui — como este mock ja fez — esconderia que o front
+      // descarta a resposta e segue exibindo a alteracao anterior.
+      estado.gravacaoSeq += 1
       const corpo = { id: path.split('/').pop(), overridesGravados: 0 }
-      return estado.putSemVersao ? corpo : { ...corpo, versao: `v${estado.versaoSeq}` }
+      return estado.putSemAuditoria
+        ? corpo
+        : {
+            ...corpo,
+            atualizadoEm: `2026-08-10T15:0${estado.gravacaoSeq}:00+00:00`,
+            atualizadoPor: 'voce@aegea',
+          }
     },
     post: async (path: string, body?: unknown) => {
       estado.posts.push([path, body])

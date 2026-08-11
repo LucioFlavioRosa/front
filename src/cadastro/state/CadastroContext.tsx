@@ -31,7 +31,6 @@ import {
   seeded as isSeeded,
   type Derivado,
   type Hier,
-  type Override,
 } from '@/cadastro/state/cadastroReducer'
 import {
   assinatura,
@@ -46,9 +45,8 @@ import {
 import type { FichaCidade, FichaCts, FichaEte, FichaSubBacia } from '@/cadastro/api/escrita'
 import { gravarRascunho, lerRascunho, limparRascunho } from '@/cadastro/state/rascunho'
 import { useApp } from '@/comum/state/AppContext'
+import type { Auditoria } from '@/cadastro/domain/auditoria'
 import { useRecarregarDoServidor } from '@/cadastro/state/recarregar'
-
-const now = () => new Date().toISOString()
 
 /** Espera entre a ultima tecla e a gravacao do rascunho (evita gravar por letra). */
 const ESPERA_RASCUNHO = 400
@@ -82,7 +80,6 @@ interface CadastroValue {
   pares: ParCts[]
   /** CTS incompletas denunciadas pelo servidor. Vem da query, nao do reducer. */
   ctsInconsistentes: CtsInconsistente[]
-  overrides: Record<string, Override>
   derivado: Derivado
   /** Chaves das fichas com edicao que o servidor ainda nao recebeu. */
   sujas: ChaveFicha[]
@@ -95,7 +92,7 @@ interface CadastroValue {
   hierEditada: boolean
   estaSuja: (chave: ChaveFicha) => boolean
   /** Chamado quando o servidor aceita uma ficha, com o corpo que foi enviado. */
-  marcarSalva: (chave: ChaveFicha, ficha: unknown, versao?: string) => void
+  marcarSalva: (chave: ChaveFicha, ficha: unknown, auditoria?: Partial<Auditoria>) => void
   // Corpo do PUT de cada tela. Vem daqui (e nao montado na pagina) para o que
   // o botao envia ser exatamente o que o controle de "tem mudanca?" compara.
   fichaDaSub: (subId: string) => FichaSubBacia | null
@@ -372,7 +369,7 @@ export function CadastroProvider({
       setObraField: (subId: string, index: number, key: keyof Obra, value: string) =>
         dispatch({ type: 'SET_OBRA_FIELD', subId, index, key, value }),
       editDbField: (subId: string, key: keyof SubBaciaDb, value: string) =>
-        dispatch({ type: 'EDIT_DB_FIELD', subId, key, value, at: now() }),
+        dispatch({ type: 'EDIT_DB_FIELD', subId, key, value }),
       setEteField: (eteId: string, key: keyof Ete, value: string) =>
         dispatch({ type: 'SET_ETE_FIELD', eteId, key, value }),
       setCidadeField: (cidId: string, key: keyof Cidade, value: string) =>
@@ -386,26 +383,26 @@ export function CadastroProvider({
         dispatch({ type: 'SET_FATOR', index, key, value }),
       removeFator: (index: number) => dispatch({ type: 'REMOVE_FATOR', index }),
       setHierUnidReg: (key: keyof UnidReg, value: string) =>
-        dispatch({ type: 'SET_HIER_UNIDREG', key, value, at: now() }),
+        dispatch({ type: 'SET_HIER_UNIDREG', key, value }),
       setHierSupNome: (supId: string, value: string) =>
-        dispatch({ type: 'SET_HIER_SUP_NOME', supId, value, at: now() }),
+        dispatch({ type: 'SET_HIER_SUP_NOME', supId, value }),
       setHierCidNome: (cidId: string, value: string) =>
-        dispatch({ type: 'SET_HIER_CID_NOME', cidId, value, at: now() }),
+        dispatch({ type: 'SET_HIER_CID_NOME', cidId, value }),
       setHierSisNome: (sisId: string, value: string) =>
-        dispatch({ type: 'SET_HIER_SIS_NOME', sisId, value, at: now() }),
+        dispatch({ type: 'SET_HIER_SIS_NOME', sisId, value }),
       setHierTopoJusante: (index: number, value: string) =>
-        dispatch({ type: 'SET_HIER_TOPO_JUSANTE', index, value, at: now() }),
+        dispatch({ type: 'SET_HIER_TOPO_JUSANTE', index, value }),
       setCtsParam: (ctsId: string, key: keyof SubBaciaParams, value: string) =>
         dispatch({ type: 'SET_CTS_PARAM', ctsId, key, value }),
       setCtsObraField: (ctsId: string, index: number, key: keyof Obra, value: string) =>
         dispatch({ type: 'SET_CTS_OBRA_FIELD', ctsId, index, key, value }),
       editCtsDbField: (ctsId: string, key: keyof SubBaciaDb, value: string) =>
-        dispatch({ type: 'EDIT_CTS_DB_FIELD', ctsId, key, value, at: now() }),
+        dispatch({ type: 'EDIT_CTS_DB_FIELD', ctsId, key, value }),
       // A assinatura vem do corpo QUE FOI ENVIADO, nao do estado atual: se o
       // usuario continuou digitando enquanto o PUT voava, essas teclas seguem
       // como nao salvas — que e a verdade.
-      marcarSalva: (chave: ChaveFicha, ficha: unknown, versao?: string) =>
-        dispatch({ type: 'FICHA_SALVA', chave, assinatura: assinatura(ficha), versao }),
+      marcarSalva: (chave: ChaveFicha, ficha: unknown, auditoria?: Partial<Auditoria>) =>
+        dispatch({ type: 'FICHA_SALVA', chave, assinatura: assinatura(ficha), auditoria }),
     }),
     [],
   )
@@ -427,7 +424,6 @@ export function CadastroProvider({
       ctss: state.ctss ?? {},
       pares: state.pares ?? [],
       ctsInconsistentes: ctsQ.data?.inconsistencias ?? [],
-      overrides: state.overrides,
       derivado,
       sujas,
       temSujas,

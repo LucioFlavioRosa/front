@@ -208,7 +208,6 @@ describe('salvar a ficha com população', () => {
     expect(corpo.params.popA).toBe('500')
     expect(corpo.params.popU).toBe('1.267')
     expect(corpo.db.popA).toBeUndefined()
-    expect(corpo.overrides).toEqual([])
   })
 
   it('voltar ao valor do servidor apaga o Salvar de novo', async () => {
@@ -280,9 +279,10 @@ describe('recorte industrial', () => {
     await waitFor(() => expect(api.puts).toHaveLength(1))
     const [, corpo] = api.puts[0]
     expect(corpo.db.ligAInd).toBe('7')
-    expect(corpo.overrides).toEqual([
-      expect.objectContaining({ campo: 'ligAInd', valorAntigo: '3', valorNovo: '7' }),
-    ])
+    // A trilha do que mudou é do SERVIDOR agora (ele compara o gravado com o
+    // que chega), então o corpo não a carrega. O que a tela garante é o que ela
+    // controla: o valor corrigido sobe no bloco certo.
+    expect('overrides' in corpo).toBe(false)
   })
 
   it('a CTS tem o dela, não o da sub-bacia pareada', async () => {
@@ -382,7 +382,6 @@ describe('vazão industrial (parâmetro do usuário)', () => {
     await waitFor(() => expect(api.puts).toHaveLength(1))
     const [, corpo] = api.puts[0]
     expect(corpo.params.vazInd).toBe('2,4')
-    expect(corpo.overrides).toEqual([])
   })
 
   it('a CTS tem o mesmo parâmetro', async () => {

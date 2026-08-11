@@ -4,7 +4,6 @@
  * Valores impuros (timestamp) chegam prontos no payload das actions.
  */
 import {
-  BASE_OBRAS,
   camposDaSub,
   cidadePorSub,
   subPend,
@@ -13,11 +12,13 @@ import {
   type SubBaciaDb,
   type SubBaciaParams,
   type SupNode,
+  OBRAS_POR_SUBBACIA,
 } from '@/cadastro/domain/subbacia'
+import { auditoriaDe, type Auditoria } from '@/cadastro/domain/auditoria'
 import { reguaDe, type Regua } from '@/cadastro/domain/baseComercial'
 import { g2Pend, type Cidade, type Fator, type Meta } from '@/cadastro/domain/contrato'
 import { etePend, isNova, type Ete } from '@/cadastro/domain/ete'
-import { BASE_OBRAS_CTS, camposDaCts, ctsPend, type Cts, type ParCts } from '@/cadastro/domain/cts'
+import { camposDaCts, ctsPend, OBRAS_POR_CTS, type Cts, type ParCts } from '@/cadastro/domain/cts'
 import type {
   CidadeH,
   SistemaH,
@@ -36,7 +37,6 @@ import {
 } from '@/cadastro/state/fichas'
 
 const clone = <T>(x: T): T => JSON.parse(JSON.stringify(x)) as T
-const AUTOR = 'Regional/Unidade'
 
 export interface Hier {
   unidReg: UnidReg
@@ -44,16 +44,6 @@ export interface Hier {
   cidades: CidadeH[]
   sistemas: SistemaH[]
   topo: TopoRow[]
-}
-
-/** Registro da trilha de auditoria de um dado do Databricks sobrescrito. */
-export interface Override {
-  campo: string
-  valorAntigo: string
-  valorNovo: string
-  autor: string
-  /** ISO timestamp — carimbado no dispatch (mantem o reducer puro). */
-  at: string
 }
 
 export interface State {
@@ -73,11 +63,11 @@ export interface State {
    * regua decide se os campos de populacao existem e contam pendencia.
    */
   cidadeDaSub: Record<string, string> | null
-  /** Snapshots imutaveis do servidor — usados como valorAntigo dos overrides. */
+  /** Snapshots imutaveis do servidor — a referencia de "o que veio" para
+   *  comparar contra o que esta em edicao. */
   originalSubs: Record<string, SubBacia> | null
   originalCtss: Record<string, Cts> | null
   originalHier: Hier | null
-  overrides: Record<string, Override>
   /**
    * Assinatura de cada ficha no ultimo estado que o SERVIDOR tem — o que veio
    * dele no seed e, dai em diante, o que cada Salvar bem-sucedido enviou.
@@ -112,7 +102,6 @@ export const initialState: State = {
   originalSubs: null,
   originalCtss: null,
   originalHier: null,
-  overrides: {},
   salvas: {},
   impressoes: {},
 }
@@ -127,13 +116,13 @@ export type Action =
   // grupo 03 · sub-bacias
   | { type: 'SET_SUB_PARAM'; subId: string; key: keyof SubBaciaParams; value: string }
   | { type: 'SET_OBRA_FIELD'; subId: string; index: number; key: keyof Obra; value: string }
-  | { type: 'EDIT_DB_FIELD'; subId: string; key: keyof SubBaciaDb; value: string; at: string }
+  | { type: 'EDIT_DB_FIELD'; subId: string; key: keyof SubBaciaDb; value: string }
   // grupo 04 · ETEs
   | { type: 'SET_ETE_FIELD'; eteId: string; key: keyof Ete; value: string }
   // grupo 05 · CTS (irma da sub-bacia: mesmas acoes + criar/remover, por ser esparsa)
   | { type: 'SET_CTS_PARAM'; ctsId: string; key: keyof SubBaciaParams; value: string }
   | { type: 'SET_CTS_OBRA_FIELD'; ctsId: string; index: number; key: keyof Obra; value: string }
-  | { type: 'EDIT_CTS_DB_FIELD'; ctsId: string; key: keyof SubBaciaDb; value: string; at: string }
+  | { type: 'EDIT_CTS_DB_FIELD'; ctsId: string; key: keyof SubBaciaDb; value: string }
   // grupo 02 · contrato & metas
   | { type: 'SET_CIDADE_FIELD'; cidId: string; key: keyof Cidade; value: string }
   | { type: 'ADD_META'; cid: string }
@@ -143,60 +132,43 @@ export type Action =
   | { type: 'SET_FATOR'; index: number; key: keyof Fator; value: string }
   | { type: 'REMOVE_FATOR'; index: number }
   // grupo 01 · hierarquia (Databricks — todos gravam override)
-  | { type: 'SET_HIER_UNIDREG'; key: keyof UnidReg; value: string; at: string }
-  | { type: 'SET_HIER_SUP_NOME'; supId: string; value: string; at: string }
-  | { type: 'SET_HIER_CID_NOME'; cidId: string; value: string; at: string }
-  | { type: 'SET_HIER_SIS_NOME'; sisId: string; value: string; at: string }
-  | { type: 'SET_HIER_TOPO_JUSANTE'; index: number; value: string; at: string }
+  | { type: 'SET_HIER_UNIDREG'; key: keyof UnidReg; value: string }
+  | { type: 'SET_HIER_SUP_NOME'; supId: string; value: string }
+  | { type: 'SET_HIER_CID_NOME'; cidId: string; value: string }
+  | { type: 'SET_HIER_SIS_NOME'; sisId: string; value: string }
+  | { type: 'SET_HIER_TOPO_JUSANTE'; index: number; value: string }
   // o servidor aceitou uma ficha: ela passa a ser o novo "sem mudancas"
-  | { type: 'FICHA_SALVA'; chave: ChaveFicha; assinatura: string; versao?: string }
+  | { type: 'FICHA_SALVA'; chave: ChaveFicha; assinatura: string; auditoria?: Partial<Auditoria> }
 
 /**
- * Acrescenta/atualiza um override, sempre preservando o valor ORIGINAL.
- *
- * Voltar o campo ao valor que veio do servidor APAGA o override: nao houve
- * correcao nenhuma. Sem isso o backend receberia uma trilha dizendo "X virou X"
- * e a ficha ficaria eternamente "nao salva" (a assinatura inclui a trilha).
+ * A trilha de auditoria e do SERVIDOR: ele compara o que esta gravado com o que
+ * chega no `PUT` (`cadastro_escrita.diferencas`). Este reducer cuida so do estado
+ * da tela, e o corpo da requisicao nao carrega registro de mudanca nenhum.
  */
-function withOverride(
-  state: State,
-  chave: string,
-  campo: string,
-  original: string | undefined,
-  novo: string,
-  at: string,
-): Record<string, Override> {
-  if (novo === (original ?? '')) {
-    const { [chave]: _desfeito, ...resto } = state.overrides
-    return resto
-  }
-  return {
-    ...state.overrides,
-    [chave]: { campo, valorAntigo: original ?? '', valorNovo: novo, autor: AUTOR, at },
-  }
-}
 
 /**
- * Mesma ideia para as obras: a ficha manda so o que difere da obra-base, entao
- * um campo digitado de volta ao valor da base sai do mapa — e o indice sai
- * junto quando nao sobra nada nele.
+ * Grava o campo digitado na obra daquele indice.
+ *
+ * O mapa carrega a obra INTEIRA, como o servidor a mandou — nenhum campo e
+ * apagado dele. Apagar criaria buraco: o campo voltaria vazio na tela, contaria
+ * pendencia, e o `PUT` gravaria NULL numa coluna que tinha valor.
+ *
+ * "Digitou de volta o valor original" nao precisa de tratamento: valor igual
+ * deixa o objeto identico ao que veio, e a comparacao de conteudo (`assinatura`
+ * em `state/fichas.ts`) e quem responde se a ficha esta suja.
+ *
+ * Indice que nao existe no mapa nao e criado. A tela so renderiza as obras que
+ * vieram do servidor, e criar uma aqui seria inventar linha de cadastro.
  */
 function withObraOverride(
   override: Record<string, Partial<Obra>>,
-  base: Obra[],
   index: number,
   key: keyof Obra,
   value: string,
 ): Record<string, Partial<Obra>> {
   const i = String(index)
-  const atual = { ...(override[i] ?? {}) }
-  if (value === base[index]?.[key]) delete atual[key]
-  else atual[key] = value
-
-  const proximo = { ...override }
-  if (Object.keys(atual).length === 0) delete proximo[i]
-  else proximo[i] = atual
-  return proximo
+  if (!(i in override)) return override
+  return { ...override, [i]: { ...override[i], [key]: value } }
 }
 
 /**
@@ -273,27 +245,27 @@ export function reducer(state: State, action: Action): State {
 
     case 'FICHA_SALVA': {
       const salvas = { ...state.salvas, [action.chave]: action.assinatura }
-      // A versao NOVA volta para a entidade. Sem isto o proximo PUT da mesma
-      // ficha mandaria a versao lida no GET, que a gravacao anterior tornou
-      // obsoleta — 409 contra a propria alteracao.
+      // A auditoria NOVA volta para a entidade: quem acabou de salvar tem de ver
+      // o proprio nome na ficha, e nao o de quem salvou antes dele.
       //
-      // SERVIDOR 2xx SEM `versao` é quebra de contrato, e há três saídas ruins:
+      // SERVIDOR 2xx SEM auditoria é quebra de contrato, e há duas saídas ruins:
       //
-      //  a) manter a versão antiga → o próximo salvamento toma 409 e a tela diz
-      //     "outra pessoa salvou esta ficha". Ninguém salvou. Erro que MENTE é
-      //     pior que proteção ausente: ensina a ignorar o aviso — e este aviso é
-      //     o único que separa duas pessoas se sobrescrevendo.
+      //  a) manter a auditoria antiga → a ficha exibe "última alteração: fulano,
+      //     ontem" logo depois de VOCÊ salvar. O único aviso que sobrou sobre
+      //     gravação concorrente passa a apontar a pessoa errada, e aviso que
+      //     MENTE é pior que aviso ausente: ensina a ignorá-lo.
       //  b) marcar a ficha como NÃO salva → mas o servidor ACEITOU. Dizer que
       //     não salvou faz a pessoa salvar de novo um dado que já está no banco.
-      //  c) esquecer a versão → o próximo PUT vai sem ela, o backend tolera
-      //     (`_exigir_versao` deixa passar quando ausente) e o salvamento
-      //     funciona. O preço: aquela ficha fica sem proteção de conflito até a
-      //     próxima carga da tela, que a recupera do GET.
       //
-      // (c), com a perda registrada no console (`conferirContrato` em
-      // api/mutations.ts). É a única que não mente ao usuário, e degrada para o
-      // comportamento anterior ao 409 em vez de para um erro falso.
-      return { ...state, salvas, ...comVersao(state, action.chave, action.versao ?? '') }
+      // Nenhuma das duas: sem auditoria na resposta, a ficha fica com os campos
+      // VAZIOS — que é o que a tela mostra para ficha nunca gravada, e é a
+      // afirmação mais fraca possível ("não sei"), em vez de uma errada. A perda
+      // vai para o console (`conferirContrato` em api/mutations.ts).
+      return {
+        ...state,
+        salvas,
+        ...comAuditoria(state, action.chave, auditoriaDe(action.auditoria)),
+      }
     }
 
     case 'SET_SUB_PARAM': {
@@ -316,7 +288,6 @@ export function reducer(state: State, action: Action): State {
             ...sub,
             obrasOverride: withObraOverride(
               sub.obrasOverride,
-              BASE_OBRAS,
               action.index,
               action.key,
               action.value,
@@ -327,21 +298,12 @@ export function reducer(state: State, action: Action): State {
     }
     case 'EDIT_DB_FIELD': {
       const sub = state.subs![action.subId]
-      const original = state.originalSubs?.[action.subId]?.db[action.key] ?? sub.db[action.key]
       return {
         ...state,
         subs: {
           ...state.subs,
           [action.subId]: { ...sub, db: { ...sub.db, [action.key]: action.value } },
         },
-        overrides: withOverride(
-          state,
-          `${action.subId}.${action.key}`,
-          action.key,
-          original,
-          action.value,
-          action.at,
-        ),
       }
     }
 
@@ -373,7 +335,6 @@ export function reducer(state: State, action: Action): State {
             ...cts,
             obrasOverride: withObraOverride(
               cts.obrasOverride,
-              BASE_OBRAS_CTS,
               action.index,
               action.key,
               action.value,
@@ -384,21 +345,12 @@ export function reducer(state: State, action: Action): State {
     }
     case 'EDIT_CTS_DB_FIELD': {
       const cts = state.ctss![action.ctsId]
-      const original = state.originalCtss?.[action.ctsId]?.db[action.key] ?? cts.db[action.key]
       return {
         ...state,
         ctss: {
           ...state.ctss,
           [action.ctsId]: { ...cts, db: { ...cts.db, [action.key]: action.value } },
         },
-        overrides: withOverride(
-          state,
-          `${action.ctsId}.${action.key}`,
-          action.key,
-          original,
-          action.value,
-          action.at,
-        ),
       }
     }
     // NAO ha ADD_CTS nem REMOVE_CTS, e isso e deliberado. A CTS e um NO DA
@@ -440,14 +392,6 @@ export function reducer(state: State, action: Action): State {
       return {
         ...state,
         hier: { ...state.hier!, unidReg: { ...state.hier!.unidReg, [action.key]: action.value } },
-        overrides: withOverride(
-          state,
-          `hier.unidReg.${action.key}`,
-          action.key,
-          state.originalHier?.unidReg[action.key],
-          action.value,
-          action.at,
-        ),
       }
     case 'SET_HIER_SUP_NOME':
       return {
@@ -458,14 +402,6 @@ export function reducer(state: State, action: Action): State {
             s.id === action.supId ? { ...s, nome: action.value } : s,
           ),
         },
-        overrides: withOverride(
-          state,
-          `hier.sup.${action.supId}`,
-          'nome',
-          state.originalHier?.superintendencias.find((s) => s.id === action.supId)?.nome,
-          action.value,
-          action.at,
-        ),
       }
     case 'SET_HIER_CID_NOME':
       return {
@@ -476,14 +412,6 @@ export function reducer(state: State, action: Action): State {
             c.id === action.cidId ? { ...c, nome: action.value } : c,
           ),
         },
-        overrides: withOverride(
-          state,
-          `hier.cid.${action.cidId}`,
-          'nome',
-          state.originalHier?.cidades.find((c) => c.id === action.cidId)?.nome,
-          action.value,
-          action.at,
-        ),
       }
     case 'SET_HIER_SIS_NOME':
       return {
@@ -494,14 +422,6 @@ export function reducer(state: State, action: Action): State {
             s.id === action.sisId ? { ...s, nome: action.value } : s,
           ),
         },
-        overrides: withOverride(
-          state,
-          `hier.sis.${action.sisId}`,
-          'nome',
-          state.originalHier?.sistemas.find((s) => s.id === action.sisId)?.nome,
-          action.value,
-          action.at,
-        ),
       }
     case 'SET_HIER_TOPO_JUSANTE':
       return {
@@ -512,14 +432,6 @@ export function reducer(state: State, action: Action): State {
             j === action.index ? { ...t, jus: action.value } : t,
           ),
         },
-        overrides: withOverride(
-          state,
-          `hier.topo.${action.index}`,
-          'componente_sistema_id_jusante',
-          state.originalHier?.topo[action.index]?.jus,
-          action.value,
-          action.at,
-        ),
       }
 
     default:
@@ -556,22 +468,22 @@ export interface Derivado {
  * escolhida, devolve null — e null nao acrescenta campo nem pendencia.
  */
 /**
- * Grava a versao nova na entidade que a `chave` aponta.
+ * Grava a auditoria nova na entidade que a `chave` aponta.
  *
  * Devolve so a fatia mudada, para o `case` acima ficar legivel. Chave
- * desconhecida devolve `{}`: perder a versao e ruim, mas quebrar o salvamento
- * por causa de um tipo de ficha novo seria pior.
+ * desconhecida devolve `{}`: a ficha exibir uma alteracao desatualizada e ruim,
+ * mas quebrar o salvamento por causa de um tipo de ficha novo seria pior.
  */
-function comVersao(state: State, chave: ChaveFicha, versao: string): Partial<State> {
+function comAuditoria(state: State, chave: ChaveFicha, a: Auditoria): Partial<State> {
   const [tipo, id] = chave.split(':')
   if (tipo === 'sub' && state.subs?.[id])
-    return { subs: { ...state.subs, [id]: { ...state.subs[id], versao } } }
+    return { subs: { ...state.subs, [id]: { ...state.subs[id], ...a } } }
   if (tipo === 'cts' && state.ctss?.[id])
-    return { ctss: { ...state.ctss, [id]: { ...state.ctss[id], versao } } }
+    return { ctss: { ...state.ctss, [id]: { ...state.ctss[id], ...a } } }
   if (tipo === 'ete' && state.etes)
-    return { etes: state.etes.map((e) => (e.id === id ? { ...e, versao } : e)) }
+    return { etes: state.etes.map((e) => (e.id === id ? { ...e, ...a } : e)) }
   if (tipo === 'cid' && state.cidades)
-    return { cidades: state.cidades.map((c) => (c.id === id ? { ...c, versao } : c)) }
+    return { cidades: state.cidades.map((c) => (c.id === id ? { ...c, ...a } : c)) }
   return {}
 }
 
@@ -655,11 +567,11 @@ export function derive(state: State): Derivado {
       cidades: state.cidades!.length,
       sistemas: state.hier!.sistemas.length,
       subBacias: subsList.length,
-      obras: subsList.length * 5,
+      obras: subsList.length * OBRAS_POR_SUBBACIA,
       metas: state.metas!.length,
       etes: state.etes!.length,
       cts: ctsList.length,
-      ctsObras: ctsList.length * BASE_OBRAS_CTS.length,
+      ctsObras: ctsList.length * OBRAS_POR_CTS,
     },
   }
 }

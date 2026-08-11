@@ -19,10 +19,6 @@ import {
   type State,
 } from '@/cadastro/state/cadastroReducer'
 import { assinatura, chaveSub, fichaSub, hierAlterada, sujas } from '@/cadastro/state/fichas'
-import { BASE_OBRAS } from '@/cadastro/domain/subbacia'
-import { BASE_OBRAS_CTS } from '@/cadastro/domain/cts'
-
-const AT = '2026-01-01T00:00:00.000Z'
 
 /** Estado totalmente semeado a partir dos fixtures (mesmo dado do app). */
 function seededState(): State {
@@ -118,7 +114,7 @@ describe('grupo 05 — CTS', () => {
     expect(derive(s1).g5).toBe(derive(s0).g5 - 1)
   })
 
-  it('EDIT_CTS_DB_FIELD grava override com o valor original e não mexe em g5', () => {
+  it('EDIT_CTS_DB_FIELD muda o valor e não mexe em g5', () => {
     const s0 = seededState()
     const original = s0.ctss!['cts_b2_1_1'].db.fat
     const s1 = reducer(s0, {
@@ -126,13 +122,11 @@ describe('grupo 05 — CTS', () => {
       ctsId: 'cts_b2_1_1',
       key: 'fat',
       value: '4.000',
-      at: AT,
     })
-    expect(s1.overrides['cts_b2_1_1.fat']).toMatchObject({
-      campo: 'fat',
-      valorAntigo: original,
-      valorNovo: '4.000',
-    })
+    expect(s1.ctss!['cts_b2_1_1'].db.fat).toBe('4.000')
+    // O snapshot do servidor não se mexe: ele é o que a ficha compara para saber
+    // se está suja, e o que a tela mostra ao lado do campo corrigido.
+    expect(s0.originalCtss!['cts_b2_1_1'].db.fat).toBe(original)
     expect(derive(s1).g5).toBe(derive(s0).g5)
   })
 })
@@ -178,8 +172,8 @@ describe('SET_SUB_PARAM', () => {
   })
 })
 
-describe('EDIT_DB_FIELD — trilha de override', () => {
-  it('grava override com o valor ORIGINAL, mesmo após várias edições', () => {
+describe('EDIT_DB_FIELD', () => {
+  it('a última edição é a que vale, e o snapshot do servidor não se mexe', () => {
     const s0 = seededState()
     const original = s0.subs!['b1_1_1'].db.fat // '260.964'
     const s1 = reducer(s0, {
@@ -187,37 +181,36 @@ describe('EDIT_DB_FIELD — trilha de override', () => {
       subId: 'b1_1_1',
       key: 'fat',
       value: 'X',
-      at: AT,
     })
     const s2 = reducer(s1, {
       type: 'EDIT_DB_FIELD',
       subId: 'b1_1_1',
       key: 'fat',
       value: 'Y',
-      at: AT,
     })
     expect(s2.subs!['b1_1_1'].db.fat).toBe('Y')
-    expect(s2.overrides['b1_1_1.fat']).toMatchObject({
+    // O snapshot do SEED continua sendo o do servidor — é dele que sai a
+    // comparação de "está suja?". A trilha (que salto foi de X para Y) é do
+    // servidor agora: ele compara o gravado com o que chega, e por isso registra
+    // `X -> Y`, e não `original -> Y` como esta tela registrava.
+    expect(s0.originalSubs!['b1_1_1'].db.fat).toBe(original)
+    expect({
       campo: 'fat',
       valorAntigo: original, // permanece o original, não 'X'
       valorNovo: 'Y',
       autor: 'Regional/Unidade',
-      at: AT,
     })
   })
 })
 
-describe('SET_HIER_TOPO_JUSANTE — override do "escoa para"', () => {
-  it('grava override do campo mais crítico com valor original', () => {
+describe('SET_HIER_TOPO_JUSANTE — o "escoa para"', () => {
+  it('muda o jusante e marca a hierarquia como editada', () => {
     const s0 = seededState()
     const original = s0.hier!.topo[0].jus // 'e1'
-    const s1 = reducer(s0, { type: 'SET_HIER_TOPO_JUSANTE', index: 0, value: 'e9', at: AT })
+    const s1 = reducer(s0, { type: 'SET_HIER_TOPO_JUSANTE', index: 0, value: 'e9' })
     expect(s1.hier!.topo[0].jus).toBe('e9')
-    expect(s1.overrides['hier.topo.0']).toMatchObject({
-      campo: 'componente_sistema_id_jusante',
-      valorAntigo: original,
-      valorNovo: 'e9',
-    })
+    expect(s1.originalHier!.topo[0].jus).toBe(original)
+    expect(hierAlterada(s1)).toBe(true)
   })
 })
 
@@ -274,12 +267,13 @@ describe('demais actions de mutação', () => {
     expect(derive(s2).g2).toBe(derive(s0).g2)
   })
 
-  it('SET_HIER_SUP_NOME grava override com o nome original', () => {
+  it('SET_HIER_SUP_NOME muda o nome da superintendência', () => {
     const s0 = seededState()
     const original = s0.hier!.superintendencias.find((s) => s.id === 'sup1')!.nome
-    const s1 = reducer(s0, { type: 'SET_HIER_SUP_NOME', supId: 'sup1', value: 'Nova Sup', at: AT })
+    const s1 = reducer(s0, { type: 'SET_HIER_SUP_NOME', supId: 'sup1', value: 'Nova Sup' })
     expect(s1.hier!.superintendencias.find((s) => s.id === 'sup1')!.nome).toBe('Nova Sup')
-    expect(s1.overrides['hier.sup.sup1']).toMatchObject({ campo: 'nome', valorAntigo: original })
+    expect(s1.originalHier!.superintendencias.find((s) => s.id === 'sup1')!.nome).toBe(original)
+    expect(hierAlterada(s1)).toBe(true)
   })
 
   it('EDIT_DB_FIELD não altera pendências (dado Databricks não é do usuário)', () => {
@@ -289,7 +283,6 @@ describe('demais actions de mutação', () => {
       subId: 'b1_1_1',
       key: 'fat',
       value: 'X',
-      at: AT,
     })
     expect(derive(s1).g3).toBe(derive(s0).g3) // g3 inalterado
   })
@@ -331,14 +324,13 @@ describe('fichas não salvas (baseline de gravação)', () => {
     expect(sujas(s3)).toEqual([chaveSub('b2_1_4')])
   })
 
-  it('a trilha de override conta como mudança da ficha', () => {
+  it('editar um dado do Databricks suja a ficha, como qualquer campo', () => {
     const s0 = seededState()
     const s1 = reducer(s0, {
       type: 'EDIT_DB_FIELD',
       subId: 'b1_1_1',
       key: 'fat',
       value: 'X',
-      at: AT,
     })
     expect(sujas(s1)).toEqual([chaveSub('b1_1_1')])
   })
@@ -357,8 +349,8 @@ describe('fichas não salvas (baseline de gravação)', () => {
   })
 })
 
-describe('reverter uma edição desfaz o registro dela', () => {
-  it('EDIT_DB_FIELD de volta ao valor do servidor apaga o override', () => {
+describe('reverter uma edição limpa a ficha', () => {
+  it('EDIT_DB_FIELD de volta ao valor do servidor limpa a ficha', () => {
     const s0 = seededState()
     const original = s0.subs!['b1_1_1'].db.fat
     const s1 = reducer(s0, {
@@ -366,20 +358,20 @@ describe('reverter uma edição desfaz o registro dela', () => {
       subId: 'b1_1_1',
       key: 'fat',
       value: 'X',
-      at: AT,
     })
-    expect(s1.overrides['b1_1_1.fat']).toBeTruthy()
+    expect(sujas(s1)).toEqual(['sub:b1_1_1'])
 
     const s2 = reducer(s1, {
       type: 'EDIT_DB_FIELD',
       subId: 'b1_1_1',
       key: 'fat',
       value: original,
-      at: AT,
     })
-    // Sem isto o backend receberia uma trilha dizendo "X virou X" e a ficha
-    // ficaria "não salva" para sempre (a assinatura inclui os overrides).
-    expect(s2.overrides['b1_1_1.fat']).toBeUndefined()
+    // Quem responde "está suja?" é a comparação de CONTEÚDO. Antes havia um
+    // segundo mecanismo — apagar o override do mapa —, e ele existia porque a
+    // assinatura incluía a trilha. Sem trilha no cliente, sobrou o que sempre
+    // bastou: valor igual ao do servidor, ficha limpa.
+    expect(s2.subs!['b1_1_1'].db.fat).toBe(original)
     expect(sujas(s2)).toEqual([])
   })
 
@@ -391,36 +383,34 @@ describe('reverter uma edição desfaz o registro dela', () => {
       ctsId: 'cts_b3_1_1',
       key: 'arr',
       value: 'X',
-      at: AT,
     })
-    expect(s1.overrides['cts_b3_1_1.arr']).toBeTruthy()
+    expect(sujas(s1)).toEqual(['cts:cts_b3_1_1'])
 
     const s2 = reducer(s1, {
       type: 'EDIT_CTS_DB_FIELD',
       ctsId: 'cts_b3_1_1',
       key: 'arr',
       value: original,
-      at: AT,
     })
-    expect(s2.overrides['cts_b3_1_1.arr']).toBeUndefined()
+    expect(s2.ctss!['cts_b3_1_1'].db.arr).toBe(original)
     expect(sujas(s2)).toEqual([])
   })
 
-  it('SET_HIER_SUP_NOME de volta ao nome original apaga o override', () => {
+  it('SET_HIER_SUP_NOME de volta ao nome original não deixa a hierarquia editada', () => {
     const s0 = seededState()
     const original = s0.hier!.superintendencias.find((x) => x.id === 'sup1')!.nome
-    const s1 = reducer(s0, { type: 'SET_HIER_SUP_NOME', supId: 'sup1', value: 'Outra', at: AT })
-    expect(s1.overrides['hier.sup.sup1']).toBeTruthy()
+    const s1 = reducer(s0, { type: 'SET_HIER_SUP_NOME', supId: 'sup1', value: 'Outra' })
+    expect(hierAlterada(s1)).toBe(true)
 
-    const s2 = reducer(s1, { type: 'SET_HIER_SUP_NOME', supId: 'sup1', value: original, at: AT })
-    expect(s2.overrides['hier.sup.sup1']).toBeUndefined()
+    const s2 = reducer(s1, { type: 'SET_HIER_SUP_NOME', supId: 'sup1', value: original })
     expect(hierAlterada(s2)).toBe(false)
   })
 
-  it('SET_OBRA_FIELD de volta ao valor da obra-base some do mapa de overrides', () => {
+  it('SET_OBRA_FIELD de volta ao valor do SERVIDOR limpa a ficha', () => {
     const s0 = seededState()
-    // Índice 4 (Linha de recalque): é o que b2_1_4 não sobrescreve no mock.
-    const base = BASE_OBRAS[4].qtd
+    // O valor original é o que veio no payload — não mais o de uma obra-base.
+    // As duas literais saíram (R1/R2), e a comparação passou a ser com o dado.
+    const doServidor = s0.subs!['b2_1_4'].obrasOverride['4'].qtd!
     const s1 = reducer(s0, {
       type: 'SET_OBRA_FIELD',
       subId: 'b2_1_4',
@@ -429,23 +419,27 @@ describe('reverter uma edição desfaz o registro dela', () => {
       value: '77',
     })
     expect(s1.subs!['b2_1_4'].obrasOverride['4'].qtd).toBe('77')
+    expect(sujas(s1)).toEqual(['sub:b2_1_4'])
 
     const s2 = reducer(s1, {
       type: 'SET_OBRA_FIELD',
       subId: 'b2_1_4',
       index: 4,
       key: 'qtd',
-      value: base,
+      value: doServidor,
     })
-    // O índice inteiro sai quando não sobra nenhum campo alterado nele: a ficha
-    // manda só o que difere da base.
-    expect(s2.subs!['b2_1_4'].obrasOverride['4']).toBeUndefined()
+    // O índice NÃO some mais, e nenhum campo é apagado: o mapa carrega a obra
+    // inteira, e tirar campo dele criaria buraco — o campo voltaria vazio na
+    // tela e o PUT gravaria NULL numa coluna que tinha valor.
+    expect(s2.subs!['b2_1_4'].obrasOverride['4'].qtd).toBe(doServidor)
+    // Quem responde "está suja?" é a comparação de conteúdo, e ela dá conta
+    // sozinha: valor igual ao do servidor, assinatura igual, ficha limpa.
     expect(sujas(s2)).toEqual([])
   })
 
-  it('SET_CTS_OBRA_FIELD idem, contra a base de 4 obras da CTS', () => {
+  it('SET_CTS_OBRA_FIELD idem, nas 4 obras da CTS', () => {
     const s0 = seededState()
-    const base = BASE_OBRAS_CTS[1].preco
+    const doServidor = s0.ctss!['cts_b3_1_1'].obrasOverride['1'].preco!
     const s1 = reducer(s0, {
       type: 'SET_CTS_OBRA_FIELD',
       ctsId: 'cts_b3_1_1',
@@ -453,20 +447,38 @@ describe('reverter uma edição desfaz o registro dela', () => {
       key: 'preco',
       value: '9',
     })
+    expect(sujas(s1)).toEqual(['cts:cts_b3_1_1'])
     const s2 = reducer(s1, {
       type: 'SET_CTS_OBRA_FIELD',
       ctsId: 'cts_b3_1_1',
       index: 1,
       key: 'preco',
-      value: base,
+      value: doServidor,
     })
-    expect(s2.ctss!['cts_b3_1_1'].obrasOverride['1']).toBeUndefined()
+    expect(s2.ctss!['cts_b3_1_1'].obrasOverride['1'].preco).toBe(doServidor)
     expect(sujas(s2)).toEqual([])
+  })
+
+  it('SET_OBRA_FIELD num índice que a ficha não tem NÃO cria a obra', () => {
+    // Seria a base literal de volta, uma linha por vez: a obra nasceria do que o
+    // cliente mandou, e não do que o banco tem. A tela só renderiza o que veio,
+    // então este caminho só se alcança por engano de código.
+    const s0 = seededState()
+    const antes = s0.subs!['b2_1_4'].obrasOverride
+    const s1 = reducer(s0, {
+      type: 'SET_OBRA_FIELD',
+      subId: 'b2_1_4',
+      index: 9,
+      key: 'qtd',
+      value: '1',
+    })
+    expect(s1.subs!['b2_1_4'].obrasOverride).toBe(antes)
+    expect(sujas(s1)).toEqual([])
   })
 
   it('reverter um campo não apaga os outros do mesmo índice', () => {
     const s0 = seededState()
-    const base = BASE_OBRAS[0].qtd
+    const base = s0.subs!['b2_1_4'].obrasOverride['0'].qtd!
     const s1 = reducer(s0, {
       type: 'SET_OBRA_FIELD',
       subId: 'b2_1_4',
@@ -488,7 +500,12 @@ describe('reverter uma edição desfaz o registro dela', () => {
       key: 'qtd',
       value: base,
     })
-    expect(s3.subs!['b2_1_4'].obrasOverride['0']).toEqual({ opex: '500' })
+    // O índice guarda a obra INTEIRA, e não só o que foi editado. O que este
+    // caso protege continua valendo: reverter `qtd` não leva `opex` junto.
+    const obra = s3.subs!['b2_1_4'].obrasOverride['0']
+    expect(obra.qtd).toBe(base)
+    expect(obra.opex).toBe('500')
+    expect(obra.nome).toBe(s0.subs!['b2_1_4'].obrasOverride['0'].nome)
   })
 })
 

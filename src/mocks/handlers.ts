@@ -121,7 +121,7 @@ const COLUNAS_PARAMS = ['preco', 'tarr', 'ramp', 'vaz', 'vazInd', 'pot', 'popU',
 
 /** Valida a ficha de coleta (sub-bacia ou CTS): campos de topo + os dois grupos. */
 function recusaDaFicha(ficha: Record<string, unknown>): string | null {
-  const falta = exigir(ficha, ['params', 'db', 'obrasOverride', 'overrides'])
+  const falta = exigir(ficha, ['params', 'db', 'obrasOverride'])
   if (falta) return falta
   const faltaDb = exigir(ficha.db as Record<string, unknown>, COLUNAS_DB)
   if (faltaDb) return `db.${faltaDb}`
@@ -154,6 +154,32 @@ export const handlers = [
 
   http.get(`${BASE}/unidades/:id/cts`, () => HttpResponse.json(ctsFx)),
 
+  // A trilha de auditoria. O mock nao a acumula: ele nao guarda o que os PUTs
+  // gravaram, entao inventar historico aqui mostraria em desenvolvimento uma
+  // lista que o banco de verdade nao teria. Uma entrada so, para o painel poder
+  // ser visto, e a marca de que ela e de mentira esta no proprio autor.
+  http.get(`${BASE}/unidades/:id/alteracoes`, ({ request }) => {
+    const url = new URL(request.url)
+    const fichaId = url.searchParams.get('fichaId') ?? ''
+    return HttpResponse.json({
+      alteracoes: fichaId
+        ? [
+            {
+              tipo: url.searchParams.get('tipo') ?? 'sub-bacia',
+              fichaId,
+              campo: 'preco',
+              de: '1.100,00',
+              para: '1.234,00',
+              autor: 'ana@aegea',
+              quando: '2026-08-10T14:32:00+00:00',
+              origem: 'regional',
+            },
+          ]
+        : [],
+      cortado: false,
+    })
+  }),
+
   http.get(`${BASE}/unidades/:id/hierarquia`, ({ params }) => {
     const u = unidades.find((x) => x.id === params.id)
     if (!u) return new HttpResponse(null, { status: 404 })
@@ -181,14 +207,14 @@ export const handlers = [
 
   http.put(`${BASE}/unidades/:id/contrato/:cidId`, async ({ request }) => {
     const ficha = (await request.json()) as Record<string, unknown>
-    const falta = exigir(ficha, ['cidade', 'metas', 'fator', 'overrides'])
+    const falta = exigir(ficha, ['cidade', 'metas', 'fator'])
     if (falta) return recusa(falta)
     return HttpResponse.json(ficha)
   }),
 
   http.put(`${BASE}/unidades/:id/etes/:eteId`, async ({ request }) => {
     const ficha = (await request.json()) as Record<string, unknown>
-    const falta = exigir(ficha, ['ete', 'overrides'])
+    const falta = exigir(ficha, ['ete'])
     if (falta) return recusa(falta)
     return HttpResponse.json(ficha)
   }),

@@ -15,6 +15,7 @@ import {
   numOuNulo,
   rotuloFoco,
   validar,
+  resumirFaltando,
   type Prontidao,
 } from '@/simulacao/domain/simulacao'
 
@@ -152,6 +153,50 @@ describe('validar — o que bloqueia e o que só avisa', () => {
     const c = validar(e, PENDENTE)
     expect(bloqueado(c)).toBe(true)
     expect(c[0].texto).toContain('46 campos pendentes')
+  })
+
+  it('componente faltando vira linha própria, com a ficha e o nome', () => {
+    // O total ("46 campos pendentes") não ajuda quem precisa corrigir ISTO: a
+    // linha do componente que falta nem aparece na ficha, então a pessoa não tem
+    // como descobri-la abrindo a tela. Enquanto havia base literal era pior — a
+    // ficha mostrava a linha, preenchida com números de template.
+    const c = validar(
+      { ...estadoInicial(), unidadeId: 'u2' },
+      {
+        ...PENDENTE,
+        faltando: [
+          {
+            tipo: 'sub-bacia',
+            id: 'a1b25_1_1',
+            componente: 'Coletor tronco',
+            detalhe: 'Falta o componente Coletor tronco nesta sub-bacia.',
+          },
+        ],
+      },
+    )
+    expect(bloqueado(c)).toBe(true)
+    expect(c.some((x) => x.texto.includes('sub-bacia a1b25_1_1'))).toBe(true)
+    expect(c.some((x) => x.texto.includes('Coletor tronco'))).toBe(true)
+  })
+
+  it('lista longa é cortada, e o corte DIZ quantos ficaram de fora', () => {
+    // Trinta linhas vermelhas viram uma parede que ninguém lê. Silenciar as
+    // demais seria pior: a pessoa corrigiria cinco e levaria a mesma recusa.
+    const faltando = Array.from({ length: 9 }, (_, i) => ({
+      tipo: 'sub-bacia',
+      id: `b${i}`,
+      componente: 'Rede coletora',
+      detalhe: '',
+    }))
+    const frases = resumirFaltando(faltando)
+    expect(frases).toHaveLength(6) // 5 + a linha do resto
+    expect(frases[5]).toContain('mais 4')
+  })
+
+  it('servidor que não manda `faltando` não quebra o checklist', () => {
+    // Compatibilidade com backend anterior a esta mudança: o campo é opcional, e
+    // ausência é lista vazia — nunca um estouro no meio do render.
+    expect(resumirFaltando(undefined)).toEqual([])
   })
 
   it('orçamento zerado bloqueia', () => {

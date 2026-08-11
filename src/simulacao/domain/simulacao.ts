@@ -226,11 +226,37 @@ export interface ItemChecklist {
   texto: string
 }
 
+/**
+ * Componente de obra que a ficha NAO tem — o que a tela nao teria como saber.
+ *
+ * Campo em branco a tela conta sozinha, a cada tecla (`subPend`/`ctsPend`), e o
+ * usuario o encontra: ele esta la, destacado. Componente AUSENTE e de outra
+ * natureza — a ficha chega do `GET` com quatro linhas em vez de cinco e nada diz
+ * que havia uma quinta.
+ *
+ * Enquanto havia base literal, a tela preenchia a linha que faltava com numeros
+ * de template e mostrava cinco. A base saiu (R1/R2), o `PUT` passou a RECUSAR a
+ * ficha incompleta, e sem esta lista a pessoa levaria a recusa sem saber o que
+ * corrigir — nem onde, ja que o conserto e no cadastro de origem.
+ */
+export interface ComponenteFaltando {
+  /** `sub-bacia` ou `cts`. */
+  tipo: string
+  /** Id da ficha — e o que a pessoa procura no rail. */
+  id: string
+  /** Nome do componente, como o banco o chama. */
+  componente: string
+  /** Frase pronta do servidor, no padrao do `inconsistencias[]` de `GET /cts`. */
+  detalhe: string
+}
+
 /** Prontidao do cadastro da unidade — quem manda no bloqueio da rodada. */
 export interface Prontidao {
   unidadeId: string
   unidadeNome: string
   pendencias: number
+  /** Opcional: servidor antigo nao manda, e a tela nao pode quebrar por isso. */
+  faltando?: ComponenteFaltando[]
 }
 
 /**
@@ -241,6 +267,31 @@ export interface Prontidao {
  * mudam MUITO o resultado, como ignorar as metas. A diferenca importa: bloquear
  * uma escolha legitima porque ela e incomum treina o usuario a ignorar avisos.
  */
+/** Quantas linhas de "falta o componente X" o checklist mostra antes de resumir. */
+const MAX_FALTANDO = 5
+
+/**
+ * As frases de componente faltando, cortadas num numero que se le.
+ *
+ * Um cadastro recem-carregado pode ter dezenas, e trinta linhas vermelhas viram
+ * uma parede que ninguem le — o efeito seria o oposto do pretendido. O corte
+ * DIZ que cortou e quantas sobraram: silenciar as demais faria a pessoa corrigir
+ * cinco e levar a mesma recusa de novo.
+ */
+export function resumirFaltando(faltando: ComponenteFaltando[] | undefined): string[] {
+  const lista = faltando ?? []
+  const frases = lista
+    .slice(0, MAX_FALTANDO)
+    .map((f) => `${f.tipo} ${f.id} — falta o componente ${f.componente} no cadastro.`)
+  const resto = lista.length - frases.length
+  if (resto > 0) {
+    frases.push(
+      `E mais ${resto} componente(s) faltando em outras fichas — a lista completa está em /prontidao.`,
+    )
+  }
+  return frases
+}
+
 export function validar(e: EstadoSimulacao, prontidao: Prontidao | undefined): ItemChecklist[] {
   const itens: ItemChecklist[] = []
   const { total, anosComVerba } = derivarOrcamento(e)
@@ -252,6 +303,12 @@ export function validar(e: EstadoSimulacao, prontidao: Prontidao | undefined): I
       severidade: 'bloqueia',
       texto: `${prontidao.unidadeNome} tem ${prontidao.pendencias} campos pendentes no cadastro — a simulação fica bloqueada até zerar.`,
     })
+    // Uma linha POR COMPONENTE que falta, com ficha e nome. O total acima diz
+    // quanto falta; estas dizem O QUE falta, e sao as unicas pendencias que a
+    // pessoa nao consegue achar sozinha abrindo a ficha — a linha nem aparece la.
+    for (const f of resumirFaltando(prontidao.faltando)) {
+      itens.push({ severidade: 'bloqueia', texto: f })
+    }
   } else {
     itens.push({
       severidade: 'ok',

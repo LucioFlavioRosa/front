@@ -1,8 +1,6 @@
-# Portão automático do projeto: o mesmo que `npm run verificar` roda localmente.
-#
-# O repositório ainda não existe (o código foi entregue como pasta), então este
-# arquivo é o ponto de partida para quando ele for criado — nada aqui depende de
-# segredo ou de infraestrutura da Aegea.
+# Portão automático do projeto: os mesmos quatro passos que `npm run verificar`
+# roda localmente. Nada aqui depende de segredo ou de infraestrutura da Aegea —
+# o job sobe do zero em qualquer runner público.
 name: CI
 
 on:
@@ -14,11 +12,14 @@ jobs:
   verificar:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      # @v5 nas duas: as @v4 rodam sobre o runtime node20 dos runners, que o
+      # GitHub depreciou — o job ainda passa, com aviso, e para de passar depois.
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
-          node-version: 20
+          # Node 22 (LTS). O 20 saiu do suporte em abril de 2026.
+          node-version: 22
           cache: npm
 
       # `npm ci` (e não `install`) para o CI usar exatamente o package-lock.

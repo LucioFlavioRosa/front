@@ -11,7 +11,6 @@
  * ciclo em runtime. Import de tipo e apagado na compilacao.
  */
 import {
-  overridesDaFicha,
   type FichaCidade,
   type FichaCts,
   type FichaEte,
@@ -33,11 +32,9 @@ export function fichaSub(state: State, subId: string): FichaSubBacia | null {
   const sub = state.subs?.[subId]
   if (!sub) return null
   return {
-    versao: sub.versao,
     params: sub.params,
     db: sub.db,
     obrasOverride: sub.obrasOverride,
-    overrides: overridesDaFicha(state.overrides, subId),
   }
 }
 
@@ -45,32 +42,31 @@ export function fichaSub(state: State, subId: string): FichaSubBacia | null {
 export function fichaCidade(state: State, cidId: string): FichaCidade | null {
   const cidade = state.cidades?.find((c) => c.id === cidId)
   if (!cidade || !state.metas || !state.fator) return null
-  const { versao, ...semVersao } = cidade
+  // A auditoria sai do bloco `cidade`: o corpo do PUT nao carrega autoria (o
+  // servidor a tira do token), e inclui-la faria a ficha ficar SUJA no instante
+  // seguinte a salvar — a assinatura mudaria sozinha, sem o usuario tocar em nada.
+  const { atualizadoEm: _em, atualizadoPor: _por, ...semAuditoria } = cidade
   return {
-    versao,
-    cidade: semVersao as Cidade,
+    cidade: semAuditoria as Cidade,
     metas: state.metas.filter((m) => m.cid === cidId),
     fator: state.fator.filter((f) => f.cid === cidId),
-    overrides: overridesDaFicha(state.overrides, cidId),
   }
 }
 
 export function fichaEte(state: State, eteId: string): FichaEte | null {
   const ete = state.etes?.find((e) => e.id === eteId)
   if (!ete) return null
-  const { versao, ...semVersao } = ete
-  return { versao, ete: semVersao as Ete, overrides: overridesDaFicha(state.overrides, eteId) }
+  const { atualizadoEm: _em, atualizadoPor: _por, ...semAuditoria } = ete
+  return { ete: semAuditoria as Ete }
 }
 
 export function fichaCts(state: State, ctsId: string): FichaCts | null {
   const cts = state.ctss?.[ctsId]
   if (!cts) return null
   return {
-    versao: cts.versao,
     params: cts.params,
     db: cts.db,
     obrasOverride: cts.obrasOverride,
-    overrides: overridesDaFicha(state.overrides, ctsId),
   }
 }
 
@@ -125,14 +121,15 @@ function ordenado(valor: unknown): unknown {
 /**
  * A ficha reduzida ao que o USUARIO controla — e a base de "esta suja?".
  *
- * `versao` fica de FORA. Ela viaja no PUT (e o que dispara o 409), mas muda
- * sozinha a cada gravacao: inclui-la faria a ficha divergir da ultima salva
- * assim que o servidor devolvesse a versao nova, e o botao Salvar nunca mais
- * apagaria.
+ * Nao precisa mais tirar nada: o corpo do PUT so tem o que o usuario controla.
+ * Antes tirava `versao`, e agora `atualizadoEm`/`atualizadoPor` sequer chegam
+ * aqui — as funcoes acima os removem ao montar a ficha. E a mesma razao de
+ * sempre: os dois mudam SOZINHOS a cada gravacao, e um deles na assinatura
+ * faria a ficha nascer suja logo depois de salva, com o botao Salvar aceso para
+ * sempre.
  */
 export function assinatura(ficha: unknown): string {
-  const { versao: _versao, ...resto } = (ficha ?? {}) as Record<string, unknown>
-  return JSON.stringify(ordenado(resto))
+  return JSON.stringify(ordenado(ficha ?? {}))
 }
 
 /**

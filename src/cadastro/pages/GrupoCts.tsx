@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { CascadeTree, type TreeNode } from '@/cadastro/components/CascadeTree'
 import { RecordSheet } from '@/cadastro/components/RecordSheet'
+import { HistoricoDaFicha } from '@/cadastro/components/HistoricoDaFicha'
 import { DbCard, DbField, DbFieldGrid } from '@/cadastro/components/DbCard'
 import { FieldRow } from '@/cadastro/components/FieldRow'
 import { ObrasTable } from '@/cadastro/components/ObrasTable'
@@ -78,10 +79,11 @@ export function GrupoCts() {
   } = useCadastro()
   const erroAoSalvar = useErroAoSalvar(unidadeId)
   const salvarM = useSalvarCts(unidadeId, {
-    onSalva: ({ ctsId, ficha }, r) => marcarSalva(chaveCts(ctsId), ficha, r?.versao),
+    onSalva: ({ ctsId, ficha }, r) => marcarSalva(chaveCts(ctsId), ficha, r),
   })
 
   const [selCts, setSelCts] = useState('')
+  const [verHistorico, setVerHistorico] = useState(false)
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
   const [busca, setBusca] = useState('')
   const [soPend, setSoPend] = useState(false)
@@ -428,6 +430,8 @@ export function GrupoCts() {
           }
           titulo={cur.id}
           nome={cur.nome}
+          auditoria={cur}
+          onAbrirHistorico={() => setVerHistorico(true)}
           chip={sheetChip}
           onSalvar={salvar}
           salvarLabel="Salvar CTS"
@@ -564,6 +568,15 @@ export function GrupoCts() {
           </div>
         </RecordSheet>
       </div>
+      {verHistorico && (
+        <HistoricoDaFicha
+          unidadeId={unidadeId}
+          tipo="cts"
+          fichaId={cur.id}
+          nome={cur.nome}
+          onFechar={() => setVerHistorico(false)}
+        />
+      )}
     </section>
   )
 }
