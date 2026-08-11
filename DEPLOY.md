@@ -193,14 +193,14 @@ Quem mudou o quê, quando — a ficha inteira, e não só o bloco do Databricks.
 {
   "alteracoes": [
     {
-      "tipo": "sub-bacia",          // sub-bacia | cts | ete | cidade
+      "tipo": "sub-bacia", // sub-bacia | cts | ete | cidade
       "fichaId": "b1b25_1_1",
       "campo": "obra:Rede coletora:qtd",
-      "de": "2.472,6",              // null = não existia (foi criado)
-      "para": "3.000",              // null = deixou de existir (foi removido)
+      "de": "2.472,6", // null = não existia (foi criado)
+      "para": "3.000", // null = deixou de existir (foi removido)
       "autor": "ana@aegea",
       "quando": "2026-08-10T14:32:00+00:00",
-      "origem": "regional",         // databricks | regional
+      "origem": "regional", // databricks | regional
     },
   ],
   "cortado": false, // true = o servidor cortou no teto; NÃO é o histórico inteiro
@@ -209,11 +209,11 @@ Quem mudou o quê, quando — a ficha inteira, e não só o bloco do Databricks.
 
 **`campo` usa a IDENTIDADE do registro, nunca a posição.** Três formas compostas:
 
-| forma | exemplo | por quê |
-| --- | --- | --- |
-| `obra:<componente>:<campo>` | `obra:Rede coletora:qtd` | a obra não tem id próprio; quem a identifica na tela é o nome |
-| `meta:<ano>:pct` | `meta:2030:pct` | a meta é identificada pelo ano |
-| `faixa:<cobertura>:paridade` | `faixa:80:paridade` | a faixa, pela cobertura |
+| forma                        | exemplo                  | por quê                                                       |
+| ---------------------------- | ------------------------ | ------------------------------------------------------------- |
+| `obra:<componente>:<campo>`  | `obra:Rede coletora:qtd` | a obra não tem id próprio; quem a identifica na tela é o nome |
+| `meta:<ano>:pct`             | `meta:2030:pct`          | a meta é identificada pelo ano                                |
+| `faixa:<cobertura>:paridade` | `faixa:80:paridade`      | a faixa, pela cobertura                                       |
 
 Por índice (`obra:2:qtd`) seria mais curto, não diria nada a quem abre a auditoria
 seis meses depois, e mudaria de significado se a ordem mudasse.
@@ -331,10 +331,10 @@ zero é resposta legítima (salvar sem mudar nada não gera trilha).
 **Auditoria da ficha.** As quatro fichas trazem no `GET` — e a resposta do `PUT`
 devolve — dois campos que o corpo **nunca envia**:
 
-| campo           | forma                                            |
-| --------------- | ------------------------------------------------ |
-| `atualizadoEm`  | ISO-8601 com fuso, ou `""` se nunca foi gravada  |
-| `atualizadoPor` | login de quem gravou, ou `""`                    |
+| campo           | forma                                           |
+| --------------- | ----------------------------------------------- |
+| `atualizadoEm`  | ISO-8601 com fuso, ou `""` se nunca foi gravada |
+| `atualizadoPor` | login de quem gravou, ou `""`                   |
 
 Três regras, e as três importam:
 
@@ -400,11 +400,11 @@ Duas expectativas do lado da resposta:
 
 Códigos que a UI já distingue (`src/comum/api/client.ts`, `mensagemDeErro`):
 
-| Código    | O que a tela faz                                                                                     |
-| --------- | ---------------------------------------------------------------------------------------------------- |
-| 400 / 422 | "O servidor recusou os dados desta ficha."                                                           |
-| 401 / 403 | "Sua sessão expirou." + dispara o fluxo de re-login                                                  |
-| outros    | "Não foi possível salvar (erro N)."                                                                  |
+| Código    | O que a tela faz                                    |
+| --------- | --------------------------------------------------- |
+| 400 / 422 | "O servidor recusou os dados desta ficha."          |
+| 401 / 403 | "Sua sessão expirou." + dispara o fluxo de re-login |
+| outros    | "Não foi possível salvar (erro N)."                 |
 
 O `409` saiu desta tabela junto com o 409 de ficha. O fluxo de **recarregar do
 servidor** continua existindo, com o outro gatilho que sempre teve: rascunho
@@ -493,6 +493,7 @@ senão um refetch de fundo apagaria o que a pessoa está digitando.
   `atualizadoEm`/`atualizadoPor`, a tela mostra "última alteração: ana@aegea,
   10/08 14:32", e o painel de histórico abre por ela. Se um dia o conflito
   precisar ser barrado, o caminho é comparar por CAMPO — não o hash da ficha.
+
 - **A hierarquia não tem gravação.** A tela do Grupo 01 deixa corrigir dado do
   Databricks, mas não há endpoint para mandar isso — a tela avisa o usuário, e as
   correções ficam só no rascunho da aba. Quando existir um

@@ -87,7 +87,7 @@ async function abrirHistorico(esperar: RegExp = /alterou|corrigiu|Nenhuma altera
   await screen.findByRole('button', { name: 'Salvar sub-bacia' })
   fireEvent.click(await screen.findByRole('button', { name: /última alteração/ }))
   const painel = await screen.findByRole('complementary', { name: 'Histórico de alterações' })
-  await within(painel).findAllByText(esperar)  // `All`: o padrão casa várias linhas
+  await within(painel).findAllByText(esperar) // `All`: o padrão casa várias linhas
   return painel
 }
 

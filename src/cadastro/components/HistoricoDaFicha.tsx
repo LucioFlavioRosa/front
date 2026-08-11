@@ -89,9 +89,8 @@ export function HistoricoDaFicha({
           // "Nada mudou" e "nunca foi gravada" são diferentes, e a tela não tem
           // como distinguir as duas — então afirma só o que sabe.
           <p className={styles.aviso}>
-            Nenhuma alteração registrada nesta ficha. A trilha guarda o que mudou
-            desde que o cadastro passou a registrar — o que veio da planilha na
-            carga não aparece aqui.
+            Nenhuma alteração registrada nesta ficha. A trilha guarda o que mudou desde que o
+            cadastro passou a registrar — o que veio da planilha na carga não aparece aqui.
           </p>
         )}
 
@@ -102,7 +101,8 @@ export function HistoricoDaFicha({
                 <div className={styles.campo}>{rotuloDoCampo(a.campo)}</div>
                 <div className={styles.valores}>{comoLer(a)}</div>
                 <div className={styles.assinatura}>
-                  {a.autor} {verboDaOrigem(a.origem)} · <time dateTime={a.quando}>{quando(a.quando)}</time>
+                  {a.autor} {verboDaOrigem(a.origem)} ·{' '}
+                  <time dateTime={a.quando}>{quando(a.quando)}</time>
                 </div>
               </li>
             ))}
@@ -111,8 +111,7 @@ export function HistoricoDaFicha({
 
         {q.data?.cortado && (
           <p className={styles.aviso}>
-            Mostrando as alterações mais recentes. Esta ficha tem mais histórico do
-            que cabe aqui.
+            Mostrando as alterações mais recentes. Esta ficha tem mais histórico do que cabe aqui.
           </p>
         )}
       </div>

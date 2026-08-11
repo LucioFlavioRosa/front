@@ -16,21 +16,14 @@ import ctsFx from '@/mocks/fixtures/cts.json'
  * obra nenhuma, que é justamente o comportamento novo — a tela mostra o que o
  * servidor mandou e nada mais. `b1_1_1` é a ficha completa da fixture.
  */
-const sobrepor = (
-  payload: Record<string, Partial<Obra>>,
-  over: Record<string, Partial<Obra>>,
-) =>
-  Object.fromEntries(
-    Object.entries(payload).map(([i, o]) => [i, { ...o, ...(over[i] ?? {}) }]),
-  )
+const sobrepor = (payload: Record<string, Partial<Obra>>, over: Record<string, Partial<Obra>>) =>
+  Object.fromEntries(Object.entries(payload).map(([i, o]) => [i, { ...o, ...(over[i] ?? {}) }]))
 
 const obrasSub = (over: Record<string, Partial<Obra>> = {}) =>
   mkObras(sobrepor(subbacias.subs.b1_1_1.obrasOverride as Record<string, Partial<Obra>>, over))
 
 const obrasCts = (over: Record<string, Partial<Obra>> = {}) =>
-  mkObrasCts(
-    sobrepor(ctsFx.ctss.cts_b2_1_1.obrasOverride as Record<string, Partial<Obra>>, over),
-  )
+  mkObrasCts(sobrepor(ctsFx.ctss.cts_b2_1_1.obrasOverride as Record<string, Partial<Obra>>, over))
 
 /**
  * COLUNAS DA TABELA DE OBRAS — o contrato visível do plano de obras.

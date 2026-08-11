@@ -1,10 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import {
-  ordenarParametros,
-  rotuloDoParametro,
-  valorDoParametro,
-} from '@/resultado/domain/pedido'
+import { ordenarParametros, rotuloDoParametro, valorDoParametro } from '@/resultado/domain/pedido'
 import type { RunResumo } from '@/resultado/domain/resultado'
 import styles from './DetalhesDaSimulacao.module.css'
 
@@ -112,8 +108,8 @@ export function DetalhesDaSimulacao({ run, onFechar }: { run: RunResumo; onFecha
           // e por isso não tem pedido gravado. Dizer isso é melhor que uma lista
           // vazia, que se lê como "rodou sem parâmetro nenhum".
           <p className={styles.semParams}>
-            Esta rodada não tem o pedido registrado — ela foi publicada sem passar
-            pela fila, e as variáveis não ficaram guardadas.
+            Esta rodada não tem o pedido registrado — ela foi publicada sem passar pela fila, e as
+            variáveis não ficaram guardadas.
           </p>
         )}
 
@@ -125,11 +121,7 @@ export function DetalhesDaSimulacao({ run, onFechar }: { run: RunResumo; onFecha
             type="button"
             className={`${styles.btn} ${styles.primario}`}
             disabled={semResultado}
-            title={
-              semResultado
-                ? 'Esta rodada não tem resultado para abrir.'
-                : undefined
-            }
+            title={semResultado ? 'Esta rodada não tem resultado para abrir.' : undefined}
             onClick={() => navigate(`/resultados/${run.runId}`)}
           >
             Ver resultados →

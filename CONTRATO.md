@@ -648,10 +648,10 @@ O `200` acontece quando o pedido é **idêntico** (mesmos parâmetros) e **da me
 pessoa** — o `USUARIO` entra na identidade do pedido, então duas pessoas pedindo a
 mesma coisa geram duas rodadas. Dois casos caem aqui:
 
-| caso | o que a tela faz |
-| --- | --- |
-| rodada **em voo** (`PENDENTE`/`RODANDO`) | acompanha, como se a tivesse criado — é o duplo clique levando ao mesmo lugar |
-| rodada **concluída** (`SUCESSO`) | avisa que já existe e oferece o link; não abre acompanhamento de algo que terminou |
+| caso                                     | o que a tela faz                                                                   |
+| ---------------------------------------- | ---------------------------------------------------------------------------------- |
+| rodada **em voo** (`PENDENTE`/`RODANDO`) | acompanha, como se a tivesse criado — é o duplo clique levando ao mesmo lugar      |
+| rodada **concluída** (`SUCESSO`)         | avisa que já existe e oferece o link; não abre acompanhamento de algo que terminou |
 
 Três condições para uma rodada **concluída** deduplicar, e nenhuma é dispensável:
 

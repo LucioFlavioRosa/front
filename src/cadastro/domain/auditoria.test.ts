@@ -32,9 +32,9 @@ describe('formatarAuditoria', () => {
     expect(formatarAuditoria({ atualizadoEm: '', atualizadoPor: 'bruno@aegea' })).toBe(
       'bruno@aegea',
     )
-    expect(formatarAuditoria({ atualizadoEm: '2026-08-10T14:32:00+00:00', atualizadoPor: '' })).toMatch(
-      /^\d{2}\/\d{2} \d{2}:\d{2}$/,
-    )
+    expect(
+      formatarAuditoria({ atualizadoEm: '2026-08-10T14:32:00+00:00', atualizadoPor: '' }),
+    ).toMatch(/^\d{2}\/\d{2} \d{2}:\d{2}$/)
   })
 })
 

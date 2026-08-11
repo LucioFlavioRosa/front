@@ -112,9 +112,9 @@ visualmente oculta como equivalente textual.
 **Estado:** as 6 fatias estão implementadas, e **o backend real existe**. Há dois
 modos, e confundi-los é o erro mais fácil de cometer aqui:
 
-| modo | como sobe | quem responde |
-|---|---|---|
-| **dev** | `npm run dev` | MSW, com as fixtures de `src/mocks` |
+| modo    | como sobe                                                                              | quem responde                                                            |
+| ------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| **dev** | `npm run dev`                                                                          | MSW, com as fixtures de `src/mocks`                                      |
 | **e2e** | `docker compose -f docker-compose.yml -f docker-compose.e2e.yml up` no repo do backend | FastAPI + Postgres com dado real da planilha, em `http://localhost:8080` |
 
 Os testes usam o `apiFake`, não o MSW nem a API real — ver `src/testes/apiFake.ts`.

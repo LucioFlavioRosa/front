@@ -152,9 +152,7 @@ export function Historico() {
           ))}
         </ul>
       )}
-      {detalhes && (
-        <DetalhesDaSimulacao run={detalhes} onFechar={() => setDetalhes(null)} />
-      )}
+      {detalhes && <DetalhesDaSimulacao run={detalhes} onFechar={() => setDetalhes(null)} />}
     </section>
   )
 }

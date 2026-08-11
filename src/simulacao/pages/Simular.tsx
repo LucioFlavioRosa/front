@@ -679,9 +679,8 @@ export function Simular() {
           // o link. Quem pediu de novo a mesma simulação quer abrir a que existe,
           // e não descobrir que ela existe e ter de procurá-la no histórico.
           <div className={styles.jaExiste} role="status">
-            <strong>Já existe uma simulação idêntica a esta.</strong> Mesmos
-            parâmetros, mesma unidade, e o cadastro não mudou desde então — o
-            resultado seria o mesmo.{' '}
+            <strong>Já existe uma simulação idêntica a esta.</strong> Mesmos parâmetros, mesma
+            unidade, e o cadastro não mudou desde então — o resultado seria o mesmo.{' '}
             <Link to={`/resultados/${jaExistente}`} onClick={() => setJaExistente(null)}>
               Abrir a simulação que já existe
             </Link>
