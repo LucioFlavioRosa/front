@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { useExcluirRun, useRuns } from '@/resultado/api/queries'
+import { useAlternarFavorita, useExcluirRun, useRuns } from '@/resultado/api/queries'
 import { RITMO_LISTA, chavesRodada, useStatusRodada } from '@/comum/api/rodada'
 import { decorrido, demorandoDemais } from '@/comum/domain/espera'
 import { Carregando, ErroCarga, Vazio } from '@/comum/components/Estado'
@@ -30,22 +30,29 @@ const ORDENS: { id: Ordem; rotulo: string }[] = [
 export function Historico() {
   const { data: runs, isPending, isError, error, refetch, isFetching } = useRuns()
   const excluir = useExcluirRun()
+  const favorita = useAlternarFavorita()
   const { askConfirm, toast } = useApp()
   const [busca, setBusca] = useState('')
   /** A rodada cujos metadados estão abertos. `null` = modal fechado. */
   const [detalhes, setDetalhes] = useState<RunResumo | null>(null)
   const [ordem, setOrdem] = useState<Ordem>('recentes')
+  const [soFavoritas, setSoFavoritas] = useState(false)
   useCrumbs([])
+
+  // Sobre TODAS as rodadas, e não sobre o resultado da busca: é a contagem que
+  // diz se vale ligar o filtro, e ela não pode mudar enquanto se digita.
+  const nFavoritas = (runs ?? []).filter((r) => r.favorita).length
 
   const lista = useMemo(() => {
     if (!runs) return []
     const q = busca.trim().toLowerCase()
     const filtradas = runs.filter(
       (r) =>
-        q === '' ||
-        r.nome.toLowerCase().includes(q) ||
-        r.runId.toLowerCase().includes(q) ||
-        r.unidadeNome.toLowerCase().includes(q),
+        (!soFavoritas || r.favorita) &&
+        (q === '' ||
+          r.nome.toLowerCase().includes(q) ||
+          r.runId.toLowerCase().includes(q) ||
+          r.unidadeNome.toLowerCase().includes(q)),
     )
     const ordenadas = [...filtradas]
     if (ordem === 'vpl')
@@ -54,7 +61,7 @@ export function Historico() {
       ordenadas.sort((a, b) => (b.metricas?.capex ?? -Infinity) - (a.metricas?.capex ?? -Infinity))
     else ordenadas.sort((a, b) => b.dataHora.localeCompare(a.dataHora))
     return ordenadas
-  }, [runs, busca, ordem])
+  }, [runs, busca, ordem, soFavoritas])
 
   // O destaque e sobre TODAS as rodadas, nao sobre o resultado do filtro: "maior
   // VPL" que muda quando voce digita na busca nao seria um destaque, seria ruido.
@@ -134,12 +141,41 @@ export function Historico() {
               </button>
             ))}
           </div>
+          {/* Filtro, e não ordenação: por isso fora do grupo acima. Ele é um
+              interruptor de um estado só — "só as favoritas" — e `aria-pressed`
+              diz ao leitor de tela que ele fica ligado, o que um botão comum não
+              diria. */}
+          <button
+            type="button"
+            className={soFavoritas ? styles.filtroAtivo : styles.filtro}
+            aria-pressed={soFavoritas}
+            onClick={() => setSoFavoritas((v) => !v)}
+          >
+            ★ Só favoritas
+            {nFavoritas > 0 && <span className={styles.filtroContagem}>{nFavoritas}</span>}
+          </button>
         </div>
       </div>
 
       {lista.length === 0 ? (
+        // A frase tem de dizer QUAL recorte esvaziou a lista. Com o filtro de
+        // favoritas ligado e a busca vazia, "não corresponde a ''" mandaria o
+        // usuário procurar erro de digitação num campo em branco.
         <p className={styles.semResultado}>
-          Nenhuma simulação corresponde a <strong>{busca}</strong>.
+          {soFavoritas && nFavoritas === 0 ? (
+            <>
+              Nenhuma simulação foi marcada como favorita. Use a estrela ao lado do nome para marcar
+              as que você quer reencontrar depois.
+            </>
+          ) : soFavoritas && busca ? (
+            <>
+              Nenhuma <strong>favorita</strong> corresponde a <strong>{busca}</strong>.
+            </>
+          ) : (
+            <>
+              Nenhuma simulação corresponde a <strong>{busca}</strong>.
+            </>
+          )}
         </p>
       ) : (
         <ul className={styles.lista}>
@@ -150,6 +186,17 @@ export function Historico() {
               melhorVpl={melhorVpl}
               onExcluir={() => pedirExclusao(r)}
               onAbrirDetalhes={() => setDetalhes(r)}
+              onAlternarFavorita={() =>
+                favorita.mutate(
+                  { runId: r.runId, favorita: !r.favorita },
+                  {
+                    // Só o toast fica no `mutate`: ele é da tela, e se ela sair
+                    // não há onde mostrá-lo. O que mexe no cache está no nível do
+                    // hook, e sobrevive à desmontagem.
+                    onError: () => toast('Não foi possível mudar a favorita.'),
+                  },
+                )
+              }
               excluindo={excluir.isPending && excluir.variables === r.runId}
             />
           ))}
@@ -165,6 +212,7 @@ function CardRodada({
   melhorVpl,
   onExcluir,
   onAbrirDetalhes,
+  onAlternarFavorita,
   excluindo,
 }: {
   run: RunResumo
@@ -172,6 +220,7 @@ function CardRodada({
   onExcluir: () => void
   /** Abre os metadados da rodada. Antes daqui se ia direto para o resultado. */
   onAbrirDetalhes: () => void
+  onAlternarFavorita: () => void
   excluindo: boolean
 }) {
   // TRES estados, e nao dois. A tela nasceu com "tem resultado" x "INFEASIBLE",
@@ -189,11 +238,25 @@ function CardRodada({
       <div className={styles.cabecalho}>
         <div className={styles.identidade}>
           <h2 className={styles.nome}>
-            {r.favorita && (
-              <span className={styles.favorita} title="Favorita">
-                ★
-              </span>
-            )}
+            {/* A estrela é o CONTROLE, e não um enfeite ao lado do nome. Ela
+                estava aqui como `<span>` desde sempre, mas nada a ligava: o
+                backend mandava `favorita: false` fixo, então ela nunca apareceu
+                em produção.
+                Botão próprio e fora do botão do nome — um dentro do outro é HTML
+                inválido, e o clique dispararia os dois. */}
+            <button
+              type="button"
+              className={r.favorita ? styles.favorita : styles.favoritaVazia}
+              aria-pressed={r.favorita}
+              aria-label={
+                r.favorita
+                  ? `Desmarcar "${r.nome || r.runId}" como favorita`
+                  : `Marcar "${r.nome || r.runId}" como favorita`
+              }
+              onClick={onAlternarFavorita}
+            >
+              {r.favorita ? '★' : '☆'}
+            </button>
             {/* O nome é o gatilho, e não o card inteiro: o card contém o botão
                 Excluir, e um botão dentro de outro é HTML inválido — o clique em
                 Excluir dispararia os dois. */}

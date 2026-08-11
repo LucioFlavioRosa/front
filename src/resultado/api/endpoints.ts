@@ -48,6 +48,16 @@ export const resultados = {
    */
   excluir: (runId: string) => api.del<void>(`${BASE}/${runId}`),
 
+  /**
+   * Favorita — a marca e DE QUEM PEDE, e nao um atributo da rodada.
+   *
+   * Os dois verbos sao idempotentes de proposito: marcar o que ja esta marcado e
+   * desmarcar o que nao esta sao sucesso, porque o estado pedido e o estado final.
+   * Duplo clique nao precisa de tratamento, e retry de rede tambem nao.
+   */
+  favoritar: (runId: string) => api.put<void>(`${BASE}/${runId}/favorita`),
+  desfavoritar: (runId: string) => api.del<void>(`${BASE}/${runId}/favorita`),
+
   /** Os 6 quadros do nivel global, num payload so. */
   painel: (runId: string) => api.get<PainelGlobal>(`${BASE}/${runId}/painel`),
 

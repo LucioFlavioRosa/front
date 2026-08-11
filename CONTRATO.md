@@ -227,9 +227,31 @@ Query opcional: `unidade`, `usuario`.
 
 ### 3.2 `DELETE /runs/{run_id}`
 
-Responde `204`. **A única mutação de todo o pacote de resultados.** Apaga o
-resultado; **não** toca no cadastro da unidade — a tela promete isso ao usuário,
-no texto do modal de confirmação.
+Responde `204`. Apaga o resultado; **não** toca no cadastro da unidade — a tela
+promete isso ao usuário, no texto do modal de confirmação. Apaga também as marcas
+de favorita daquela rodada, de todos os usuários (§3.2.1).
+
+### 3.2.1 Favorita
+
+`PUT /runs/{run_id}/favorita` marca; `DELETE /runs/{run_id}/favorita` desmarca. Os
+dois respondem `204`, sem corpo em nenhuma direção.
+
+**A marca é POR USUÁRIO, e não um atributo da rodada.** Ela pertence a quem está
+autenticado no request — nunca a um login vindo do corpo ou da querystring. A
+distinção importa por causa do `admin`, que vê as rodadas dos outros: se favoritar
+fosse coluna da rodada, a estrela dele apareceria na tela do dono.
+
+`favorita` em `GET /runs` (§3.1) é **de quem pediu a lista**, pela mesma razão.
+
+Os dois verbos são **idempotentes**: marcar o que já está marcado e desmarcar o
+que não está são `204`, porque o estado pedido é o estado final. Isso é o que
+permite ao front tratar a estrela de forma otimista — duplo clique e retry de rede
+não precisam de tratamento em nenhum dos dois lados.
+
+Não há checagem de posse na escrita, e é deliberado: favoritar só afeta a própria
+lista de quem pede. O que protege o dado dos outros é a **leitura** — `GET /runs`
+já recorta por posse e escopo, então uma rodada que a pessoa não pode ver não
+aparece para ela nem favoritada.
 
 ### 3.3 `GET /runs/{run_id}/meta` — KPIs do nível global
 

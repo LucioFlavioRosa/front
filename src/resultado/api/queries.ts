@@ -20,6 +20,7 @@
  */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { resultados } from '@/resultado/api/endpoints'
+import type { RunResumo } from '@/resultado/domain/resultado'
 
 const chavesResultado = {
   /** A lista do historico. Muda com exclusao — por isso nao e "para sempre". */
@@ -135,6 +136,54 @@ export function useExcluirRun() {
       qc.invalidateQueries({ queryKey: ['runs', 'lista'] })
       // O cache daquela rodada nao serve mais para nada.
       qc.removeQueries({ queryKey: ['runs', runId] })
+    },
+  })
+}
+
+/**
+ * Marca ou desmarca uma rodada como favorita.
+ *
+ * OTIMISTA, ao contrario do resto do pacote. A estrela e um clique que o usuario
+ * repete varias vezes seguidas enquanto organiza a lista, e esperar o servidor a
+ * cada uma faria a interface parecer emperrada. O risco e proporcional: se
+ * falhar, o que se perde e uma marca, e o `onError` a devolve ao estado anterior.
+ *
+ * Compare com criar/remover CTS no cadastro, que sao PESSIMISTAS: la o otimismo
+ * foi tentado e revertido, porque o rollback vivia no callback por chamada de
+ * `mutate` — que o TanStack nao dispara quando o observer perde os listeners — e
+ * ainda apagava o que o usuario digitasse durante o voo. Aqui o callback esta no
+ * NIVEL DO HOOK, entao ele roda mesmo se a tela desmontar, e nao ha nada que o
+ * usuario possa digitar em cima.
+ */
+export function useAlternarFavorita() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ runId, favorita }: { runId: string; favorita: boolean }) =>
+      favorita ? resultados.favoritar(runId) : resultados.desfavoritar(runId),
+
+    onMutate: async ({ runId, favorita }) => {
+      // Cancela refetch em voo: uma resposta antiga chegando depois desfaria a
+      // marca na tela, e o usuario veria a estrela piscar de volta sozinha.
+      await qc.cancelQueries({ queryKey: ['runs', 'lista'] })
+      const antes = qc.getQueriesData<RunResumo[]>({ queryKey: ['runs', 'lista'] })
+      for (const [chave, lista] of antes) {
+        if (!lista) continue
+        qc.setQueryData(
+          chave,
+          lista.map((r) => (r.runId === runId ? { ...r, favorita } : r)),
+        )
+      }
+      return { antes }
+    },
+
+    onError: (_e, _vars, ctx) => {
+      for (const [chave, lista] of ctx?.antes ?? []) qc.setQueryData(chave, lista)
+    },
+
+    // Reconcilia com o servidor no fim, dê certo ou não: a lista tem filtro por
+    // favorita, e o recorte depende deste dado estar correto.
+    onSettled: () => {
+      void qc.invalidateQueries({ queryKey: ['runs', 'lista'] })
     },
   })
 }
