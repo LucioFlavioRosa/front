@@ -40,8 +40,21 @@ export interface UnidadeResumo {
   /** Esparsas: nem toda sub-bacia tem CTS pareada, e zero e comum. */
   cts: number
   etes: number
-  /** Sub-bacia + CTS — o tamanho do problema que o motor vai resolver. */
+  /**
+   * Candidatas de CAPEX: `obrasAegea + obrasTerceiros`.
+   *
+   * E o mesmo criterio do motor (`necess = capex > 0 || tempo_execucao > 0`), e
+   * NAO o total de linhas da ficha. Ainda fica abaixo do que o motor conta: falta
+   * uma obra por ETE e, com `ETE_FASEADA`, os modulos de expansao — e esses
+   * dependem de parametro da RODADA, que nenhum numero por unidade alcanca.
+   */
   obras: number
+  /** `capex > 0` — investimento da Aegea. */
+  obrasAegea: number
+  /** `capex = 0` e prazo > 0: a obra acontece e ocupa a sequencia, outro paga. */
+  obrasTerceiros: number
+  /** `capex = 0` e prazo = 0: o elemento existe na ficha e nao gera obra. */
+  semObra: number
 }
 
 export interface Unidade {

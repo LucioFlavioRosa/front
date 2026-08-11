@@ -650,7 +650,20 @@ export function Simular() {
                 mostra. Antes vinha de um `tamanho` em `/prontidao` que o backend
                 nunca implementou, então a linha simplesmente não aparecia. */}
             {unidadeEscolhida?.resumo && (
-              <Item k="Tamanho" v={textoDoTamanho(unidadeEscolhida.resumo)} calc />
+              <>
+                <Item k="Tamanho" v={textoDoTamanho(unidadeEscolhida.resumo)} calc />
+                {/* As obras em linha própria, e com as três categorias: é o número
+                    que prediz o custo da rodada, e o único aqui em que "quanto"
+                    depende de quem paga.
+                    A presença de `obrasAegea` é conferida porque um servidor
+                    anterior a esta mudança manda `resumo` SEM as três — e aí
+                    `toLocaleString(undefined)` derrubaria a página pelo error
+                    boundary. Foi assim que o `tamanho` sumiu da tela um dia; a
+                    diferença é que ali a falha era silenciosa. */}
+                {unidadeEscolhida.resumo.obrasAegea !== undefined && (
+                  <Item k="Obras" v={textoDasObras(unidadeEscolhida.resumo)} calc />
+                )}
+              </>
             )}
             <Item k="Orçamento total" v={`R$ ${orc.total.toLocaleString('pt-BR')} Mi`} calc />
             <Item k="Janela de CAPEX" v={orc.janelaTexto} calc />
@@ -771,16 +784,34 @@ export function Simular() {
  * é o tipo de descuido que faz duvidar do resto dos números. Milhar com separador
  * pt-BR: `11525` custa a ler, `11.525` não. CTS não flexiona.
  */
-function textoDoTamanho({ cidades, sistemas, subBacias, cts, etes, obras }: UnidadeResumo): string {
-  const n = (v: number) => v.toLocaleString('pt-BR')
-  const plural = (v: number, um: string, muitos: string) => `${n(v)} ${v === 1 ? um : muitos}`
+const nPtBr = (v: number) => v.toLocaleString('pt-BR')
+const plural = (v: number, um: string, muitos: string) => `${nPtBr(v)} ${v === 1 ? um : muitos}`
+
+function textoDoTamanho({ cidades, sistemas, subBacias, cts, etes }: UnidadeResumo): string {
   return [
     plural(cidades, 'cidade', 'cidades'),
     plural(sistemas, 'sistema', 'sistemas'),
     plural(subBacias, 'sub-bacia', 'sub-bacias'),
-    `${n(cts)} CTS`,
+    `${nPtBr(cts)} CTS`,
     plural(etes, 'ETE', 'ETEs'),
-    plural(obras, 'obra', 'obras'),
+  ].join(' · ')
+}
+
+/**
+ * `"2.615 Aegea · 184 de terceiros · 1.560 sem obra"` — o que há de CAPEX.
+ *
+ * TRÊS categorias e não um total, porque um número só escondia os dois extremos.
+ * "11.525 obras" na Leste contava 4.830 linhas que não são obra nenhuma, e não
+ * distinguia o que a Aegea paga do que ocupa prazo por conta de terceiros.
+ *
+ * As três são exaustivas e não se sobrepõem: somadas, dão o total de componentes
+ * das fichas. As duas primeiras são o que o motor considera candidato.
+ */
+function textoDasObras({ obrasAegea, obrasTerceiros, semObra }: UnidadeResumo): string {
+  return [
+    `${nPtBr(obrasAegea)} Aegea`,
+    `${nPtBr(obrasTerceiros)} de terceiros`,
+    `${nPtBr(semObra)} sem obra`,
   ].join(' · ')
 }
 
