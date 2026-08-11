@@ -130,16 +130,16 @@ describe('bloqueio por cadastro incompleto', () => {
 })
 
 describe('avisos que não bloqueiam', () => {
-  it('ignorar as metas avisa, mas deixa rodar', async () => {
+  it('não há seletor de fonte das metas, e a tela diz a regra', async () => {
+    // O seletor "Ignorar as metas nesta rodada" saiu. Ele nunca funcionou, e
+    // quando o bug que o neutralizava foi corrigido ele passou a produzir rodada
+    // sem meta nenhuma — que a regra de negócio não admite.
     renderApp('/simular')
     await escolherUnidade()
-    fireEvent.change(await screen.findByLabelText(/Metas de cobertura/), {
-      target: { value: 'ignorar' },
-    })
 
-    expect(await screen.findByText(/não pode ser usado para aferir cumprimento/)).toBeTruthy()
-    const b = screen.getByRole('button', { name: 'Iniciar simulação' }) as HTMLButtonElement
-    expect(b.disabled).toBe(false)
+    expect(screen.queryByLabelText(/Metas de cobertura/)).toBeNull()
+    expect(await screen.findByText(/Sempre as do cadastro/)).toBeTruthy()
+    expect(screen.getByText(/fora da janela de CAPEX não são cobradas/)).toBeTruthy()
   })
 })
 

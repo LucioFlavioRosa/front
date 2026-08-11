@@ -646,7 +646,6 @@ tela mostra o nome técnico ao lado de cada controle).
 
   "foco_cobertura": 1.0, // 0 a 1
   "penalidade_cobertura": "meta+cobertura", // meta+cobertura | meta | ligacao
-  "metas_cobertura": "cadastro", // "cadastro" | null (null = IGNORAR as metas)
   "peso_cidade": { "Cabo Frio": 5 }, // {} quando não há prioridade
 
   "base_receita": "arrecadada", // arrecadada | faturada
@@ -705,9 +704,20 @@ Três detalhes que o front garante e o backend **não deve assumir**:
   verba em `orcamento`. Não existe campo de janela no modo cronograma.
 - **`teto_execucao_anual: null` ≠ 0.** `null` significa "usa o pico do
   cronograma"; `0` significaria "não pode executar nada".
-- **`metas_cobertura: null` significa ignorar as metas** nesta rodada — é uma
-  escolha legítima do usuário, e a tela avisa que o resultado não serve para
-  aferir cumprimento.
+- **NÃO existe `metas_cobertura` no corpo, e a ausência é a regra.** As metas de
+  cobertura vêm **sempre** da base — a fonte não é escolha de quem dispara a
+  rodada. O único descarte legítimo é por **ano**: meta fora da janela de CAPEX
+  não é cobrada. Com CAPEX até 2031, a meta de 2030 conta e a de 2032 não; com
+  CAPEX até 2034, uma meta de 2036 é descartada. Isso é responsabilidade do motor,
+  na avaliação, e o backend não precisa fazer nada a respeito — só **não** mandar
+  o campo, para o job usar o próprio default (carregar da planilha).
+
+  > Houve aqui um `metas_cobertura: "cadastro" | null`, com `null` significando
+  > ignorar as metas. Ele nunca funcionou: o backend colapsava as duas opções no
+  > mesmo valor e o motor carregava as metas de qualquer jeito. Corrigido o
+  > colapso, a opção passou a produzir rodada sem meta nenhuma — que a regra não
+  > admite. O campo saiu do contrato e o seletor saiu da tela. Um corpo que ainda
+  > mande o campo é **ignorado em silêncio**: o resultado é o que a regra pede.
 
 **Quem cunha o `run_id`.** Este endpoint, sempre. No pacote de produção o `run_id`
 é de quem insere a `controle.run_request`, não do job (`docs/01-visao-geral.md`), e

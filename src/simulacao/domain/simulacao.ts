@@ -14,7 +14,6 @@ export const MILHAO = 1_000_000
 
 export type ModoOrcamento = 'ano' | 'unico'
 export type Penalidade = 'meta+cobertura' | 'meta' | 'ligacao'
-export type FonteMetas = 'cadastro' | 'ignorar'
 export type BaseReceita = 'arrecadada' | 'faturada'
 export type CurvaAdocao = 'scurve' | 'linear'
 
@@ -44,7 +43,6 @@ export interface EstadoSimulacao {
   anosExtra: string
   foco: string
   penalidade: Penalidade
-  fonteMetas: FonteMetas
   pesos: PesoCidade[]
   baseReceita: BaseReceita
   curvaAdocao: CurvaAdocao
@@ -93,7 +91,6 @@ export function estadoInicial(): EstadoSimulacao {
     anosExtra: '3',
     foco: '1',
     penalidade: 'meta+cobertura',
-    fonteMetas: 'cadastro',
     pesos: [],
     baseReceita: 'arrecadada',
     curvaAdocao: 'scurve',
@@ -361,13 +358,6 @@ export function validar(e: EstadoSimulacao, prontidao: Prontidao | undefined): I
     })
   }
 
-  if (e.fonteMetas === 'ignorar') {
-    itens.push({
-      severidade: 'avisa',
-      texto:
-        'As metas do contrato serão ignoradas nesta rodada — o resultado não pode ser usado para aferir cumprimento.',
-    })
-  }
   if (e.eteFixo && e.eteFaseada) {
     itens.push({
       severidade: 'avisa',
@@ -406,7 +396,6 @@ export interface CorpoNovaRodada {
   anos_extra_conclusao: number
   foco_cobertura: number
   penalidade_cobertura: Penalidade
-  metas_cobertura: 'cadastro' | null
   peso_cidade: Record<string, number>
   base_receita: BaseReceita
   curva_adocao: CurvaAdocao
@@ -428,8 +417,6 @@ export function corpoDaRodada(e: EstadoSimulacao): CorpoNovaRodada {
     anos_extra_conclusao: Math.max(0, Math.round(num(e.anosExtra))),
     foco_cobertura: Math.min(1, Math.max(0, num(e.foco))),
     penalidade_cobertura: e.penalidade,
-    // `null` = ignorar as metas nesta rodada; 'cadastro' = usar a aba do cadastro.
-    metas_cobertura: e.fonteMetas === 'cadastro' ? 'cadastro' : null,
     peso_cidade: Object.fromEntries(
       e.pesos
         .filter((p) => p.cidade !== '' && p.peso !== '')

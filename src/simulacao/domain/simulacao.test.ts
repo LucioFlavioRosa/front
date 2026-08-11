@@ -204,12 +204,12 @@ describe('validar — o que bloqueia e o que só avisa', () => {
     expect(bloqueado(validar(e, PRONTA))).toBe(true)
   })
 
-  it('ignorar as metas AVISA, não bloqueia — é escolha legítima', () => {
-    // Bloquear uma escolha incomum treina o usuario a ignorar avisos.
-    const e = { ...estadoInicial(), unidadeId: 'u1', fonteMetas: 'ignorar' as const }
-    const c = validar(e, PRONTA)
-    expect(bloqueado(c)).toBe(false)
-    expect(c.some((x) => x.severidade === 'avisa' && x.texto.includes('metas'))).toBe(true)
+  it('não há mais aviso sobre metas — não há mais o que escolher', () => {
+    // O checklist avisava "as metas serão ignoradas nesta rodada". A escolha que
+    // gerava esse aviso saiu: as metas vêm sempre da base, e o único descarte é
+    // por ano de CAPEX, que o motor faz sozinho e não é decisão de quem dispara.
+    const c = validar({ ...estadoInicial(), unidadeId: 'u1' }, PRONTA)
+    expect(c.some((x) => x.texto.includes('metas'))).toBe(false)
   })
 
   it('ETE faseada + módulos fixos avisa da contradição', () => {
@@ -253,9 +253,11 @@ describe('corpoDaRodada', () => {
     expect(corpoDaRodada(e).teto_execucao_anual).toBeNull()
   })
 
-  it('metas ignoradas viram null, como no notebook', () => {
-    const e = { ...estadoInicial(), unidadeId: 'u1', fonteMetas: 'ignorar' as const }
-    expect(corpoDaRodada(e).metas_cobertura).toBeNull()
+  it('o corpo NÃO carrega metas_cobertura — a fonte não é escolha da rodada', () => {
+    // Ausente, e não `'cadastro'`: chave que não viaja é o jeito de o job usar o
+    // proprio default (carregar da base). Mandar um valor fixo daria a impressão
+    // de que existe alternativa.
+    expect('metas_cobertura' in corpoDaRodada({ ...estadoInicial(), unidadeId: 'u1' })).toBe(false)
   })
 
   it('descarta prioridade de cidade incompleta', () => {

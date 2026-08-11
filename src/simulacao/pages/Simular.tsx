@@ -450,17 +450,24 @@ export function Simular() {
             <Ajuda>{AJUDA_PENALIDADE[e.penalidade]}</Ajuda>
           </div>
 
+          {/* NÃO HÁ ESCOLHA DE FONTE DAS METAS, e a ausência é a regra.
+              As metas vêm sempre da base. O único descarte legítimo é por ANO: meta
+              fora da janela de CAPEX não é cobrada — com CAPEX até 2031, a meta de
+              2030 conta e a de 2032 não. Isso o motor já faz sozinho
+              (`otimizador_capex_v62.py`, na avaliação: `idx >= anos_capex → continue`),
+              e não é decisão de quem dispara a rodada.
+              Houve aqui um seletor "Ignorar as metas nesta rodada". Ele nunca
+              funcionou — o backend colapsava as duas opções no mesmo valor, e o
+              motor carregava as metas de qualquer jeito. Quando o colapso foi
+              corrigido, a opção passou a produzir rodada sem meta nenhuma, que a
+              regra não admite. Saiu inteira, em vez de virar um controle que só
+              tem uma escolha certa. */}
           <div>
-            <Rotulo texto="Metas de cobertura" tecnico="METAS_COBERTURA" htmlFor="sim-metas" />
-            <select
-              id="sim-metas"
-              className={styles.select}
-              value={e.fonteMetas}
-              onChange={(ev) => set('fonteMetas', ev.target.value as 'cadastro' | 'ignorar')}
-            >
-              <option value="cadastro">Usar as metas do cadastro</option>
-              <option value="ignorar">Ignorar as metas nesta rodada</option>
-            </select>
+            <Rotulo texto="Metas de cobertura" tecnico="METAS_COBERTURA" />
+            <p className={styles.metasNota}>
+              Sempre as do cadastro. Metas em anos fora da janela de CAPEX não são cobradas nesta
+              rodada.
+            </p>
           </div>
 
           <div>
@@ -677,11 +684,7 @@ export function Simular() {
               v={`${focoV.toFixed(2).replace('.', ',')} · ${rotuloFoco(focoV)}`}
             />
             <Item k="Penalidade" v={e.penalidade} />
-            <Item
-              k="Metas"
-              v={e.fonteMetas === 'cadastro' ? 'do cadastro' : 'ignoradas'}
-              alerta={e.fonteMetas === 'ignorar'}
-            />
+            <Item k="Metas" v="do cadastro" />
             <Item
               k="Prioridade de cidade"
               v={e.pesos.length ? `${e.pesos.length} cidade(s)` : 'nenhuma'}
