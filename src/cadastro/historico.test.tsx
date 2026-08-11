@@ -3,16 +3,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, screen, within } from '@testing-library/react'
 
 /**
- * O HISTÓRICO DE UMA FICHA — a tela que faltava para a trilha existir de verdade.
+ * O HISTÓRICO DE UMA FICHA.
  *
- * A trilha era gravada desde a primeira migração e nunca foi lida por ninguém:
- * o único `SELECT` nela, em todo o backend, servia para deduplicar. Ou seja, o
- * registro crescia e responder "quem mudou este preço em julho" exigia SQL na
- * mão — auditoria que só o DBA alcança não é auditoria do produto.
- *
- * Estes casos cobrem o caminho inteiro do lado da tela: a linha "última
- * alteração" abre o painel, o painel lê do servidor, e o que ele mostra
- * distingue as coisas que a auditoria existe para distinguir.
+ * Estes casos cobrem o caminho da tela: a linha "última alteração" abre o painel,
+ * o painel lê do servidor, e o que ele mostra distingue as coisas que a auditoria
+ * existe para distinguir — correção de preenchimento, criação de remoção.
  */
 
 vi.mock('@/comum/api/client', async (importOriginal) => {

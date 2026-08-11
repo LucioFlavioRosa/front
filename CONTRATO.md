@@ -53,14 +53,15 @@ O `409` aparece **só na simulação**: tentativa de reexecutar uma rodada já
 publicada (§4.5). O usuário precisa entender **o que** conflitou, e a única fonte
 é o texto que vem no corpo.
 
-O outro `409`, o de edição de cadastro, **saiu** — o servidor não recusa mais a
-gravação de quem leu a ficha antes de um colega salvar. No lugar dele a ficha
-carrega `atualizadoEm`/`atualizadoPor` e a tela mostra quem mexeu por último
-(`DEPLOY.md` §3). É uma troca, não uma remoção: barrar virou avisar.
+A **edição de cadastro não responde 409**: o servidor aceita a gravação de quem
+leu a ficha antes de um colega salvar. O sinal de concorrência é a auditoria —
+toda ficha carrega `atualizadoEm`/`atualizadoPor`, e a tela mostra quem mexeu por
+último (`DEPLOY.md` §3).
 
 Uma resposta 2xx que **não** seja JSON válido é tratada como erro. Isso é
-proposital: proxy devolvendo HTML já quebrou este app antes, e falhar cedo é
-melhor que um `undefined` aparecendo três telas adiante.
+proposital: proxy que devolve a página de login em HTML com status 200 é um modo
+de falha real, e falhar cedo é melhor que um `undefined` aparecendo três telas
+adiante.
 
 ---
 

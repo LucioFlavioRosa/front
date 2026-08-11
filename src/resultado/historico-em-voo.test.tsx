@@ -10,14 +10,10 @@ import { cleanup, fireEvent, screen, within } from '@testing-library/react'
  * acompanhamento perdia a rodada de vista, e a tela mais operacional do produto
  * era cega justamente para o estado operacional.
  *
- * A mudança quebrou a tela inteira, e o modo de falha vale registrar: o card lia
- * `r.parametros.janelaCapex` incondicionalmente, e rodada em voo não tem
- * `parametros` — eles saem de `otim_meta`, escrita só na publicação. Resultado:
- * `Cannot read properties of undefined` e o error boundary comendo a página.
- *
- * Eu tinha percebido que a forma da resposta mudou (dois smokes do backend
- * quebraram e eu os consertei) e escrevi no commit que "o front tem a mesma
- * armadilha" — sem ir verificar. Este arquivo é o que faltava naquele momento.
+ * Rodada em voo NÃO tem `parametros` nem `metricas`: os dois saem de `otim_meta`,
+ * escrita só na publicação. O card precisa renderizar esses estados sem tentar
+ * montar bloco de resultado — ler `r.parametros.janelaCapex` sem guarda derruba a
+ * página inteira pelo error boundary.
  */
 /**
  * As tres ficam em FIXTURE, e nao numa constante aqui, porque `vi.mock` e HOISTED

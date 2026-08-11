@@ -88,38 +88,28 @@ o valor recém-gravado e a origem Databricks se perderia.
 Voltar um campo ao valor do servidor faz a ficha deixar de estar suja. Quem
 responde isso é a comparação de **conteúdo** (`assinatura` em `state/fichas.ts`).
 
-Havia aqui um segundo mecanismo: o mapa de `overrides` do cliente, do qual a
-reversão apagava a entrada. Ele saiu junto com a trilha montada no front — o
-servidor calcula a diferença agora —, e com ele saiu a razão de existir do
-mecanismo: a assinatura não inclui mais trilha nenhuma.
+A assinatura mede só conteúdo — nenhuma trilha de alteração entra nela, porque a
+trilha é do servidor.
 
-Nas **obras** isso mudou: elas não têm mais obra-base para comparar, e o mapa
-carrega a obra inteira como o servidor a mandou. Apagar chave dali criaria buraco
-— o campo voltaria vazio na tela e o `PUT` gravaria NULL numa coluna que tinha
-valor. O "digitou de volta o original" continua funcionando sem truque: valor
-igual, assinatura igual, ficha limpa.
+Nas **obras** não há obra-base para comparar: o mapa carrega a obra inteira como
+o servidor a mandou, e nenhuma chave é apagada dele. Apagar criaria buraco — o
+campo voltaria vazio na tela e o `PUT` gravaria NULL numa coluna que tinha valor.
+O "digitou de volta o original" funciona sem truque: valor igual, assinatura
+igual, ficha limpa.
 → `cadastroReducer.test.ts`, bloco "reverter uma edição desfaz o registro dela".
 
 ### 4. Callback que mexe no store fica no nível do hook
 
-> Esta seção descrevia a **criação de CTS**, que não existe mais: a CTS é nó da
-> topologia, e criá-la pela tela produzia uma ficha que o motor nunca carrega
-> (ver `DEPLOY.md` §3). O teste citado — `escrita.test.tsx`, bloco "criar CTS" —
-> foi removido junto. A regra abaixo sobreviveu ao fluxo que a originou, e é o
-> motivo de a seção continuar aqui.
-
-A regra veio de uma criação otimista que foi implementada e revertida: o rollback
-vivia no callback por chamada de `mutate`, que o TanStack **não dispara** quando o
-observer perde os listeners — o usuário sai da tela antes da resposta e o rollback
-nunca roda. E, quando rodava, apagava o que a pessoa tivesse digitado durante o voo.
+O callback por chamada de `mutate` **não dispara** quando o observer perde os
+listeners — o usuário sai da tela antes de a resposta chegar. Um rollback ali
+nunca roda; e quando roda, apaga o que a pessoa digitou durante o voo.
 
 Daí: **callback que mexe no store fica no nível do hook**
 (`useMutation({ onSuccess })` em `api/mutations.ts`); callback que só mostra toast
 pode ficar no `mutate(vars, {...})` da página.
 
 É a mesma razão pela qual a **auditoria** devolvida pelo PUT (`atualizadoEm`,
-`atualizadoPor`) volta ao store por `onSuccess` do hook, e não pela página. Ela
-substituiu a `versao`, que fazia o mesmo caminho quando havia 409 de ficha.
+`atualizadoPor`) volta ao store por `onSuccess` do hook, e não pela página.
 → `escrita.test.tsx`, bloco "o ciclo da auditoria".
 
 ### 5. O rascunho entra **no lugar** do seed
@@ -148,9 +138,7 @@ versão anterior" e "rascunho feito sobre dado que já mudou".
 `state/recarregar.ts`: apaga o rascunho → **aguarda** `resetQueries` → sobe a
 geração, que entra na `key` do `CadastroProvider` e o remonta do zero. É a única
 forma de trocar dado já semeado (ver item 1). Um refetch sozinho não faria nada.
-Usado quando o rascunho recuperado é mais velho que o servidor. Era usado também
-no 409 de ficha, que saiu (R6) — o gatilho do rascunho é o que restou, e é o que
-os testes exercitam.
+O gatilho é um só: rascunho recuperado mais velho que o dado do servidor.
 
 ### 7. A régua da cidade muda o que a ficha cobra
 
@@ -231,7 +219,7 @@ Pontos que passaram por revisão automatizada, mas que merecem seu olho:
    está testado, mas é o candidato natural a ser dividido por fatia. Não fiz
    antes da revisão para não trocar risco conhecido por risco novo.
 2. **`GrupoCts.tsx` (586 linhas) espelha `GrupoSubBacias.tsx`** — a parte
-   compartilhada já saiu (`ObrasTable`, `CamposPopulacao`, `CAMPOS_DB`), mas a
+   compartilhada já está extraída (`ObrasTable`, `CamposPopulacao`, `CAMPOS_DB`), mas a
    casca das telas ainda é paralela. Uma casca comum é possível; custa alinhar
    cinco telas.
 3. **Rerender amplo**: o contexto entrega o estado inteiro, então cada tecla

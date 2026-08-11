@@ -5,27 +5,19 @@
  * São coisas diferentes: `otim_meta.params_extra` guarda cinco chaves que o job
  * escolheu devolver, e o pedido é o que a pessoa mandou pela tela.
  *
- * ## Por que existe, se já há `parametros`
- *
- * `parametros` traz seis campos tipados — os que o card do histórico mostra e a
- * tela sabe formatar. O formulário de simulação tem **mais de vinte**, e os
- * outros dezessete não apareciam em lugar nenhum depois de a rodada existir:
- * penalidade de cobertura, curva de adoção, peso por cidade, anos extras de
- * conclusão, teto de execução, solver, workers.
- *
- * Quem abre "o que foi usado nesta simulação" está tentando reproduzir ou
- * explicar um resultado. Seis de vinte e três responde a pergunta errada.
+ * Complementa `parametros`, que traz seis campos tipados — os que o card do
+ * histórico mostra. O formulário aceita mais de vinte, e quem abre "o que foi
+ * usado nesta simulação" está tentando reproduzir ou explicar um resultado.
  */
 export type Pedido = Record<string, unknown>
 
 /**
  * Rótulos das chaves do pedido.
  *
- * Os nomes técnicos são deliberados no formulário — a tela de simulação mostra
- * `FOCO_COBERTURA` ao lado de cada controle porque a rastreabilidade com o
- * notebook foi requisito de handoff. Aqui eles ganham o rótulo humano ao lado,
- * e não no lugar: quem compara com o notebook precisa do técnico, quem lê o
- * histórico precisa do outro.
+ * A tela de simulação mostra o nome técnico ao lado de cada controle, porque a
+ * rastreabilidade com o notebook é requisito. Aqui o rótulo humano acompanha o
+ * técnico, e não o substitui: quem compara com o notebook precisa de um, quem lê
+ * o histórico precisa do outro.
  */
 const ROTULOS: Record<string, string> = {
   ORCAMENTO: 'Orçamento por ano',
@@ -99,11 +91,10 @@ export function valorDoParametro(chave: string, v: unknown): string {
 /**
  * As chaves do pedido em ordem de leitura, e não a do JSON.
  *
- * A ordem de um objeto JSON não significa nada, e sem isto o modal listaria
- * `WORKERS` antes de `ORCAMENTO` só porque o servidor serializou assim. Aqui a
- * ordem é a do formulário: primeiro o que define o cenário, depois o que ajusta
- * a execução. Chave desconhecida vai para o fim, em ordem alfabética — ela
- * existe (o job pode ganhar parâmetro novo) e esconder seria pior.
+ * A ordem de um objeto JSON não significa nada. Esta é a do formulário: primeiro
+ * o que define o cenário, depois o que ajusta a execução. Chave desconhecida vai
+ * para o fim, em ordem alfabética — o job pode ganhar parâmetro novo, e escondê-lo
+ * seria pior que mostrá-lo sem rótulo.
  */
 const ORDEM = [
   'ORCAMENTO',

@@ -348,7 +348,7 @@ Três regras, e as três importam:
    gravada pela tela não ganha data inventada — as 4.850 sub-bacias vieram da
    planilha, e a coluna só existe desde a migração `006_auditoria_cadastro.sql`.
 
-Isto **substituiu o 409 de edição de cadastro** (R6): ver §6.
+A escrita de ficha **não tem controle otimista** (R6): ver §6.
 
 > **Não há criar nem remover CTS.** A CTS é um **nó do sistema**, como a sub-bacia:
 > a posição dela vem da topologia (`sistema_topologia`), com jusante próprio. O motor
@@ -382,11 +382,11 @@ um nó sem ficha só existe aqui, porque não há ficha para editar. Servir a li
 sem isso era o comportamento anterior — e foi assim que duas CTS ficaram meio
 existindo no cadastro real sem ninguém notar.
 
-**`overrides` viaja junto com a ficha de propósito**: é a trilha de auditoria de
-cada dado do Databricks sobrescrito (campo, valor antigo, valor novo, autor,
-timestamp). Gravar na mesma transação do dado evita dado corrigido sem trilha.
-Só entra na trilha o que **de fato** difere do valor do servidor: voltar o campo
-ao valor original apaga o registro, então "X virou X" não chega até vocês.
+**A trilha de auditoria não viaja no corpo do PUT.** O servidor compara o que
+está gravado com o que chega e registra a diferença na mesma transação do dado —
+dado corrigido sem trilha fica impossível. Só entra o que **de fato** difere:
+salvar sem mudar nada grava zero linhas (`alteracoesGravadas: 0` é resposta
+legítima). Para ler a trilha, `GET /unidades/:uid/alteracoes`, acima.
 
 Duas expectativas do lado da resposta:
 
@@ -484,23 +484,21 @@ senão um refetch de fundo apagaria o que a pessoa está digitando.
 
 ## 6. Pendências conhecidas (não bloqueiam o deploy, mas o backend precisa saber)
 
-- **Concorrência**: duas pessoas na mesma ficha continuam podendo sobrescrever
-  uma à outra, e **sem aviso no momento da gravação**. Houve uma proteção — a
-  `versao` da ficha viajava no PUT e o servidor respondia 409 —, e ela saiu por
-  decisão do dono do produto (R6): comparava o hash da ficha INTEIRA, então quem
-  editava um campo perdia o trabalho porque um colega editara outro.
+- **Concorrência**: duas pessoas na mesma ficha podem sobrescrever uma à outra,
+  e **sem aviso no momento da gravação**. É decisão do dono do produto (R6):
+  barrar por hash da ficha INTEIRA fazia quem editava um campo perder o trabalho
+  porque um colega editara outro.
 
-  A compensação é a auditoria visível: toda ficha traz `atualizadoEm` e
-  `atualizadoPor`, e a tela mostra "última alteração: ana@aegea, 10/08 14:32". O
-  sinal passou a ser posterior e legível, em vez de imediato e cego. Se um dia o
-  conflito de verdade precisar ser barrado, o caminho não é ressuscitar o hash da
-  ficha inteira — é comparar por CAMPO.
+  O sinal é posterior e legível, e não imediato e cego: toda ficha traz
+  `atualizadoEm`/`atualizadoPor`, a tela mostra "última alteração: ana@aegea,
+  10/08 14:32", e o painel de histórico abre por ela. Se um dia o conflito
+  precisar ser barrado, o caminho é comparar por CAMPO — não o hash da ficha.
 - **A hierarquia não tem gravação.** A tela do Grupo 01 deixa corrigir dado do
-  Databricks (e monta a trilha de override), mas não há endpoint para mandar
-  isso — a tela avisa o usuário, e as correções ficam só no rascunho da aba.
-  Quando existir um `PUT /unidades/:uid/hierarquia` (corpo: a hierarquia inteira
-  - `overrides`), ela entra como as outras: vira uma ficha em
-    `src/cadastro/state/fichas.ts`, entra em `sujas` e ganha o botão Salvar.
+  Databricks, mas não há endpoint para mandar isso — a tela avisa o usuário, e as
+  correções ficam só no rascunho da aba. Quando existir um
+  `PUT /unidades/:uid/hierarquia` (corpo: a hierarquia inteira), ela entra como
+  as outras: vira uma ficha em `src/cadastro/state/fichas.ts`, entra em `sujas` e
+  ganha o botão Salvar.
 - **Importar planilha** é um stub: o botão no hub só mostra um aviso.
 - **O rascunho é da aba**: fechar a aba (não recarregar) descarta o que não foi
   salvo. O aviso do navegador ao fechar é o que existe hoje contra isso.

@@ -1,26 +1,12 @@
 /**
- * QUEM MEXEU NESTA FICHA, E QUANDO — o que substituiu o 409 de ficha.
+ * QUEM MEXEU NESTA FICHA, E QUANDO.
  *
  * As quatro fichas do cadastro (sub-bacia, CTS, ETE, cidade) carregam estes dois
  * campos, e por isso eles moram aqui em vez de repetidos nos quatro tipos.
  *
- * ## Por que existe
- *
- * Aqui havia `versao`: a impressao do conteudo que o `GET` entregava, o corpo
- * devolvia no `PUT`, e o servidor comparava para responder 409 quando alguem
- * tinha gravado no intervalo. O dono do produto trocou uma coisa pela outra (R6):
- * em vez de BARRAR a gravacao, MOSTRAR quem mexeu.
- *
- * O 409 comparava o hash da ficha INTEIRA. Quem abriu de manha e salvou a tarde
- * perdia o trabalho por causa de um colega que mexeu em OUTRO campo da mesma
- * ficha — ou seja, cobrava o preco de um conflito onde quase nunca havia um.
- *
- * ## O que se perde, dito sem enfeite
- *
- * Duas pessoas na mesma ficha continuam podendo sobrescrever uma a outra, e
- * agora sem aviso NO MOMENTO da gravacao. O sinal passou a ser posterior e
- * legivel. Os caminhos de sobrescrita estao mapeados no backend
- * (`migracoes/006_auditoria_cadastro.sql`).
+ * A escrita de cadastro nao tem controle otimista: duas pessoas na mesma ficha
+ * podem sobrescrever uma a outra, sem aviso no momento da gravacao. Este carimbo
+ * e o sinal que o produto da sobre isso — posterior, e legivel.
  *
  * ## Duas regras que valem para os dois campos
  *
@@ -49,15 +35,12 @@ export interface Auditoria {
 /**
  * Extrai a auditoria de uma resposta do servidor — E SO ELA.
  *
- * Existe porque a resposta do `PUT` traz mais coisas (`id`, `overridesGravados`),
- * e espalhar o objeto inteiro dentro da ficha a contaminaria com campos que nao
- * sao dela. Foi o que aconteceu na primeira versao desta mudanca: a ficha
- * ganhava `overridesGravados`, a auditoria NAO era trocada, e a tela continuava
- * creditando a gravacao a quem tinha salvado antes.
+ * A resposta do `PUT` traz mais campos (`id`, `alteracoesGravadas`), e espalhar o
+ * objeto inteiro dentro da ficha a contaminaria com o que nao e dela.
  *
- * Campo ausente vira vazio, e nao fica com o valor anterior: servidor que aceita
- * e nao diz quem gravou nos deixa sem saber, e "nao sei" e uma afirmacao mais
- * honesta que o nome da pessoa errada.
+ * Campo ausente vira vazio, e nao mantem o valor anterior: servidor que aceita e
+ * nao diz quem gravou nos deixa sem saber, e "nao sei" e mais honesto que o nome
+ * da pessoa errada.
  */
 export function auditoriaDe(resposta: Partial<Auditoria> | undefined): Auditoria {
   return {

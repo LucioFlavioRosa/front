@@ -11,25 +11,19 @@ import styles from './DetalhesDaSimulacao.module.css'
 /**
  * OS METADADOS DA SIMULAÇÃO, antes de abrir o resultado.
  *
- * Antes, clicar numa rodada do histórico levava direto para o resultado. Isso
- * funciona quando você sabe qual rodada quer; não funciona quando a lista tem
- * dez cenários da mesma unidade e a pergunta é "qual deles era o de orçamento
- * apertado?". A resposta estava no pedido, e o pedido não aparecia em lugar
- * nenhum — só seis dos vinte e três parâmetros chegavam à tela.
- *
- * O modal responde antes de navegar: quem fez, quando, em que unidade, e com que
- * variáveis. Dois caminhos de saída, e nada mais — abrir o resultado, ou fechar.
+ * Responde "qual dessas rodadas é a que eu quero?" sem sair da lista: quem fez,
+ * quando, em que unidade, e com que variáveis ela foi pedida. Duas saídas, e
+ * nada mais — abrir o resultado, ou fechar.
  *
  * ## Acessibilidade
  *
- * Segue o `ConfirmModal`, e pelas mesmas razões: `Esc` fecha, o foco entra no
- * card, fica preso enquanto ele estiver aberto e volta ao elemento de origem ao
- * fechar. Sem o retorno de foco, o teclado volta ao início da página — e a lista
- * de rodadas é longa.
+ * Segue o `ConfirmModal`: `Esc` fecha, o foco entra no card, fica preso enquanto
+ * ele estiver aberto e volta ao elemento de origem ao fechar. Sem o retorno de
+ * foco, o teclado volta ao início da página — e a lista de rodadas é longa.
  *
  * O foco inicial vai em **Fechar**, e não em "Ver resultados": o modal é uma
- * parada para ler, e a tecla Enter logo após abrir não pode navegar para fora
- * antes de a pessoa ter lido o que pediu para ver.
+ * parada para ler, e Enter logo após abrir não pode navegar para fora antes de a
+ * pessoa ter lido o que pediu para ver.
  */
 export function DetalhesDaSimulacao({ run, onFechar }: { run: RunResumo; onFechar: () => void }) {
   const navigate = useNavigate()

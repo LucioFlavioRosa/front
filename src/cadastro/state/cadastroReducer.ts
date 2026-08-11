@@ -63,7 +63,8 @@ export interface State {
    * regua decide se os campos de populacao existem e contam pendencia.
    */
   cidadeDaSub: Record<string, string> | null
-  /** Snapshots imutaveis do servidor — usados como valorAntigo dos overrides. */
+  /** Snapshots imutaveis do servidor — a referencia de "o que veio" para
+   *  comparar contra o que esta em edicao. */
   originalSubs: Record<string, SubBacia> | null
   originalCtss: Record<string, Cts> | null
   originalHier: Hier | null
@@ -140,47 +141,24 @@ export type Action =
   | { type: 'FICHA_SALVA'; chave: ChaveFicha; assinatura: string; auditoria?: Partial<Auditoria> }
 
 /**
- * A TRILHA SAIU DAQUI, e o lugar dela agora e o servidor.
- *
- * Havia aqui `withOverride`, que montava um registro `{campo, valorAntigo,
- * valorNovo, autor, at}` a cada edicao de campo do Databricks, guardava num mapa
- * e o mandava no corpo do `PUT`. Tres coisas estavam erradas nisso:
- *
- *  1. **Auditoria montada pelo auditado.** Um bug neste arquivo e o rastro sumia
- *     sem sinal nenhum — e o servidor gravava o que chegasse.
- *  2. **Cobria um quarto da ficha.** So o bloco do Databricks virava override;
- *     `params`, obras, cidade e ETE nunca geraram linha.
- *  3. **O `valorAntigo` era o do SEED**, e nao o ultimo gravado. Duas edicoes na
- *     mesma sessao gravavam `A -> B` e depois `A -> C`, quando o segundo salto
- *     foi `B -> C`.
- *
- * O servidor compara o que esta gravado com o que chega
- * (`cadastro_escrita.diferencas`), o que resolve as tres de uma vez. Aqui ficou
- * so o que e mesmo do cliente: o estado da tela.
+ * A trilha de auditoria e do SERVIDOR: ele compara o que esta gravado com o que
+ * chega no `PUT` (`cadastro_escrita.diferencas`). Este reducer cuida so do estado
+ * da tela, e o corpo da requisicao nao carrega registro de mudanca nenhum.
  */
 
 /**
  * Grava o campo digitado na obra daquele indice.
  *
- * Antes esta funcao APAGAVA o campo quando o valor digitado era igual ao da
- * obra-base, e apagava o indice inteiro quando nao sobrava campo nenhum. Fazia
- * sentido enquanto `obrasOverride` era mesmo um override: o que nao estivesse la
- * seria completado pela base literal, dos dois lados.
+ * O mapa carrega a obra INTEIRA, como o servidor a mandou — nenhum campo e
+ * apagado dele. Apagar criaria buraco: o campo voltaria vazio na tela, contaria
+ * pendencia, e o `PUT` gravaria NULL numa coluna que tinha valor.
  *
- * As bases sairam (R1/R2). O mapa agora carrega a obra INTEIRA, como o servidor
- * a mandou, e apagar campo dele nao economizaria payload: criaria buraco. O
- * campo voltaria vazio na tela, contaria pendencia e o `PUT` gravaria NULL numa
- * coluna que tinha valor.
+ * "Digitou de volta o valor original" nao precisa de tratamento: valor igual
+ * deixa o objeto identico ao que veio, e a comparacao de conteudo (`assinatura`
+ * em `state/fichas.ts`) e quem responde se a ficha esta suja.
  *
- * E o "digitou de volta o valor original" continua funcionando sem truque
- * nenhum: se o valor e o mesmo, o objeto fica identico ao que veio, a assinatura
- * bate com a de `salvas`, e a ficha nao aparece como suja. Quem decide isso e a
- * comparacao de conteudo (`assinatura` em `state/fichas.ts`) — nunca foi preciso
- * apagar chave para consegui-lo.
- *
- * O indice que nao existe no mapa continua nao existindo: a tela so renderiza as
- * obras que vieram, entao nao ha como digitar num indice ausente. Cria-lo aqui
- * seria a base literal de volta, uma linha por vez.
+ * Indice que nao existe no mapa nao e criado. A tela so renderiza as obras que
+ * vieram do servidor, e criar uma aqui seria inventar linha de cadastro.
  */
 function withObraOverride(
   override: Record<string, Partial<Obra>>,

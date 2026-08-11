@@ -5,14 +5,13 @@ import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/re
 /**
  * OS METADADOS DA SIMULAÇÃO, antes de abrir o resultado.
  *
- * Antes, clicar numa rodada levava direto ao resultado. Isso funciona quando você
- * sabe qual rodada quer; não funciona quando a lista tem dez cenários da mesma
- * unidade e a pergunta é "qual era o de orçamento apertado?".
+ * Clicar numa rodada do histórico abre o modal, e não o resultado: ele responde
+ * "qual dessas rodadas é a que eu quero?" com quem fez, quando, em que unidade e
+ * com que variáveis ela foi pedida.
  *
- * A resposta estava no pedido, e o pedido não chegava à tela: `parametros` traz
- * seis campos, e o formulário de simulação tem mais de vinte. Coisas como
- * `PENALIDADE_COBERTURA`, `CURVA_ADOCAO` e `WORKERS` não apareciam em lugar
- * nenhum depois de a rodada existir.
+ * As variáveis vêm do PEDIDO (`controle.run_request.params`), que é mais largo
+ * que os seis campos tipados do card — `PENALIDADE_COBERTURA`, `CURVA_ADOCAO` e
+ * `WORKERS` só existem lá.
  */
 
 vi.mock('@/comum/api/client', async (importOriginal) => {

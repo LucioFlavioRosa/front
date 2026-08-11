@@ -121,7 +121,7 @@ const COLUNAS_PARAMS = ['preco', 'tarr', 'ramp', 'vaz', 'vazInd', 'pot', 'popU',
 
 /** Valida a ficha de coleta (sub-bacia ou CTS): campos de topo + os dois grupos. */
 function recusaDaFicha(ficha: Record<string, unknown>): string | null {
-  const falta = exigir(ficha, ['params', 'db', 'obrasOverride', 'overrides'])
+  const falta = exigir(ficha, ['params', 'db', 'obrasOverride'])
   if (falta) return falta
   const faltaDb = exigir(ficha.db as Record<string, unknown>, COLUNAS_DB)
   if (faltaDb) return `db.${faltaDb}`
@@ -207,14 +207,14 @@ export const handlers = [
 
   http.put(`${BASE}/unidades/:id/contrato/:cidId`, async ({ request }) => {
     const ficha = (await request.json()) as Record<string, unknown>
-    const falta = exigir(ficha, ['cidade', 'metas', 'fator', 'overrides'])
+    const falta = exigir(ficha, ['cidade', 'metas', 'fator'])
     if (falta) return recusa(falta)
     return HttpResponse.json(ficha)
   }),
 
   http.put(`${BASE}/unidades/:id/etes/:eteId`, async ({ request }) => {
     const ficha = (await request.json()) as Record<string, unknown>
-    const falta = exigir(ficha, ['ete', 'overrides'])
+    const falta = exigir(ficha, ['ete'])
     if (falta) return recusa(falta)
     return HttpResponse.json(ficha)
   }),
