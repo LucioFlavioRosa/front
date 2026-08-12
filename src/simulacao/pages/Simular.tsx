@@ -21,21 +21,9 @@ import type { UnidadeResumo } from '@/comum/domain/organizacao'
 import { Ajuda, Campo, Interruptor, Opcao, Rotulo, Secao } from '@/simulacao/components/campos'
 import styles from './Simular.module.css'
 
-const CIDADES_EXEMPLO = [
-  'Maricá',
-  'Saquarema',
-  'Araruama',
-  'Cabo Frio',
-  'Iguaba',
-  'Rio das Ostras',
-  'Búzios',
-  'Silva Jardim',
-]
-
 const AJUDA_PENALIDADE: Record<Penalidade, string> = {
   'meta+cobertura': 'Penaliza o descumprimento da meta e também a cobertura abaixo do possível.',
   meta: 'Penaliza apenas o descumprimento da meta do ano.',
-  ligacao: 'Penaliza por ligação não atendida, independente da meta.',
 }
 
 /**
@@ -414,7 +402,6 @@ export function Simular() {
             >
               <option value="meta+cobertura">meta + cobertura</option>
               <option value="meta">meta</option>
-              <option value="ligacao">ligação</option>
             </select>
             <Ajuda>{AJUDA_PENALIDADE[e.penalidade]}</Ajuda>
           </div>
@@ -439,66 +426,13 @@ export function Simular() {
             </p>
           </div>
 
-          <div>
-            <Rotulo texto="Prioridade por cidade" tecnico="PESO_CIDADE" />
-            <ul className={styles.pesos}>
-              {e.pesos.map((p, i) => (
-                <li key={i} className={styles.peso}>
-                  <select
-                    className={p.cidade === '' ? styles.selectPend : styles.select}
-                    value={p.cidade}
-                    aria-label={`Cidade da prioridade ${i + 1}`}
-                    onChange={(ev) =>
-                      setE((s) => {
-                        const a = s.pesos.map((x) => ({ ...x }))
-                        a[i].cidade = ev.target.value
-                        return { ...s, pesos: a }
-                      })
-                    }
-                  >
-                    <option value="">— cidade —</option>
-                    {CIDADES_EXEMPLO.map((c) => (
-                      <option key={c} value={c}>
-                        {c}
-                      </option>
-                    ))}
-                  </select>
-                  <input
-                    className={p.peso === '' ? styles.inputPend : styles.input}
-                    value={p.peso}
-                    inputMode="decimal"
-                    placeholder="peso"
-                    aria-label={`Peso da prioridade ${i + 1}`}
-                    style={{ width: 90 }}
-                    onChange={(ev) =>
-                      setE((s) => {
-                        const a = s.pesos.map((x) => ({ ...x }))
-                        a[i].peso = ev.target.value
-                        return { ...s, pesos: a }
-                      })
-                    }
-                  />
-                  <button
-                    type="button"
-                    className={styles.anoRemover}
-                    aria-label={`Remover a prioridade ${i + 1}`}
-                    onClick={() =>
-                      setE((s) => ({ ...s, pesos: s.pesos.filter((_, j) => j !== i) }))
-                    }
-                  >
-                    ✕
-                  </button>
-                </li>
-              ))}
-            </ul>
-            <button
-              type="button"
-              className={styles.acaoSecundaria}
-              onClick={() => setE((s) => ({ ...s, pesos: [...s.pesos, { cidade: '', peso: '' }] }))}
-            >
-              + Priorizar cidade
-            </button>
-          </div>
+          {/* PRIORIDADE POR CIDADE saiu, e a ausência É o padrão pedido: todas as
+              cidades pesam 1. O motor multiplica a contribuição de cada cidade por
+              `peso_cidade.get(cidade, 1.0)` — sem o parâmetro, o multiplicador é 1
+              para todas, que é exatamente "peso igual".
+              Não há valor a afirmar aqui, ao contrário do `ANOS_EXTRA_CONCLUSAO`:
+              lá o default do motor era 3 e precisávamos de 0; aqui o default já é
+              o que se quer. Mandar `{}` daria no mesmo e sugeriria uma escolha. */}
         </Secao>
 
         {/* ---------------- 04 RECEITA ---------------- */}
@@ -652,10 +586,7 @@ export function Simular() {
             />
             <Item k="Penalidade" v={e.penalidade} />
             <Item k="Metas" v="do cadastro" />
-            <Item
-              k="Prioridade de cidade"
-              v={e.pesos.length ? `${e.pesos.length} cidade(s)` : 'nenhuma'}
-            />
+            <Item k="Prioridade de cidade" v="todas com peso 1" />
             <Item k="Base de receita" v={e.baseReceita} />
             <Item k="Curva de adesão" v={e.curvaAdocao === 'scurve' ? 'curva S' : 'linear'} />
             <Item k="Usar CTS" v={e.usarCts ? 'sim' : 'não'} />

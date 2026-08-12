@@ -13,7 +13,12 @@
 export const MILHAO = 1_000_000
 
 export type ModoOrcamento = 'ano' | 'unico'
-export type Penalidade = 'meta+cobertura' | 'meta' | 'ligacao'
+/**
+ * `ligacao` SAIU: penalizava por ligacao nao atendida, independente da meta — e a
+ * decisao de produto e que a meta e sempre a referencia. O motor continua
+ * entendendo o modo; a tela e que nao o oferece.
+ */
+export type Penalidade = 'meta+cobertura' | 'meta'
 export type BaseReceita = 'arrecadada' | 'faturada'
 export type CurvaAdocao = 'scurve' | 'linear'
 
@@ -21,12 +26,6 @@ export type CurvaAdocao = 'scurve' | 'linear'
 export interface LinhaOrcamento {
   ano: string
   valor: string
-}
-
-/** Prioridade de uma cidade (`PESO_CIDADE`). Linha incompleta e ignorada. */
-export interface PesoCidade {
-  cidade: string
-  peso: string
 }
 
 export interface EstadoSimulacao {
@@ -40,7 +39,6 @@ export interface EstadoSimulacao {
   horizonte: string
   foco: string
   penalidade: Penalidade
-  pesos: PesoCidade[]
   baseReceita: BaseReceita
   curvaAdocao: CurvaAdocao
   usarCts: boolean
@@ -83,7 +81,6 @@ export function estadoInicial(): EstadoSimulacao {
     horizonte: '8',
     foco: '1',
     penalidade: 'meta+cobertura',
-    pesos: [],
     baseReceita: 'arrecadada',
     curvaAdocao: 'scurve',
     usarCts: true,
@@ -337,13 +334,6 @@ export function validar(e: EstadoSimulacao, prontidao: Prontidao | undefined): I
     })
   }
 
-  if (e.pesos.some((p) => p.cidade === '' || p.peso === '')) {
-    itens.push({
-      severidade: 'avisa',
-      texto: 'Há prioridade de cidade incompleta — será ignorada.',
-    })
-  }
-
   return itens
 }
 
@@ -366,7 +356,6 @@ export interface CorpoNovaRodada {
   horizonte_capex?: number
   foco_cobertura: number
   penalidade_cobertura: Penalidade
-  peso_cidade: Record<string, number>
   base_receita: BaseReceita
   curva_adocao: CurvaAdocao
   usar_cts: boolean
@@ -382,11 +371,6 @@ export function corpoDaRodada(e: EstadoSimulacao): CorpoNovaRodada {
     nome: e.nome.trim() || null,
     foco_cobertura: Math.min(1, Math.max(0, num(e.foco))),
     penalidade_cobertura: e.penalidade,
-    peso_cidade: Object.fromEntries(
-      e.pesos
-        .filter((p) => p.cidade !== '' && p.peso !== '')
-        .map((p) => [p.cidade, num(p.peso)] as const),
-    ),
     base_receita: e.baseReceita,
     curva_adocao: e.curvaAdocao,
     usar_cts: e.usarCts,
