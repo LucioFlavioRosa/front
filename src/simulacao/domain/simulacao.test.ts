@@ -204,17 +204,22 @@ describe('validar — o que bloqueia e o que só avisa', () => {
     expect(bloqueado(validar(e, PRONTA))).toBe(true)
   })
 
-  it('ignorar as metas AVISA, não bloqueia — é escolha legítima', () => {
-    // Bloquear uma escolha incomum treina o usuario a ignorar avisos.
-    const e = { ...estadoInicial(), unidadeId: 'u1', fonteMetas: 'ignorar' as const }
-    const c = validar(e, PRONTA)
-    expect(bloqueado(c)).toBe(false)
-    expect(c.some((x) => x.severidade === 'avisa' && x.texto.includes('metas'))).toBe(true)
+  it('não há mais aviso sobre metas — não há mais o que escolher', () => {
+    // O checklist avisava "as metas serão ignoradas nesta rodada". A escolha que
+    // gerava esse aviso saiu: as metas vêm sempre da base, e o único descarte é
+    // por ano de CAPEX, que o motor faz sozinho e não é decisão de quem dispara.
+    const c = validar({ ...estadoInicial(), unidadeId: 'u1' }, PRONTA)
+    expect(c.some((x) => x.texto.includes('metas'))).toBe(false)
   })
 
-  it('ETE faseada + módulos fixos avisa da contradição', () => {
-    const e = { ...estadoInicial(), unidadeId: 'u1', eteFaseada: true, eteFixo: true }
-    expect(validar(e, PRONTA).some((x) => x.severidade === 'avisa')).toBe(true)
+  it('o corpo NÃO carrega os flags de ETE — o tratamento é da ficha, não da rodada', () => {
+    // ETE nova (terreno + módulos informados) entra como pacote único; a que já
+    // existe é expandida em módulos. Quem decide é o dado de CADA ETE, no motor.
+    // `ETE_FASEADA` oferecia desligar isso — e o modo desligado trata a expansão
+    // pior. `ETE_FIXO` era morto: o motor sai do fluxo antes de olhar para ele.
+    const corpo = corpoDaRodada({ ...estadoInicial(), unidadeId: 'u1' })
+    expect('ete_faseada' in corpo).toBe(false)
+    expect('ete_fixo' in corpo).toBe(false)
   })
 
   it('prioridade de cidade incompleta avisa que será ignorada', () => {
@@ -253,9 +258,11 @@ describe('corpoDaRodada', () => {
     expect(corpoDaRodada(e).teto_execucao_anual).toBeNull()
   })
 
-  it('metas ignoradas viram null, como no notebook', () => {
-    const e = { ...estadoInicial(), unidadeId: 'u1', fonteMetas: 'ignorar' as const }
-    expect(corpoDaRodada(e).metas_cobertura).toBeNull()
+  it('o corpo NÃO carrega metas_cobertura — a fonte não é escolha da rodada', () => {
+    // Ausente, e não `'cadastro'`: chave que não viaja é o jeito de o job usar o
+    // proprio default (carregar da base). Mandar um valor fixo daria a impressão
+    // de que existe alternativa.
+    expect('metas_cobertura' in corpoDaRodada({ ...estadoInicial(), unidadeId: 'u1' })).toBe(false)
   })
 
   it('descarta prioridade de cidade incompleta', () => {
@@ -287,8 +294,6 @@ describe('corpoDaRodada', () => {
     expect(corpo.curva_adocao).toBe('scurve')
     expect(corpo.usar_cts).toBe(true)
     expect(corpo.incluir_industrial).toBe(true)
-    expect(corpo.ete_faseada).toBe(true)
-    expect(corpo.ete_fixo).toBe(false)
     expect(corpo.max_time_s).toBe(300)
     expect(corpo.workers).toBe(8)
   })
@@ -309,5 +314,20 @@ describe('rótulos', () => {
     expect(etapaDe(60)).toContain('solver')
     expect(etapaDe(95)).toContain('Materializando')
     expect(etapaDe(100)).toContain('Concluída')
+  })
+
+  it('na fila NÃO anuncia etapa nenhuma — nada está executando', () => {
+    // PENDENTE nao e progresso zero: e ausencia de execucao. Dizer "Lendo dados
+    // da unidade" ali afirma uma atividade que nao acontece, e contradiz o motivo
+    // da fila que aparece na linha seguinte do mesmo modal.
+    expect(etapaDe(0, true)).not.toContain('Lendo dados')
+    expect(etapaDe(0, true)).toContain('fila')
+  })
+
+  it('o texto da fila não repete o motivo, que é do backend', () => {
+    // Quem explica a espera e o bloco `fila`, o unico que conhece executores e
+    // posicao. Duas frases dizendo a mesma coisa envelheceriam separadas.
+    const t = etapaDe(0, true)
+    expect(t).not.toMatch(/executor|vaga/i)
   })
 })

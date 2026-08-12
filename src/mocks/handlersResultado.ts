@@ -30,6 +30,14 @@ const D = dadosFx as unknown as Record<string, never>
 /** Rodadas apagadas nesta sessao. Reset no reload — e mock, nao banco. */
 const excluidas = new Set<string>()
 
+/**
+ * Favoritas do usuario da sessao. Um conjunto so, e nao um por login, porque o
+ * mock nao autentica ninguem — o que ele precisa exercitar e o CAMINHO: marcar,
+ * desmarcar, e a lista voltando com a marca. A regra de "favorita e por usuario"
+ * vive no banco (`migracoes/009_favoritas.sql`) e nao tem como ser exercitada aqui.
+ */
+const favoritas = new Set<string>()
+
 function existe(runId: string): boolean {
   return !excluidas.has(runId) && !!metas[runId]
 }
@@ -50,7 +58,20 @@ export const handlersResultado = [
       .filter((r) => !excluidas.has(r.runId))
       .filter((r) => !unidade || r.unidadeId === unidade)
       .filter((r) => !usuario || r.autor === usuario)
+      // A marca vem do estado da sessao, e nao da fixture: e o que faz o clique
+      // na estrela sobreviver ao refetch que a propria mutation dispara.
+      .map((r) => ({ ...r, favorita: favoritas.has(r.runId) }))
     return HttpResponse.json(lista)
+  }),
+
+  http.put(`${BASE}/runs/:runId/favorita`, ({ params }) => {
+    favoritas.add(String(params.runId))
+    return new HttpResponse(null, { status: 204 })
+  }),
+
+  http.delete(`${BASE}/runs/:runId/favorita`, ({ params }) => {
+    favoritas.delete(String(params.runId))
+    return new HttpResponse(null, { status: 204 })
   }),
 
   http.get(`${BASE}/runs/:runId/meta`, ({ params }) => {

@@ -20,11 +20,19 @@ const ler = (p: string) => readFileSync(`${raiz}/${p}`, 'utf-8')
 
 const doc = ler('CONTRATO.md')
 const QUERIES = ler('src/resultado/api/queries.ts')
-const FONTES_API = ['src/resultado/api/endpoints.ts', 'src/simulacao/api/endpoints.ts']
+const FONTES_API = [
+  'src/resultado/api/endpoints.ts',
+  'src/simulacao/api/endpoints.ts',
+  // O estado operacional da rodada e de DUAS areas — o modal da nova simulacao e
+  // o card em voo do historico —, entao ele mora em `comum/`. Sem esta linha, o
+  // `GET /runs/{}/status` viraria endpoint documentado e sem chamador.
+  'src/comum/api/rodada.ts',
+]
 const FONTES_TIPOS = [
   'src/resultado/domain/resultado.ts',
   'src/simulacao/domain/simulacao.ts',
   'src/simulacao/api/endpoints.ts',
+  'src/comum/api/rodada.ts',
   // As chaves do `pedido` nao sao campos de interface: sao DADO — os nomes dos
   // parametros que o job aceita. Elas vivem aqui, no de-para de rotulos, e e
   // aqui que o documento tem de casar. Sem esta linha, citar `PENALIDADE_COBERTURA`

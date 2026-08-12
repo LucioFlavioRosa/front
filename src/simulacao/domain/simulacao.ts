@@ -14,7 +14,6 @@ export const MILHAO = 1_000_000
 
 export type ModoOrcamento = 'ano' | 'unico'
 export type Penalidade = 'meta+cobertura' | 'meta' | 'ligacao'
-export type FonteMetas = 'cadastro' | 'ignorar'
 export type BaseReceita = 'arrecadada' | 'faturada'
 export type CurvaAdocao = 'scurve' | 'linear'
 
@@ -44,14 +43,11 @@ export interface EstadoSimulacao {
   anosExtra: string
   foco: string
   penalidade: Penalidade
-  fonteMetas: FonteMetas
   pesos: PesoCidade[]
   baseReceita: BaseReceita
   curvaAdocao: CurvaAdocao
   usarCts: boolean
   incluirIndustrial: boolean
-  eteFaseada: boolean
-  eteFixo: boolean
   dataInicio: string
   maxTimeS: string
   workers: string
@@ -93,14 +89,11 @@ export function estadoInicial(): EstadoSimulacao {
     anosExtra: '3',
     foco: '1',
     penalidade: 'meta+cobertura',
-    fonteMetas: 'cadastro',
     pesos: [],
     baseReceita: 'arrecadada',
     curvaAdocao: 'scurve',
     usarCts: true,
     incluirIndustrial: true,
-    eteFaseada: true,
-    eteFixo: false,
     dataInicio: '',
     maxTimeS: '300',
     workers: '8',
@@ -250,7 +243,15 @@ export interface ComponenteFaltando {
   detalhe: string
 }
 
-/** Prontidao do cadastro da unidade — quem manda no bloqueio da rodada. */
+/**
+ * Prontidao do cadastro da unidade — quem manda no bloqueio da rodada.
+ *
+ * NAO ha `tamanho` aqui, e a ausencia e deliberada. Ele existiu, o backend nunca
+ * o implementou, e a linha do resumo simplesmente nao aparecia em producao. O
+ * porte da unidade ja viaja em `Unidade.resumo` — no proprio registro da unidade,
+ * que a tela carrega para montar o select. Dois contratos para o mesmo fato so
+ * teriam divergido.
+ */
 export interface Prontidao {
   unidadeId: string
   unidadeNome: string
@@ -353,19 +354,6 @@ export function validar(e: EstadoSimulacao, prontidao: Prontidao | undefined): I
     })
   }
 
-  if (e.fonteMetas === 'ignorar') {
-    itens.push({
-      severidade: 'avisa',
-      texto:
-        'As metas do contrato serão ignoradas nesta rodada — o resultado não pode ser usado para aferir cumprimento.',
-    })
-  }
-  if (e.eteFixo && e.eteFaseada) {
-    itens.push({
-      severidade: 'avisa',
-      texto: 'ETE faseada com número fixo de módulos: a expansão não será otimizada.',
-    })
-  }
   if (e.pesos.some((p) => p.cidade === '' || p.peso === '')) {
     itens.push({
       severidade: 'avisa',
@@ -398,14 +386,11 @@ export interface CorpoNovaRodada {
   anos_extra_conclusao: number
   foco_cobertura: number
   penalidade_cobertura: Penalidade
-  metas_cobertura: 'cadastro' | null
   peso_cidade: Record<string, number>
   base_receita: BaseReceita
   curva_adocao: CurvaAdocao
   usar_cts: boolean
   incluir_industrial: boolean
-  ete_faseada: boolean
-  ete_fixo: boolean
   data_inicio: string | null
   max_time_s: number
   workers: number
@@ -420,8 +405,6 @@ export function corpoDaRodada(e: EstadoSimulacao): CorpoNovaRodada {
     anos_extra_conclusao: Math.max(0, Math.round(num(e.anosExtra))),
     foco_cobertura: Math.min(1, Math.max(0, num(e.foco))),
     penalidade_cobertura: e.penalidade,
-    // `null` = ignorar as metas nesta rodada; 'cadastro' = usar a aba do cadastro.
-    metas_cobertura: e.fonteMetas === 'cadastro' ? 'cadastro' : null,
     peso_cidade: Object.fromEntries(
       e.pesos
         .filter((p) => p.cidade !== '' && p.peso !== '')
@@ -431,8 +414,6 @@ export function corpoDaRodada(e: EstadoSimulacao): CorpoNovaRodada {
     curva_adocao: e.curvaAdocao,
     usar_cts: e.usarCts,
     incluir_industrial: e.incluirIndustrial,
-    ete_faseada: e.eteFaseada,
-    ete_fixo: e.eteFixo,
     data_inicio: e.dataInicio.trim() || null,
     max_time_s: Math.max(1, Math.round(num(e.maxTimeS))),
     workers: Math.max(1, Math.round(num(e.workers))),
@@ -459,7 +440,19 @@ const ETAPAS = [
   { ate: 100, texto: 'Materializando as tabelas de resultado…' },
 ] as const
 
-export function etapaDe(progresso: number): string {
+/**
+ * A etapa que o job está executando, pelo progresso.
+ *
+ * `naFila` existe porque PENDENTE **não é progresso zero** — é ausência de
+ * execução. Sem ele, uma rodada que ainda não começou exibia "Lendo dados da
+ * unidade…", afirmando uma atividade que não estava acontecendo e contradizendo,
+ * na linha logo abaixo, o motivo da fila ("todas as vagas estão ocupadas").
+ *
+ * O texto daqui não repete o motivo: quem explica a espera é o bloco `fila`, que
+ * é o único que conhece executores e posição. Este diz só que não começou.
+ */
+export function etapaDe(progresso: number, naFila = false): string {
+  if (naFila) return 'Ainda não começou — está na fila.'
   if (progresso >= 100) return 'Concluída — disponível no histórico.'
   return ETAPAS.find((e) => progresso < e.ate)?.texto ?? ETAPAS[0].texto
 }

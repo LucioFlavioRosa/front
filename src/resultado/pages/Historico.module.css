@@ -124,9 +124,77 @@
   gap: 6px;
 }
 
+/* A estrela é um botão, e não texto: era `<span>` quando nada a ligava. Sem
+   moldura nem fundo, porque ela vive dentro do título e uma caixa ali competiria
+   com o nome da rodada — o alvo de clique vem do padding. */
+.favorita,
+.favoritaVazia {
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1;
+  padding: 2px 4px;
+  margin-right: 2px;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  border-radius: 6px;
+}
 .favorita {
   color: var(--pend-accent);
-  font-size: 14px;
+}
+/* A vazia é discreta de propósito: ela aparece em TODOS os cards, e uma fileira
+   de estrelas fortes competiria com a informação da lista. Ganha contraste no
+   hover e no foco, que é quando ela deixa de ser fundo e vira alvo. */
+.favoritaVazia {
+  color: var(--text-500);
+  opacity: 0.45;
+}
+.favoritaVazia:hover,
+.favoritaVazia:focus-visible {
+  opacity: 1;
+  color: var(--pend-accent);
+}
+.favorita:focus-visible,
+.favoritaVazia:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+/* O filtro fica ao lado da ordenação e se parece com ela, mas não é ordenação:
+   é um interruptor de recorte. A contagem ao lado responde "vale ligar?" antes
+   do clique. */
+.filtro,
+.filtroAtivo {
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 7px 11px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid #cbd5e1;
+  background: var(--surface);
+  color: var(--text-500);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.filtroAtivo {
+  border-color: var(--pend-accent);
+  background: #fef3c7;
+  color: var(--pend-text);
+}
+.filtro:focus-visible,
+.filtroAtivo:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+.filtroContagem {
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--pend-bg);
+  color: var(--pend-text);
 }
 
 .meta {
@@ -189,6 +257,29 @@
   border: 1px solid var(--pend-border-2);
   border-radius: 10px;
   padding: 10px 12px;
+}
+
+/* A espera que EXIGE alguém agir: nenhum executor de pé, lease vencido, ou tempo
+   parado além do que a fila explica. Mais forte que o `.aviso` amarelo, que é o
+   tom de "isto está em andamento" e se lê de relance sem nada a fazer. */
+.avisoAtencao {
+  margin: 14px 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-weight: 600;
+  color: #7c2d12;
+  background: #fff7ed;
+  border: 1px solid #fdba74;
+}
+
+/* O relógio anda junto da frase, mas não compete com ela: quem lê quer primeiro
+   o motivo, e o tempo é o que qualifica esse motivo. */
+.espera {
+  font-weight: 400;
+  opacity: 0.85;
+  white-space: nowrap;
 }
 
 .metricas {

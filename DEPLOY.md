@@ -110,6 +110,45 @@ GET /unidades/:id/hierarquia        -> { unidReg, superintendencias, cidades, si
 GET /unidades/:id/cts               -> { pares, ctss, inconsistencias }
 ```
 
+**`Unidade.resumo` — o porte da unidade.** Duas telas dependem dele: a seleção do
+cadastro e o **resumo da nova simulação**, que o usa para dizer se a rodada é de
+minutos ou de meia hora antes de disparar.
+
+```jsonc
+// Unidade Norte Litoral, medida na base de desenvolvimento
+"resumo": {
+  "cidades": 21,
+  "sistemas": 155,
+  "subBacias": 751,
+  "cts": 151, // esparsas — zero é comum, e a tela mostra "0 CTS"
+  "etes": 155,
+  "obras": 2799, // = obrasAegea + obrasTerceiros
+  "obrasAegea": 2615, // capex > 0
+  "obrasTerceiros": 184, // capex = 0 e tempo_execucao > 0
+  "semObra": 1560 // capex = 0 e tempo_execucao = 0
+}
+```
+
+**As três categorias de componente**, e por que o total sozinho não serve:
+
+| categoria        | regra                              | o que é                                    |
+| ---------------- | ---------------------------------- | ------------------------------------------ |
+| `obrasAegea`     | `capex > 0`                        | investimento da Aegea                      |
+| `obrasTerceiros` | `capex = 0` e `tempo_execucao > 0` | a obra acontece e ocupa prazo; outro paga  |
+| `semObra`        | `capex = 0` e `tempo_execucao = 0` | o elemento existe na ficha e não gera obra |
+
+São exaustivas e não se sobrepõem: somadas dão o total de linhas de
+`componentes_subbacias_capex` + `componentes_cts_capex` da unidade. Conte-as, não
+as deduza de constantes — a base tem 5 linhas por sub-bacia e 4 por CTS hoje, mas
+isso é dado, não contrato.
+
+`obras` (= Aegea + terceiros) é **o mesmo critério do motor**
+(`otimizador_capex_v62.ler_banco`: `necess = capex > 0 or tempo_execucao > 0`).
+Ele ainda fica **abaixo** do que o motor conta, e a diferença é conhecida: falta
+uma obra por ETE de sistema e, com `ETE_FASEADA`, os módulos de expansão. Esses
+dependem de parâmetro da **rodada**, então nenhum número por unidade os alcança —
+e a tela não promete que alcança.
+
 A ficha de coleta (sub-bacia e CTS, que são iguais) tem **dois blocos de origem
 diferente**, e a régua da meta da cidade (`Cidade.cob`) decide o que aparece:
 

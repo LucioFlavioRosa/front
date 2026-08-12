@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useRegionais, useUnidades } from '@/comum/api/organizacao'
-import { useCriarRodada, useProntidao, useStatusRodada } from '@/simulacao/api/queries'
+import { useCancelarRodada, useCriarRodada, useProntidao } from '@/simulacao/api/queries'
+import { useStatusRodada, type FilaDaRodada } from '@/comum/api/rodada'
+import { decorrido, demorandoDemais } from '@/comum/domain/espera'
 import { useApp } from '@/comum/state/AppContext'
 import {
   aceitaFoco,
@@ -16,6 +18,7 @@ import {
   type EstadoSimulacao,
   type Penalidade,
 } from '@/simulacao/domain/simulacao'
+import type { UnidadeResumo } from '@/comum/domain/organizacao'
 import { Ajuda, Campo, Interruptor, Opcao, Rotulo, Secao } from '@/simulacao/components/campos'
 import styles from './Simular.module.css'
 
@@ -56,10 +59,14 @@ export function Simular() {
   const unidades = useUnidades(e.regionalId || null)
   const prontidao = useProntidao(e.unidadeId || undefined)
   const criar = useCriarRodada()
+  const cancelar = useCancelarRodada()
   const status = useStatusRodada(runId)
 
   const set = <K extends keyof EstadoSimulacao>(k: K, v: EstadoSimulacao[K]) =>
     setE((s) => ({ ...s, [k]: v }))
+
+  /** A unidade escolhida, com o `resumo` que a lista do select já trouxe. */
+  const unidadeEscolhida = (unidades.data ?? []).find((u) => u.id === e.unidadeId)
 
   const orc = useMemo(() => derivarOrcamento(e), [e])
   const checklist = useMemo(() => validar(e, prontidao.data), [e, prontidao.data])
@@ -96,6 +103,22 @@ export function Simular() {
         setRunId(r.runId)
       },
       onError: () => toast('Não foi possível iniciar a rodada. Tente de novo.'),
+    })
+  }
+
+  /**
+   * Desiste da rodada em voo.
+   *
+   * Nao fecha o modal por conta propria: quem o fecha e o `emVoo` abaixo, quando
+   * o status recarregado voltar `CANCELADA`. Fechar aqui, no otimismo, mostraria
+   * a tela liberada enquanto o cluster ainda estaria processando se o cancelamento
+   * tivesse falhado — e a rodada apareceria concluida minutos depois.
+   */
+  function cancelarRodada() {
+    if (!runId) return
+    cancelar.mutate(runId, {
+      onSuccess: () => toast('Rodada cancelada.'),
+      onError: () => toast('Não foi possível cancelar a rodada. Ela continua no servidor.'),
     })
   }
 
@@ -427,17 +450,24 @@ export function Simular() {
             <Ajuda>{AJUDA_PENALIDADE[e.penalidade]}</Ajuda>
           </div>
 
+          {/* NÃO HÁ ESCOLHA DE FONTE DAS METAS, e a ausência é a regra.
+              As metas vêm sempre da base. O único descarte legítimo é por ANO: meta
+              fora da janela de CAPEX não é cobrada — com CAPEX até 2031, a meta de
+              2030 conta e a de 2032 não. Isso o motor já faz sozinho
+              (`otimizador_capex_v62.py`, na avaliação: `idx >= anos_capex → continue`),
+              e não é decisão de quem dispara a rodada.
+              Houve aqui um seletor "Ignorar as metas nesta rodada". Ele nunca
+              funcionou — o backend colapsava as duas opções no mesmo valor, e o
+              motor carregava as metas de qualquer jeito. Quando o colapso foi
+              corrigido, a opção passou a produzir rodada sem meta nenhuma, que a
+              regra não admite. Saiu inteira, em vez de virar um controle que só
+              tem uma escolha certa. */}
           <div>
-            <Rotulo texto="Metas de cobertura" tecnico="METAS_COBERTURA" htmlFor="sim-metas" />
-            <select
-              id="sim-metas"
-              className={styles.select}
-              value={e.fonteMetas}
-              onChange={(ev) => set('fonteMetas', ev.target.value as 'cadastro' | 'ignorar')}
-            >
-              <option value="cadastro">Usar as metas do cadastro</option>
-              <option value="ignorar">Ignorar as metas nesta rodada</option>
-            </select>
+            <Rotulo texto="Metas de cobertura" tecnico="METAS_COBERTURA" />
+            <p className={styles.metasNota}>
+              Sempre as do cadastro. Metas em anos fora da janela de CAPEX não são cobradas nesta
+              rodada.
+            </p>
           </div>
 
           <div>
@@ -569,20 +599,23 @@ export function Simular() {
           titulo="ETE e execução do solver"
           descricao="Avançado — os padrões atendem à maioria das rodadas."
         >
-          <Interruptor
-            rotulo="ETE faseada"
-            tecnico="ETE_FASEADA"
-            descricao="Permite construir a ETE em módulos, conforme a vazão conectada cresce."
-            ligado={e.eteFaseada}
-            onToggle={() => set('eteFaseada', !e.eteFaseada)}
-          />
-          <Interruptor
-            rotulo="ETE com número fixo de módulos"
-            tecnico="ETE_FIXO"
-            descricao="Trava a quantidade de módulos no que está cadastrado, sem otimizar a expansão."
-            ligado={e.eteFixo}
-            onToggle={() => set('eteFixo', !e.eteFixo)}
-          />
+          {/* NÃO HÁ INTERRUPTOR DE ETE, e a ausência é a regra do negócio.
+              Qual tratamento a ETE recebe não é escolha da rodada: é o que a ficha
+              dela diz. ETE com terreno e número de módulos informados é NOVA, e
+              entra como pacote único — sem faseamento. ETE que já existe é
+              expandida em módulos, conforme a vazão passa da capacidade ociosa. O
+              motor decide isso por ETE (`otimizador_capex_v62.py`, detecção por
+              `nova=Sim` ou `capex_terreno > 0`), e não por rodada.
+              Havia aqui dois interruptores. `ETE_FASEADA` oferecia desligar o
+              tratamento por módulos — e o modo desligado trata a expansão PIOR,
+              porque o CP-SAT força o pré-dimensionamento pelo total do sistema.
+              `ETE_FIXO` era controle morto: com faseada ligada, o motor sai do
+              fluxo antes de olhar para ele. */}
+          <p className={styles.metasNota}>
+            <strong>ETE.</strong> Cada ETE é tratada conforme a ficha dela: a nova (terreno e
+            módulos informados) entra como pacote único; a que já existe é expandida em módulos,
+            conforme a vazão conectada passa da capacidade ociosa.
+          </p>
           <div className={styles.linha3}>
             <Campo
               rotulo="Data de início"
@@ -619,6 +652,29 @@ export function Simular() {
           <h2 className={styles.resumoTitulo}>Resumo</h2>
           <dl className={styles.resumoLista}>
             <Item k="Unidade" v={prontidao.data?.unidadeNome ?? '—'} alerta={!e.unidadeId} />
+            {/* O TAMANHO logo abaixo do nome, e não no fim: ele qualifica a
+                unidade que se acabou de escolher, e é o que separa "rodar a
+                Serrana" de "rodar a Leste" — 710 obras contra 11.525.
+                Sai do `resumo` da unidade, que a lista do select JÁ trouxe: não
+                custa request nenhum, e é o mesmo número que a seleção do cadastro
+                mostra. Antes vinha de um `tamanho` em `/prontidao` que o backend
+                nunca implementou, então a linha simplesmente não aparecia. */}
+            {unidadeEscolhida?.resumo && (
+              <>
+                <Item k="Tamanho" v={textoDoTamanho(unidadeEscolhida.resumo)} calc />
+                {/* As obras em linha própria, e com as três categorias: é o número
+                    que prediz o custo da rodada, e o único aqui em que "quanto"
+                    depende de quem paga.
+                    A presença de `obrasAegea` é conferida porque um servidor
+                    anterior a esta mudança manda `resumo` SEM as três — e aí
+                    `toLocaleString(undefined)` derrubaria a página pelo error
+                    boundary. Foi assim que o `tamanho` sumiu da tela um dia; a
+                    diferença é que ali a falha era silenciosa. */}
+                {unidadeEscolhida.resumo.obrasAegea !== undefined && (
+                  <Item k="Obras" v={textoDasObras(unidadeEscolhida.resumo)} calc />
+                )}
+              </>
+            )}
             <Item k="Orçamento total" v={`R$ ${orc.total.toLocaleString('pt-BR')} Mi`} calc />
             <Item k="Janela de CAPEX" v={orc.janelaTexto} calc />
             <Item
@@ -631,11 +687,7 @@ export function Simular() {
               v={`${focoV.toFixed(2).replace('.', ',')} · ${rotuloFoco(focoV)}`}
             />
             <Item k="Penalidade" v={e.penalidade} />
-            <Item
-              k="Metas"
-              v={e.fonteMetas === 'cadastro' ? 'do cadastro' : 'ignoradas'}
-              alerta={e.fonteMetas === 'ignorar'}
-            />
+            <Item k="Metas" v="do cadastro" />
             <Item
               k="Prioridade de cidade"
               v={e.pesos.length ? `${e.pesos.length} cidade(s)` : 'nenhuma'}
@@ -644,10 +696,7 @@ export function Simular() {
             <Item k="Curva de adesão" v={e.curvaAdocao === 'scurve' ? 'curva S' : 'linear'} />
             <Item k="Usar CTS" v={e.usarCts ? 'sim' : 'não'} />
             <Item k="Incluir industrial" v={e.incluirIndustrial ? 'sim' : 'não'} />
-            <Item
-              k="ETE"
-              v={`${e.eteFaseada ? 'faseada' : 'não faseada'}${e.eteFixo ? ' · módulos fixos' : ''}`}
-            />
+            <Item k="ETE" v="nova em pacote · existente por módulos" />
             <Item k="Solver" v={`${e.maxTimeS} s · ${e.workers} workers`} />
           </dl>
         </div>
@@ -709,12 +758,64 @@ export function Simular() {
           terminal={terminal}
           falhou={st === 'ERRO' || st === 'FALHOU_QUALIDADE'}
           erro={status.data?.erro ?? undefined}
+          fila={status.data?.fila}
+          pedidaEm={status.data?.pedidaEm}
+          naFila={st === 'PENDENTE'}
+          cancelando={cancelar.isPending}
+          onCancelar={cancelarRodada}
           onFechar={() => setRunId(undefined)}
           onHistorico={() => navigate('/resultados')}
         />
       )}
     </div>
   )
+}
+
+/**
+ * `"5 cidades · 28 sistemas · 92 sub-bacias · 3 CTS · 4 ETEs · 710 obras"` — o
+ * porte da unidade, numa linha.
+ *
+ * A ordem é a da árvore: cidade contém sistema, que contém sub-bacia, que tem CTS
+ * pareada; ETEs ao lado; e `obras` fecha porque é o número que resume o custo da
+ * rodada — o total, sub-bacia mais CTS.
+ *
+ * CTS aparece mesmo quando é zero. Ela é esparsa, e "0 CTS" responde uma pergunta
+ * que a ausência da palavra deixaria no ar: se a unidade não tem, ligar `USAR_CTS`
+ * nos parâmetros não muda nada, e é melhor descobrir isso aqui.
+ *
+ * Singular e plural porque "1 cidades" numa tela que o usuário lê o dia inteiro
+ * é o tipo de descuido que faz duvidar do resto dos números. Milhar com separador
+ * pt-BR: `11525` custa a ler, `11.525` não. CTS não flexiona.
+ */
+const nPtBr = (v: number) => v.toLocaleString('pt-BR')
+const plural = (v: number, um: string, muitos: string) => `${nPtBr(v)} ${v === 1 ? um : muitos}`
+
+function textoDoTamanho({ cidades, sistemas, subBacias, cts, etes }: UnidadeResumo): string {
+  return [
+    plural(cidades, 'cidade', 'cidades'),
+    plural(sistemas, 'sistema', 'sistemas'),
+    plural(subBacias, 'sub-bacia', 'sub-bacias'),
+    `${nPtBr(cts)} CTS`,
+    plural(etes, 'ETE', 'ETEs'),
+  ].join(' · ')
+}
+
+/**
+ * `"2.615 Aegea · 184 de terceiros · 1.560 sem obra"` — o que há de CAPEX.
+ *
+ * TRÊS categorias e não um total, porque um número só escondia os dois extremos.
+ * "11.525 obras" na Leste contava 4.830 linhas que não são obra nenhuma, e não
+ * distinguia o que a Aegea paga do que ocupa prazo por conta de terceiros.
+ *
+ * As três são exaustivas e não se sobrepõem: somadas, dão o total de componentes
+ * das fichas. As duas primeiras são o que o motor considera candidato.
+ */
+function textoDasObras({ obrasAegea, obrasTerceiros, semObra }: UnidadeResumo): string {
+  return [
+    `${nPtBr(obrasAegea)} Aegea`,
+    `${nPtBr(obrasTerceiros)} de terceiros`,
+    `${nPtBr(semObra)} sem obra`,
+  ].join(' · ')
 }
 
 function Item({ k, v, calc, alerta }: { k: string; v: string; calc?: boolean; alerta?: boolean }) {
@@ -781,6 +882,11 @@ function ModalProgresso({
   terminal,
   falhou,
   erro,
+  fila,
+  pedidaEm,
+  naFila,
+  cancelando,
+  onCancelar,
   onFechar,
   onHistorico,
 }: {
@@ -788,6 +894,13 @@ function ModalProgresso({
   terminal: boolean
   falhou: boolean
   erro?: string
+  /** Ausente quando a rodada já terminou, e quando o servidor é anterior a isto. */
+  fila?: FilaDaRodada
+  pedidaEm?: string | null
+  /** PENDENTE: nada está executando ainda, e a etapa não pode dizer que sim. */
+  naFila: boolean
+  cancelando: boolean
+  onCancelar: () => void
   onFechar: () => void
   onHistorico: () => void
 }) {
@@ -828,6 +941,14 @@ function ModalProgresso({
       ? 'Simulação concluída'
       : 'Simulação em andamento'
 
+  const espera = decorrido(pedidaEm)
+  // Duas origens para o mesmo destaque, e elas cobrem coisas diferentes.
+  // `atencao` é o que o backend SABE (nenhum executor de pé, lease vencido);
+  // `demorandoDemais` é o que só o relógio sabe — "deve começar em instantes" há
+  // vinte minutos é um motivo tranquilo que parou de ser verdade, e é justamente
+  // o caso que ninguém reporta porque a frase continua parecendo normal.
+  const alerta = !!fila?.atencao || demorandoDemais(pedidaEm)
+
   return (
     <div className={styles.overlay} role="dialog" aria-modal="true" aria-labelledby="prog-t">
       <div className={styles.modal} ref={caixa} tabIndex={-1}>
@@ -835,8 +956,21 @@ function ModalProgresso({
           {titulo}
         </h2>
         <p className={styles.modalEtapa} aria-live="polite">
-          {falhou ? (erro ?? 'O servidor não conseguiu concluir esta rodada.') : etapaDe(progresso)}
+          {falhou
+            ? (erro ?? 'O servidor não conseguiu concluir esta rodada.')
+            : etapaDe(progresso, naFila)}
         </p>
+        {/* POR QUE ela está esperando, e há quanto tempo.
+            A etapa acima diz o que o job FARIA; ela não distingue "vai começar em
+            instantes" de "não há executor nenhum de pé". Quem olha precisa dos
+            dois, e o segundo é o que o dono do produto marcou como inegociável em
+            produção. `fila` é opcional: servidor antigo simplesmente não mostra. */}
+        {!falhou && fila && (
+          <p className={alerta ? styles.filaAtencao : styles.fila} role="status">
+            {fila.motivo}
+            {espera && <span className={styles.decorrido}> · pedida {espera}</span>}
+          </p>
+        )}
         <div
           className={styles.progresso}
           role="progressbar"
@@ -853,16 +987,23 @@ function ModalProgresso({
           </p>
         )}
         <div className={styles.modalAcoes}>
-          {/* O botao "Cancelar rodada" NAO esta aqui, e isso e temporario.
-              `POST /runs/{id}/cancelar` responde 501: `controle.run_status` tem um
-              CHECK sem `CANCELADA`, e o backend prefere dizer a verdade a fingir
-              que cancelou enquanto o cluster segue processando e cobrando.
-              Botao que sempre da erro e pior que botao ausente — ensina o usuario
-              a desconfiar da tela inteira.
-
-              Quando a migracao entrar, ele volta com a condicao que ja tinha:
-              `!terminal`, porque cancelar uma rodada que ja terminou (bem ou mal)
-              tambem seria um botao que mente. Ver CONTRATO.md §4.4. */}
+          {/* Cancelar aparece sob `!terminal`, e so ai: cancelar uma rodada que ja
+              terminou — bem ou mal — seria um botao que mente, e o backend
+              responde 409. Ele esteve ausente da tela enquanto
+              `POST /runs/{id}/cancelar` respondia 501, porque botao que sempre da
+              erro ensina o usuario a desconfiar da tela inteira; a migracao 008
+              pos `CANCELADA` no CHECK de `controle.run_status` e o endpoint passou
+              a cancelar de verdade. Ver CONTRATO.md §4.4. */}
+          {!terminal && (
+            <button
+              type="button"
+              className={styles.modalCancelar}
+              onClick={onCancelar}
+              disabled={cancelando}
+            >
+              {cancelando ? 'Cancelando…' : 'Cancelar rodada'}
+            </button>
+          )}
           {falhou && (
             <button type="button" className={styles.modalCancelar} onClick={onFechar}>
               Ajustar parâmetros

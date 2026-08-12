@@ -30,7 +30,37 @@ vi.mock('@/comum/api/client', async (importOriginal) => {
     publicada: true,
   }))
   const emVoo = (await import('@/mocks/fixtures/runs-em-voo.json')).default
-  return { ...original, api: apiFake(api, { '/runs': [...emVoo, ...publicadas] }) }
+  // A lista NAO traz o bloco `fila` — ele e por rodada, em `/runs/{id}/status`, e
+  // o card em voo o busca. Sem estas tres respostas o `apiFake` estouraria com
+  // "sem mock", que e o jeito certo de o mock avisar que a tela ganhou uma
+  // chamada nova.
+  const status = Object.fromEntries(
+    (emVoo as { runId: string; status: string; progresso: number; erro: string | null }[]).map(
+      (r) => [
+        `/runs/${r.runId}/status`,
+        {
+          runId: r.runId,
+          status: r.status,
+          progresso: r.progresso,
+          erro: r.erro,
+          pedidaEm: '2026-08-09T12:00:00Z',
+          fila:
+            r.status === 'PENDENTE'
+              ? {
+                  vivos: 0,
+                  capacidade: 0,
+                  ocupadas: 0,
+                  posicao: 0,
+                  motivo:
+                    'NENHUM executor está ativo. A rodada não vai começar enquanto um não subir — isto não é fila cheia, é ausência de executor.',
+                  atencao: true,
+                }
+              : undefined,
+        },
+      ],
+    ),
+  )
+  return { ...original, api: apiFake(api, { '/runs': [...emVoo, ...publicadas], ...status }) }
 })
 
 import { renderApp } from '@/testes/renderApp'
@@ -46,9 +76,29 @@ describe('histórico com rodadas em voo', () => {
     expect(screen.getByText('Cenário que falhou')).toBeTruthy()
 
     // Cada estado diz o que está acontecendo, em vez de mostrar métricas vazias.
-    expect(screen.getByText(/Na fila, esperando um executor/)).toBeTruthy()
-    expect(screen.getByText(/62% concluído/)).toBeTruthy()
+    expect(await screen.findByText(/62% concluído/)).toBeTruthy()
     expect(screen.getByText(/Fila de simulações não configurada/)).toBeTruthy()
+  })
+
+  it('a rodada na fila diz POR QUE espera, e não a frase que servia para tudo', async () => {
+    // A frase era fixa — "Na fila, esperando um executor" — e cobria dois mundos
+    // opostos: todas as vagas ocupadas (espere) e nenhum executor de pé (isto
+    // nunca vai rodar). O segundo é o caso caro, e era o silencioso.
+    renderApp('/resultados')
+    await screen.findByText('Cenário na fila')
+
+    const motivo = await screen.findByText(/NENHUM executor está ativo/)
+    expect(motivo.textContent).toMatch(/pedida há/) // o relógio anda junto
+    expect(screen.queryByText(/esperando um executor/)).toBeNull()
+  })
+
+  it('a rodada que falhou não ganha relógio nem destaque de espera', async () => {
+    // O tempo desde o pedido não é espera nenhuma numa rodada que já parou:
+    // "pedida há 54h" sobre algo que falhou anteontem é ruído com cara de alerta.
+    renderApp('/resultados')
+
+    const aviso = await screen.findByText(/Fila de simulações não configurada/)
+    expect(aviso.textContent).not.toMatch(/pedida há/)
   })
 
   it('a rodada em voo ABRE os detalhes, mas não deixa ir ao resultado', async () => {

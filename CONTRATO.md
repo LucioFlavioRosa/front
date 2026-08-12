@@ -227,9 +227,31 @@ Query opcional: `unidade`, `usuario`.
 
 ### 3.2 `DELETE /runs/{run_id}`
 
-Responde `204`. **A única mutação de todo o pacote de resultados.** Apaga o
-resultado; **não** toca no cadastro da unidade — a tela promete isso ao usuário,
-no texto do modal de confirmação.
+Responde `204`. Apaga o resultado; **não** toca no cadastro da unidade — a tela
+promete isso ao usuário, no texto do modal de confirmação. Apaga também as marcas
+de favorita daquela rodada, de todos os usuários (§3.2.1).
+
+### 3.2.1 Favorita
+
+`PUT /runs/{run_id}/favorita` marca; `DELETE /runs/{run_id}/favorita` desmarca. Os
+dois respondem `204`, sem corpo em nenhuma direção.
+
+**A marca é POR USUÁRIO, e não um atributo da rodada.** Ela pertence a quem está
+autenticado no request — nunca a um login vindo do corpo ou da querystring. A
+distinção importa por causa do `admin`, que vê as rodadas dos outros: se favoritar
+fosse coluna da rodada, a estrela dele apareceria na tela do dono.
+
+`favorita` em `GET /runs` (§3.1) é **de quem pediu a lista**, pela mesma razão.
+
+Os dois verbos são **idempotentes**: marcar o que já está marcado e desmarcar o
+que não está são `204`, porque o estado pedido é o estado final. Isso é o que
+permite ao front tratar a estrela de forma otimista — duplo clique e retry de rede
+não precisam de tratamento em nenhum dos dois lados.
+
+Não há checagem de posse na escrita, e é deliberado: favoritar só afeta a própria
+lista de quem pede. O que protege o dado dos outros é a **leitura** — `GET /runs`
+já recorta por posse e escopo, então uma rodada que a pessoa não pode ver não
+aparece para ela nem favoritada.
 
 ### 3.3 `GET /runs/{run_id}/meta` — KPIs do nível global
 
@@ -592,6 +614,14 @@ aba e voltar.
 
 `pendencias > 0` bloqueia a rodada na UI.
 
+**O PORTE da unidade não vem daqui** — cidades, sistemas, sub-bacias, CTS, ETEs e
+obras estão em `Unidade.resumo`, no próprio registro da unidade (`DEPLOY.md` §3),
+que esta tela já carrega para montar o select. Não é economia de request: é evitar
+duas fontes para o mesmo fato. Houve um `tamanho` nesta resposta, e ele mostra
+por que a regra importa — o front consumia o campo, o contrato nunca o descreveu,
+o backend nunca o implementou, e a linha do resumo simplesmente não aparecia em
+produção. Só o mock a mostrava.
+
 ### 4.2 `POST /runs` — dispara a rodada
 
 Corpo completo. **Os nomes aqui são `snake_case`**, espelhando os parâmetros do
@@ -616,7 +646,6 @@ tela mostra o nome técnico ao lado de cada controle).
 
   "foco_cobertura": 1.0, // 0 a 1
   "penalidade_cobertura": "meta+cobertura", // meta+cobertura | meta | ligacao
-  "metas_cobertura": "cadastro", // "cadastro" | null (null = IGNORAR as metas)
   "peso_cidade": { "Cabo Frio": 5 }, // {} quando não há prioridade
 
   "base_receita": "arrecadada", // arrecadada | faturada
@@ -624,8 +653,6 @@ tela mostra o nome técnico ao lado de cada controle).
   "usar_cts": true,
   "incluir_industrial": true,
 
-  "ete_faseada": true,
-  "ete_fixo": false,
   "data_inicio": null, // null = janeiro do ano-base; ou "2026-06"
   "max_time_s": 300,
   "workers": 8,
@@ -675,9 +702,37 @@ Três detalhes que o front garante e o backend **não deve assumir**:
   verba em `orcamento`. Não existe campo de janela no modo cronograma.
 - **`teto_execucao_anual: null` ≠ 0.** `null` significa "usa o pico do
   cronograma"; `0` significaria "não pode executar nada".
-- **`metas_cobertura: null` significa ignorar as metas** nesta rodada — é uma
-  escolha legítima do usuário, e a tela avisa que o resultado não serve para
-  aferir cumprimento.
+- **NÃO existem `ete_faseada` nem `ete_fixo` no corpo.** O tratamento da ETE sai
+  da **ficha dela**, e não da rodada: ETE com terreno e número de módulos
+  informados é **nova** e entra como pacote único, sem faseamento; a que já existe
+  é expandida em módulos conforme a vazão passa da capacidade ociosa. O motor
+  decide isso por ETE (detecção por `nova=Sim` ou `capex_terreno > 0`).
+
+  > **Atenção de quem for implementar o job:** aqui a regra do `metas_cobertura`
+  > NÃO se aplica. Lá, a chave ausente dá o comportamento certo porque coincide
+  > com o default do motor. Aqui o default de `ete_faseada` no `ler_banco` é
+  > **`False`** — omitir o argumento **desligaria** o tratamento por módulos. Quem
+  > executa precisa **afirmar `ete_faseada=True`**, sempre.
+  >
+  > Havia dois controles na tela. `ETE_FASEADA` permitia desligar o tratamento por
+  > módulos, e o modo desligado trata a expansão **pior** (o CP-SAT força o
+  > pré-dimensionamento pelo total do sistema). `ETE_FIXO` era inerte: com faseada
+  > ligada, o motor sai do fluxo antes de olhar para ele. Os dois saíram.
+
+- **NÃO existe `metas_cobertura` no corpo, e a ausência é a regra.** As metas de
+  cobertura vêm **sempre** da base — a fonte não é escolha de quem dispara a
+  rodada. O único descarte legítimo é por **ano**: meta fora da janela de CAPEX
+  não é cobrada. Com CAPEX até 2031, a meta de 2030 conta e a de 2032 não; com
+  CAPEX até 2034, uma meta de 2036 é descartada. Isso é responsabilidade do motor,
+  na avaliação, e o backend não precisa fazer nada a respeito — só **não** mandar
+  o campo, para o job usar o próprio default (carregar da planilha).
+
+  > Houve aqui um `metas_cobertura: "cadastro" | null`, com `null` significando
+  > ignorar as metas. Ele nunca funcionou: o backend colapsava as duas opções no
+  > mesmo valor e o motor carregava as metas de qualquer jeito. Corrigido o
+  > colapso, a opção passou a produzir rodada sem meta nenhuma — que a regra não
+  > admite. O campo saiu do contrato e o seletor saiu da tela. Um corpo que ainda
+  > mande o campo é **ignorado em silêncio**: o resultado é o que a regra pede.
 
 **Quem cunha o `run_id`.** Este endpoint, sempre. No pacote de produção o `run_id`
 é de quem insere a `controle.run_request`, não do job (`docs/01-visao-geral.md`), e
@@ -693,11 +748,24 @@ publicada. Reexecução é assunto de um endpoint separado, sujeito à regra da 
   "status": "RODANDO", // PENDENTE | RODANDO | SUCESSO | FALHOU_QUALIDADE | ERRO | CANCELADA
   "progresso": 42, // 0 a 100
   "erro": null, // mensagem quando status = ERRO ou FALHOU_QUALIDADE
+  "pedidaEm": "2026-08-11T15:02:11Z", // ISO-8601; quando a rodada foi pedida
+  "fila": {
+    // só enquanto PENDENTE ou RODANDO
+    "vivos": 2, // executores que bateram ponto há pouco
+    "capacidade": 4, // soma das vagas dos executores vivos
+    "ocupadas": 4,
+    "posicao": 2, // rodadas PENDENTES na frente desta; 0 = é a próxima
+    "motivo": "Todas as 4 vagas estão ocupadas. Há 2 simulação(ões) na frente desta.",
+    "atencao": false, // true quando a espera exige alguém agir
+  },
 }
 ```
 
-O front faz polling a cada 1,2 s **enquanto** o status for `PENDENTE` ou
-`RODANDO`, e para sozinho nos demais. O modal nomeia a etapa a partir do
+O front faz polling **enquanto** o status for `PENDENTE` ou `RODANDO`, e para
+sozinho nos demais. Dois ritmos, e a diferença é de escala: **1,2 s no modal** da
+nova simulação (uma rodada só, com alguém parado olhando a barra) e **5 s no
+histórico**, que pergunta por cada rodada em voo da lista — a 1,2 s, dez rodadas
+na fila seriam oito requests por segundo. O modal nomeia a etapa a partir do
 `progresso` (lendo dados → montando o modelo → resolvendo → materializando), então
 um progresso que salta de 0 para 100 funciona, mas perde a informação útil.
 
@@ -705,50 +773,56 @@ um progresso que salta de 0 para 100 funciona, mas perde a informação útil.
 portão. A tela trata os dois como término, mas o texto de `erro` é o que explica
 a diferença ao usuário — mande o motivo da reprovação aqui.
 
+**O bloco `fila` responde POR QUE a rodada está onde está**, e existe porque a
+frase que ele substituiu — "na fila, esperando um executor" — cobria dois mundos
+opostos: todas as vagas ocupadas (espere) e nenhum executor de pé (isto nunca vai
+rodar). Quem olhava a tela não tinha como distinguir, e em produção o segundo caso
+é silencioso: a fila cresce e ninguém descobre.
+
+O `motivo` vem **pronto do servidor**, e não montado na tela, porque só o servidor
+vê a fila inteira. `atencao: true` é o que exige alguém agir — nenhum executor
+ativo, ou lease vencido — e é o que a tela destaca; o resto é informação de
+espera normal. Os dois lugares que mostram isso são o modal da nova simulação e o
+card de rodada em voo do histórico.
+
+**`pedidaEm` é o que torna a espera legível.** Sem ele, "esperando" com dois
+segundos e "esperando" com quarenta minutos são a mesma frase, e não há como
+distinguir lento de travado. A tela também destaca por conta própria quando a
+espera passa de 5 minutos e o `motivo` continua tranquilo — um "deve começar em
+instantes" que dura vinte minutos é o caso que ninguém reporta, justamente porque
+a frase continua parecendo normal.
+
 ### 4.4 `POST /runs/{run_id}/cancelar`
 
-<!-- somente-backend -->
+Sem corpo, e sem corpo na resposta. O usuário desiste de uma rodada que ainda não
+terminou.
 
-**Não é chamado pelo front hoje** — e a marcação acima diz isso ao
-`contrato.test.ts`, que exige que todo endpoint documentado tenha chamador. Sai
-da marcação no dia em que o botão voltar.
+| `run_status`          | resposta | efeito                                   |
+| --------------------- | -------- | ---------------------------------------- |
+| `PENDENTE`, `RODANDO` | `204`    | vira `CANCELADA`, e o job é interrompido |
+| qualquer estado final | `409`    | não há o que cancelar; a rodada já parou |
+| id inexistente        | `404`    | —                                        |
 
-> **Ainda não disponível — responde `501`.** `controle.run_status` tem
-> `CHECK (status IN ('PENDENTE','RODANDO','SUCESSO','FALHOU_QUALIDADE','ERRO'))`,
-> e `CANCELADA` viola o CHECK: o UPDATE falharia. Responder `204` sem cancelar
-> seria pior que responder erro — a tela fecharia dizendo "cancelado" e o cluster
-> continuaria processando e cobrando, com a rodada aparecendo concluída minutos
-> depois.
->
-> Enquanto a migração não roda, **o front não oferece o botão**. Quando `CANCELADA`
-> entrar no CHECK e o job souber interromper a execução, o endpoint passa a
-> responder `204` e o botão volta — os dois na mesma entrega, nunca um sem o outro.
+O `409` é o que sustenta a condição do botão na tela: ele só aparece sob
+`!terminal`, porque cancelar uma rodada que já terminou — bem ou mal — seria um
+botão que mente. Os dois lados dizem a mesma coisa, e é de propósito: o front
+evita o clique, o backend recusa a corrida em que o status virou no meio.
 
-**Quando a migração entrar**, o endpoint responde `204` e o front religa em três
-pontos. Os três na mesma entrega: cada um sozinho mente.
+**Marcar o status não basta.** O cancelamento tem de alcançar quem está
+executando; só gravar `CANCELADA` faria o front parar de perguntar enquanto o
+cluster continua processando e cobrando, e a rodada apareceria concluída minutos
+depois — o resultado seria pior que não ter o botão. Em `PENDENTE` basta tirá-la
+da fila; em `RODANDO`, o executor precisa notar o cancelamento e largar o
+trabalho.
 
-```ts
-// simulacao/api/endpoints.ts
-cancelar: (runId: string) => api.post<void>(`/runs/${runId}/cancelar`),
-
-// simulacao/api/queries.ts — invalidar o status é a parte que se esquece: sem
-// isso o modal segue exibindo RODANDO depois do cancelamento aceito.
-export function useCancelarRodada() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (runId: string) => simulacao.cancelar(runId),
-    onSuccess: (_d, runId) =>
-      void qc.invalidateQueries({ queryKey: chavesSimulacao.status(runId) }),
-  })
-}
-
-// simulacao/pages/Simular.tsx — o botão volta sob `!terminal`: cancelar uma
-// rodada que já terminou também é um botão que mente.
-```
-
-Está aqui em texto, e não como código sem chamador no repositório, porque função
-que ninguém usa envelhece sem que ninguém perceba — e o `knip` a acusa a cada
-execução até alguém a apagar sem saber por que existia.
+> **Histórico, porque explica a forma desta seção.** O endpoint respondeu `501`
+> por um tempo: `controle.run_status` tinha
+> `CHECK (status IN ('PENDENTE','RODANDO','SUCESSO','FALHOU_QUALIDADE','ERRO'))`
+> e `CANCELADA` violava o CHECK — o UPDATE falharia. Nesse período o front **não
+> oferecia o botão**, porque botão que sempre dá erro ensina o usuário a
+> desconfiar da tela inteira. A migração `008_lease_e_executores.sql` pôs
+> `CANCELADA` no CHECK, e endpoint e botão voltaram na mesma entrega. A regra que
+> vale para o resto: cada um sozinho mente.
 
 ### 4.5 `POST /runs/{run_id}/reexecutar` — retry
 

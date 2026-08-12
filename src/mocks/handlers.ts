@@ -7,7 +7,15 @@ import etesFx from '@/mocks/fixtures/etes.json'
 import estrutura from '@/mocks/fixtures/estrutura.json'
 import ctsFx from '@/mocks/fixtures/cts.json'
 import type { Unidade } from '@/comum/domain/organizacao'
-import { camposDaSub, cidadePorSub, subPend, type SubBacia } from '@/cadastro/domain/subbacia'
+import {
+  camposDaSub,
+  cidadePorSub,
+  deTerceiros,
+  num,
+  subPend,
+  type Obra,
+  type SubBacia,
+} from '@/cadastro/domain/subbacia'
 import { g2Pend, type ContratoPayload } from '@/cadastro/domain/contrato'
 import { etePend, isNova, type Ete } from '@/cadastro/domain/ete'
 import { camposDaCts, ctsPend, type Cts } from '@/cadastro/domain/cts'
@@ -71,6 +79,35 @@ const contadores = {
   cts: ctsList.length,
 }
 
+/**
+ * As TRES categorias de componente, contadas das fixtures pela regra do dominio.
+ *
+ * Nao ha numero escrito a mao aqui de proposito: o mock e a referencia executavel
+ * do contrato, e um total redondo esconderia o dia em que a fixture mudasse. A
+ * classificacao usa `deTerceiros` do proprio dominio — a mesma funcao que a tela
+ * de obras usa para por o selo —, entao mock e app nao tem como discordar.
+ */
+const obrasDasFixtures = (() => {
+  const todas = [...subsList, ...ctsList].flatMap((f) =>
+    Object.values((f.obrasOverride ?? {}) as Record<string, Obra>),
+  )
+  // `num` devolve `null` em texto invalido — mesmo cuidado de `deTerceiros`, que
+  // trata "nao consigo ler" como diferente de zero.
+  const temCapex = (o: Obra) => {
+    const q = num(o.qtd)
+    const p = num(o.preco)
+    return q != null && p != null && q * p > 0
+  }
+  const terceiros = todas.filter(deTerceiros).length
+  const aegea = todas.filter(temCapex).length
+  return {
+    obras: aegea + terceiros,
+    obrasAegea: aegea,
+    obrasTerceiros: terceiros,
+    semObra: todas.length - aegea - terceiros,
+  }
+})()
+
 const nomeRegional = (id: string) => regionais.find((r) => r.id === id)?.nome ?? ''
 
 function toUnidade(u: UnidadeRaw): Unidade {
@@ -82,7 +119,9 @@ function toUnidade(u: UnidadeRaw): Unidade {
       cidades: contadores.cidades,
       sistemas: contadores.sistemas,
       subBacias: contadores.subBacias,
-      obras: contadores.obras,
+      cts: contadores.cts,
+      etes: contadores.etes,
+      ...obrasDasFixtures,
     },
     completude,
     databricksConectado: u.databricksConectado,
