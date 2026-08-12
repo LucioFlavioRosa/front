@@ -294,7 +294,6 @@ describe('corpoDaRodada', () => {
     const corpo = corpoDaRodada({ ...estadoInicial(), unidadeId: 'u1' })
     expect(corpo.foco_cobertura).toBe(1)
     expect(corpo.penalidade_cobertura).toBe('meta+cobertura')
-    expect(corpo.anos_extra_conclusao).toBe(3)
     expect(corpo.base_receita).toBe('arrecadada')
     expect(corpo.curva_adocao).toBe('scurve')
     expect(corpo.usar_cts).toBe(true)

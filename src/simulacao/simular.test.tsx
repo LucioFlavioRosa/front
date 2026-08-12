@@ -52,10 +52,11 @@ describe('parâmetros e rastreabilidade', () => {
     expect(screen.getByText('PENALIDADE_COBERTURA')).toBeTruthy()
     expect(screen.getByText('USAR_CTS')).toBeTruthy()
     expect(screen.getByText('INCLUIR_INDUSTRIAL')).toBeTruthy()
-    expect(screen.getByText('ANOS_EXTRA_CONCLUSAO')).toBeTruthy()
     // ETE_FASEADA e ETE_FIXO NAO estao mais aqui: o tratamento da ETE sai da
     // ficha dela, e nao de um controle da rodada.
     expect(screen.queryByText('ETE_FASEADA')).toBeNull()
+    // ANOS_EXTRA_CONCLUSAO tambem saiu: vale 0 sempre, fixado no backend.
+    expect(screen.queryByText('ANOS_EXTRA_CONCLUSAO')).toBeNull()
     expect(screen.queryByText('ETE_FIXO')).toBeNull()
   })
 

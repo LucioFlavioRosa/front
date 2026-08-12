@@ -359,21 +359,13 @@ export function Simular() {
               `app/dominio/parametros.py` faz (célula 3 do notebook), e o backend
               continua sabendo fazê-lo. Voltar é reintroduzir este interruptor. */}
 
-          <div>
-            <Campo
-              rotulo="Anos extra para concluir"
-              tecnico="ANOS_EXTRA_CONCLUSAO"
-              valor={e.anosExtra}
-              onChange={(v) => set('anosExtra', v)}
-              sufixo="anos"
-              largura={90}
-            />
-            <Ajuda>
-              A obra inicia dentro da janela e pode concluir até esses anos depois. O teto anual
-              continua estrito <strong>dentro</strong> da janela; o “rabo” é custeado pela sobra
-              acumulada. 0 = inicia e conclui na janela.
-            </Ajuda>
-          </div>
+          {/* "Anos extra para concluir" saiu da tela e vale ZERO: a obra inicia e
+              conclui dentro da janela de CAPEX, sem rabo custeado pela sobra.
+              O parâmetro CONTINUA existindo no backend e no motor — quem o fixa em
+              0 é `app/dominio/parametros.py`, e ele viaja no `params` da rodada
+              para o histórico registrar o que foi usado.
+              ATENÇÃO ao mexer: o default do motor é 3, não 0. Deixar de mandar a
+              chave NÃO dá zero — dá três. */}
         </Secao>
 
         {/* ---------------- 03 OBJETIVO ---------------- */}
@@ -665,7 +657,6 @@ export function Simular() {
             )}
             <Item k="Orçamento total" v={`R$ ${orc.total.toLocaleString('pt-BR')} Mi`} calc />
             <Item k="Janela de CAPEX" v={orc.janelaTexto} calc />
-            <Item k="Anos extra p/ concluir" v={e.anosExtra} />
             <Item
               k="Foco em cobertura"
               v={`${focoV.toFixed(2).replace('.', ',')} · ${rotuloFoco(focoV)}`}
