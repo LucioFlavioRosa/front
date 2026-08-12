@@ -243,6 +243,15 @@ describe('corpoDaRodada', () => {
     expect('metas_cobertura' in corpoDaRodada({ ...estadoInicial(), unidadeId: 'u1' })).toBe(false)
   })
 
+  it('o corpo NÃO carrega afinação de execução', () => {
+    // `max_time_s` e `workers` são execução, não decisão de negócio. O tempo é
+    // fixado em 1000s pelo backend (e viaja no `params`, para o histórico
+    // registrar); os workers ficam com o padrão do executor.
+    const corpo = corpoDaRodada({ ...estadoInicial(), unidadeId: 'u1' })
+    expect('max_time_s' in corpo).toBe(false)
+    expect('workers' in corpo).toBe(false)
+  })
+
   it('o corpo NÃO carrega peso_cidade — todas as cidades pesam 1', () => {
     // A ausência É o padrão pedido: o motor multiplica por
     // `peso_cidade.get(cidade, 1.0)`, então sem o parâmetro o multiplicador é 1
@@ -266,8 +275,6 @@ describe('corpoDaRodada', () => {
     expect(corpo.curva_adocao).toBe('scurve')
     expect(corpo.usar_cts).toBe(true)
     expect(corpo.incluir_industrial).toBe(true)
-    expect(corpo.max_time_s).toBe(300)
-    expect(corpo.workers).toBe(8)
   })
 })
 
