@@ -1,10 +1,12 @@
 import { Outlet, useParams } from 'react-router-dom'
 import { AppHeader } from '@/app/AppHeader'
-import { DictionaryPanel } from '@/cadastro/components/DictionaryPanel'
+import { DictionaryPanel } from '@/comum/components/DictionaryPanel'
 import { ConfirmModal } from '@/comum/components/ConfirmModal'
 import { GuardaSaida } from '@/cadastro/components/GuardaSaida'
 import { ToastHost } from '@/comum/components/ToastHost'
 import { CadastroProvider } from '@/cadastro/state/CadastroContext'
+import { DICT } from '@/cadastro/domain/dict'
+import { DICT_SIMULACAO } from '@/simulacao/domain/dicionario'
 import { useApp } from '@/comum/state/AppContext'
 import styles from './AppShell.module.css'
 
@@ -28,7 +30,12 @@ export function AppShell() {
         <main className={styles.content} id="conteudo" tabIndex={-1}>
           <Outlet />
         </main>
-        <DictionaryPanel />
+        {/* O painel e um so, e os verbetes vem das DUAS areas: as colunas que a
+            pessoa digita no cadastro e os parametros da rodada na simulacao.
+            Juntar aqui e o que permite ao painel viver em `comum/` sem conhecer
+            area nenhuma — e as areas nao se conhecem entre si. A raiz de
+            composicao existe justamente para isto. */}
+        <DictionaryPanel verbetes={{ ...DICT, ...DICT_SIMULACAO }} />
       </div>
       <ConfirmModal />
       {/* Dentro do provider (le as fichas nao salvas) e so quando ha unidade. */}

@@ -40,7 +40,7 @@ export function Simular() {
   /** Rodada CONCLUÍDA idêntica que o servidor devolveu em vez de criar (R5). */
   const [jaExistente, setJaExistente] = useState<string | null>(null)
   const navigate = useNavigate()
-  const { toast } = useApp()
+  const { toast, openDict } = useApp()
 
   const regionais = useRegionais()
   const unidades = useUnidades(e.regionalId || null)
@@ -451,10 +451,10 @@ export function Simular() {
               o que se quer. Mandar `{}` daria no mesmo e sugeriria uma escolha. */}
         </Secao>
 
-        {/* ---------------- 04 RECEITA ---------------- */}
+        {/* ---------------- 04 RECEITA E ADESÃO ---------------- */}
         <Secao
           numero="04"
-          titulo="Receita, adesão e demanda"
+          titulo="Receita e adesão"
           descricao="De onde sai o ticket e como as ligações novas entram ao longo do tempo."
         >
           <div>
@@ -493,7 +493,14 @@ export function Simular() {
               />
             </div>
           </div>
+        </Secao>
 
+        {/* ---------------- 05 O QUE ENTRA NO PLANO ---------------- */}
+        <Secao
+          numero="05"
+          titulo="O que entra no plano"
+          descricao="Quais estruturas e qual demanda a rodada considera."
+        >
           <Interruptor
             rotulo="Usar CTS (coletor de tempo seco)"
             tecnico="USAR_CTS"
@@ -510,14 +517,7 @@ export function Simular() {
             ligado={e.incluirIndustrial}
             onToggle={() => set('incluirIndustrial', !e.incluirIndustrial)}
           />
-        </Secao>
 
-        {/* ---------------- 05 ETE E SOLVER ---------------- */}
-        <Secao
-          numero="05"
-          titulo="ETE"
-          descricao="Como cada estação entra no plano — decidido pela ficha dela, não por esta tela."
-        >
           {/* NÃO HÁ INTERRUPTOR DE ETE, e a ausência é a regra do negócio.
               Qual tratamento a ETE recebe não é escolha da rodada: é o que a ficha
               dela diz. ETE com terreno e número de módulos informados é NOVA, e
@@ -530,16 +530,39 @@ export function Simular() {
               porque o CP-SAT força o pré-dimensionamento pelo total do sistema.
               `ETE_FIXO` era controle morto: com faseada ligada, o motor sai do
               fluxo antes de olhar para ele. */}
-          <p className={styles.metasNota}>
-            <strong>ETE.</strong> Cada ETE é tratada conforme a ficha dela: a nova (terreno e
-            módulos informados) entra como pacote único; a que já existe é expandida em módulos,
-            conforme a vazão conectada passa da capacidade ociosa.
-          </p>
-          {/* TEMPO DE SOLVER e WORKERS saíram: são afinação de execução, não
-              decisão de negócio, e quem dispara a rodada não tem como calibrá-los.
-              `MAX_TIME_S` é fixado em 1000s por `app/dominio/parametros.py` e viaja
-              no `params` — o histórico registra o que a rodada usou. `WORKERS` não
-              viaja: o executor usa o próprio padrão. */}
+          <div>
+            <Rotulo texto="Tratamento da ETE" tecnico="ETE_FASEADA" />
+            <p className={styles.metasNota}>
+              Cada ETE é tratada conforme a ficha dela: a nova (terreno e módulos informados) entra
+              como pacote único; a que já existe é expandida em módulos, conforme a vazão conectada
+              passa da capacidade ociosa.
+            </p>
+          </div>
+          {/* OS FIXOS TÊM VERBETE, e por isso têm onde ser clicados.
+              Eles saíram da tela porque não são escolha — mas "por que não posso
+              mexer nisto?" é pergunta tão legítima quanto "o que isto faz?", e sem
+              um lugar para perguntar a resposta só existiria no commit. */}
+          <div className={styles.fixos}>
+            <span className={styles.fixosRotulo}>Fixos nesta versão</span>
+            {(
+              [
+                ['METAS_COBERTURA', 'metas do cadastro'],
+                ['ANOS_EXTRA_CONCLUSAO', 'sem anos extra'],
+                ['PESO_CIDADE', 'cidades com peso 1'],
+                ['MAX_TIME_S', 'solver 1000 s'],
+              ] as const
+            ).map(([chave, texto]) => (
+              <button
+                key={chave}
+                type="button"
+                className={styles.fixoChip}
+                aria-label={`Por que "${texto}" é fixo?`}
+                onClick={() => openDict(chave)}
+              >
+                {texto} <span aria-hidden="true">?</span>
+              </button>
+            ))}
+          </div>
         </Secao>
       </div>
 

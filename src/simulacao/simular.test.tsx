@@ -52,11 +52,13 @@ describe('parâmetros e rastreabilidade', () => {
     expect(screen.getByText('PENALIDADE_COBERTURA')).toBeTruthy()
     expect(screen.getByText('USAR_CTS')).toBeTruthy()
     expect(screen.getByText('INCLUIR_INDUSTRIAL')).toBeTruthy()
-    // ETE_FASEADA e ETE_FIXO NAO estao mais aqui: o tratamento da ETE sai da
-    // ficha dela, e nao de um controle da rodada.
-    expect(screen.queryByText('ETE_FASEADA')).toBeNull()
-    // ANOS_EXTRA_CONCLUSAO tambem saiu: vale 0 sempre, fixado no backend.
-    expect(screen.queryByText('ANOS_EXTRA_CONCLUSAO')).toBeNull()
+    // `ETE_FASEADA` aparece como RÓTULO da nota da ETE, com o "?" do dicionário —
+    // ele deixou de ser CONTROLE, não deixou de ser explicável. A distinção é o
+    // ponto: não há interruptor, e o `role="switch"` prova isso melhor que a
+    // ausência do texto.
+    expect(screen.getByText('ETE_FASEADA')).toBeTruthy()
+    expect(screen.queryByRole('switch', { name: /ETE_FASEADA/ })).toBeNull()
+    // `ETE_FIXO` saiu inteiro: era controle morto, e não ganhou verbete.
     expect(screen.queryByText('ETE_FIXO')).toBeNull()
   })
 
@@ -65,6 +67,30 @@ describe('parâmetros e rastreabilidade', () => {
     // 15 anos de cronograma, comecando em 60 Mi.
     expect(await screen.findByLabelText('Verba de 2026, em milhões')).toHaveProperty('value', '60')
     expect(screen.getByLabelText('Verba de 2040, em milhões')).toHaveProperty('value', '10')
+  })
+})
+
+describe('dicionário dos parâmetros', () => {
+  it('o "?" de um parâmetro abre o verbete dele', async () => {
+    // Mesmo gesto do cadastro, do outro lado do produto: a rodada é irreversível,
+    // e cada controle muda o plano de um jeito que o rótulo não entrega.
+    renderApp('/simular')
+    fireEvent.click(await screen.findByRole('button', { name: 'O que é "Foco em cobertura"?' }))
+
+    const painel = await screen.findByRole('complementary', { name: 'Dicionário de dados' })
+    expect(within(painel).getByText('Foco em cobertura')).toBeTruthy()
+    expect(within(painel).getByText(/maximiza retorno e ignora a meta/i)).toBeTruthy()
+  })
+
+  it('o que é FIXO também tem verbete — "por que não posso mexer" é pergunta legítima', async () => {
+    // Estes não têm controle na tela. Sem um lugar para perguntar, a resposta só
+    // existiria no commit.
+    renderApp('/simular')
+    fireEvent.click(await screen.findByRole('button', { name: /Por que "solver 1000 s" é fixo\?/ }))
+
+    const painel = await screen.findByRole('complementary', { name: 'Dicionário de dados' })
+    expect(within(painel).getByText('Tempo do solver')).toBeTruthy()
+    expect(within(painel).getByText(/afinação de execução/i)).toBeTruthy()
   })
 })
 
@@ -182,7 +208,10 @@ describe('avisos que não bloqueiam', () => {
     renderApp('/simular')
     await escolherUnidade()
 
-    expect(screen.queryByLabelText(/Metas de cobertura/)).toBeNull()
+    // Não há SELETOR. `queryByLabelText` não serve mais: o "?" do dicionário
+    // responde por `aria-label` com o nome do parâmetro, e ele é justamente o que
+    // deve continuar existindo.
+    expect(screen.queryByRole('combobox', { name: /Metas de cobertura/ })).toBeNull()
     expect(await screen.findByText(/Sempre as do cadastro/)).toBeTruthy()
     expect(screen.getByText(/fora da janela de CAPEX não são cobradas/)).toBeTruthy()
   })

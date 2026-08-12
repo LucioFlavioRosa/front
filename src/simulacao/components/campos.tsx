@@ -1,4 +1,5 @@
 import { useId, type ReactNode } from 'react'
+import { useApp } from '@/comum/state/AppContext'
 import styles from './campos.module.css'
 
 /**
@@ -38,11 +39,20 @@ export function Secao({
 }
 
 /**
- * Rotulo de um parametro, com o NOME TECNICO em mono ao lado.
+ * Rotulo de um parametro, com o NOME TECNICO em mono e o "?" do dicionario.
  *
  * O nome tecnico e requisito do handoff e existe para rastreabilidade: quem
  * conhece o notebook reconhece `FOCO_COBERTURA` e sabe exatamente o que o
  * controle mexe. Sem ele, a traducao para linguagem de negocio viraria adivinha.
+ *
+ * O "?" e o MESMO gesto do cadastro: abre o verbete no painel da direita. Aqui
+ * ele importa ainda mais, porque a rodada e irreversivel — o que se dispara
+ * existe para sempre no historico —, e porque varios parametros deixaram de ser
+ * escolha nesta versao. "Por que nao posso mexer nisto?" e pergunta tao legitima
+ * quanto "o que isto faz?", e o verbete responde as duas.
+ *
+ * FORA do `<label>`, como no cadastro: o "?" e um controle proprio, e nao parte
+ * do nome do campo — senao o leitor de tela anunciaria "Foco em cobertura ?".
  */
 export function Rotulo({
   texto,
@@ -53,10 +63,21 @@ export function Rotulo({
   tecnico: string
   htmlFor?: string
 }) {
+  const { openDict } = useApp()
   return (
-    <label className={styles.rotulo} htmlFor={htmlFor}>
-      {texto} <code className={styles.tecnico}>{tecnico}</code>
-    </label>
+    <div className={styles.rotuloLinha}>
+      <label className={styles.rotulo} htmlFor={htmlFor}>
+        {texto} <code className={styles.tecnico}>{tecnico}</code>
+      </label>
+      <button
+        type="button"
+        className={styles.ajudaBtn}
+        aria-label={`O que é "${texto}"?`}
+        onClick={() => openDict(tecnico)}
+      >
+        ?
+      </button>
+    </div>
   )
 }
 

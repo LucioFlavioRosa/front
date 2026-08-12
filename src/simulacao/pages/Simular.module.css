@@ -629,3 +629,40 @@
   line-height: 1.5;
   color: var(--texto-2, #64748b);
 }
+
+/* Os parâmetros que esta versão não oferece. Não são controles — são respostas a
+   "por que não posso mexer nisto?", e por isso cada um abre o próprio verbete. */
+.fixos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--border);
+}
+.fixosRotulo {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-500);
+}
+.fixoChip {
+  font-family: inherit;
+  font-size: 11.5px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  cursor: pointer;
+  color: var(--db-text-2);
+  background: var(--db-bg);
+  border: 1px solid var(--db-border);
+}
+.fixoChip:hover {
+  border-color: var(--brand);
+  color: var(--brand);
+}
+.fixoChip:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}

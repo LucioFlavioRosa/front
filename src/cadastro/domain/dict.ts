@@ -2,17 +2,13 @@
  * Dicionario de dados (aba "02 Dicionario de Dados" da planilha, exposto no
  * prototipo como objeto DICT). Copy FINAL — extraido do Cadastro de Dados.dc.html
  * (linhas 834-851). Chave = nome tecnico da coluna.
+ *
+ * O TIPO e o selo de origem vivem em `comum/domain/dicionario.ts`: a simulacao
+ * tem o dicionario dela, e o painel que exibe os dois e um so.
  */
-export interface Verbete {
-  rotulo: string
-  tec: string
-  origem: string
-  tipo: string
-  oque: string
-  porque: string
-  exemplo: string
-}
+import type { Verbete } from '@/comum/domain/dicionario'
 
+export type { Verbete }
 export const DICT: Record<string, Verbete> = {
   preco_por_ligacao: {
     rotulo: 'Taxa de ligação',
@@ -283,16 +279,3 @@ export const DICT: Record<string, Verbete> = {
 }
 
 /** Cor do chip de origem no painel: Databricks = cyan, usuario = ambar. */
-export function origemStyle(origem: string): {
-  background: string
-  color: string
-  borderColor: string
-} {
-  return origem.includes('Databricks')
-    ? { background: 'var(--db-bg)', color: 'var(--db-text-2)', borderColor: 'var(--db-border)' }
-    : {
-        background: 'var(--pend-bg)',
-        color: 'var(--pend-text-3)',
-        borderColor: 'var(--pend-border-2)',
-      }
-}
