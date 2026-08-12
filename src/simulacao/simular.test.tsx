@@ -52,10 +52,11 @@ describe('parâmetros e rastreabilidade', () => {
     expect(screen.getByText('PENALIDADE_COBERTURA')).toBeTruthy()
     expect(screen.getByText('USAR_CTS')).toBeTruthy()
     expect(screen.getByText('INCLUIR_INDUSTRIAL')).toBeTruthy()
-    expect(screen.getByText('ANOS_EXTRA_CONCLUSAO')).toBeTruthy()
     // ETE_FASEADA e ETE_FIXO NAO estao mais aqui: o tratamento da ETE sai da
     // ficha dela, e nao de um controle da rodada.
     expect(screen.queryByText('ETE_FASEADA')).toBeNull()
+    // ANOS_EXTRA_CONCLUSAO tambem saiu: vale 0 sempre, fixado no backend.
+    expect(screen.queryByText('ANOS_EXTRA_CONCLUSAO')).toBeNull()
     expect(screen.queryByText('ETE_FIXO')).toBeNull()
   })
 
@@ -92,11 +93,13 @@ describe('orçamento', () => {
     await waitFor(() => expect(screen.queryByLabelText('Verba de 2026, em milhões')).toBeNull())
   })
 
-  it('o teto de execução só aparece com a redistribuição ligada', async () => {
+  it('não há redistribuição de verba nem teto de execução', async () => {
+    // Saíram por decisão do produto: a verba de cada ano é a do cronograma. O teto
+    // só existia dentro da redistribuição, então foi junto.
     renderApp('/simular')
+    await screen.findByLabelText('Verba de 2026, em milhões')
+    expect(screen.queryByText('REDISTRIBUIR_ORCAMENTO')).toBeNull()
     expect(screen.queryByText('TETO_EXECUCAO_ANUAL')).toBeNull()
-    fireEvent.click(await screen.findByRole('switch', { name: /REDISTRIBUIR_ORCAMENTO/ }))
-    expect(await screen.findByText('TETO_EXECUCAO_ANUAL')).toBeTruthy()
   })
 })
 

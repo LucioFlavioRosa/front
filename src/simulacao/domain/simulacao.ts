@@ -38,9 +38,6 @@ export interface EstadoSimulacao {
   /** Modo "valor unico": verba por ano e quantos anos. */
   orcamentoValor: string
   horizonte: string
-  redistribuir: boolean
-  teto: string
-  anosExtra: string
   foco: string
   penalidade: Penalidade
   pesos: PesoCidade[]
@@ -84,9 +81,6 @@ export function estadoInicial(): EstadoSimulacao {
     orcamento: ORCAMENTO_PADRAO.map(([ano, v]) => ({ ano: String(ano), valor: String(v) })),
     orcamentoValor: '50',
     horizonte: '8',
-    redistribuir: false,
-    teto: '',
-    anosExtra: '3',
     foco: '1',
     penalidade: 'meta+cobertura',
     pesos: [],
@@ -381,9 +375,6 @@ export interface CorpoNovaRodada {
   orcamento?: Record<string, number>
   orcamento_anual?: number
   horizonte_capex?: number
-  redistribuir_orcamento: boolean
-  teto_execucao_anual: number | null
-  anos_extra_conclusao: number
   foco_cobertura: number
   penalidade_cobertura: Penalidade
   peso_cidade: Record<string, number>
@@ -400,9 +391,6 @@ export function corpoDaRodada(e: EstadoSimulacao): CorpoNovaRodada {
   const base: CorpoNovaRodada = {
     unidade_id: e.unidadeId,
     nome: e.nome.trim() || null,
-    redistribuir_orcamento: e.redistribuir,
-    teto_execucao_anual: e.teto.trim() === '' ? null : num(e.teto) * MILHAO,
-    anos_extra_conclusao: Math.max(0, Math.round(num(e.anosExtra))),
     foco_cobertura: Math.min(1, Math.max(0, num(e.foco))),
     penalidade_cobertura: e.penalidade,
     peso_cidade: Object.fromEntries(
