@@ -640,8 +640,6 @@ tela mostra o nome técnico ao lado de cada controle).
   "orcamento_anual": 50000000,
   "horizonte_capex": 8,
 
-  "redistribuir_orcamento": false,
-  "teto_execucao_anual": null, // null = usa o PICO do cronograma
   "anos_extra_conclusao": 3,
 
   "foco_cobertura": 1.0, // 0 a 1
@@ -700,8 +698,18 @@ Três detalhes que o front garante e o backend **não deve assumir**:
 
 - **A janela de CAPEX é derivada**, nunca enviada: ela é o intervalo dos anos com
   verba em `orcamento`. Não existe campo de janela no modo cronograma.
-- **`teto_execucao_anual: null` ≠ 0.** `null` significa "usa o pico do
-  cronograma"; `0` significaria "não pode executar nada".
+- **NÃO existem `redistribuir_orcamento` nem `teto_execucao_anual` no corpo.** A
+  verba de cada ano é a do cronograma, e o otimizador não a move entre anos —
+  decisão de produto, reversível. O teto de execução saiu junto porque só existia
+  dentro da redistribuição: era o valor que cada ano recebia **depois** do
+  achatamento; sem ela, o teto de cada ano já é a própria verba dele.
+
+  > Os dois **nunca existiram no motor** — `grep` em `otimizador_capex_v62.py` e
+  > `otimizador_capex_cpsat63.py` dá zero. São pré-processamento da célula 3 do
+  > notebook, feito em `app/dominio/parametros.py`, e **o backend continua sabendo
+  > fazê-lo**: um corpo que mande os dois é tratado como sempre foi, e o teste que
+  > cobre isso segue vivo. Voltar a oferecer é reintroduzir o interruptor na tela.
+
 - **NÃO existem `ete_faseada` nem `ete_fixo` no corpo.** O tratamento da ETE sai
   da **ficha dela**, e não da rodada: ETE com terreno e número de módulos
   informados é **nova** e entra como pacote único, sem faseamento; a que já existe

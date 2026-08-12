@@ -252,10 +252,15 @@ describe('corpoDaRodada', () => {
     expect(Object.keys(corpoDaRodada(e).orcamento ?? {})).toEqual(['2026'])
   })
 
-  it('teto vazio vira null, não zero', () => {
-    // "vazio" significa "usa o pico"; zero significaria "nao pode executar nada".
-    const e = { ...estadoInicial(), unidadeId: 'u1', redistribuir: true, teto: '' }
-    expect(corpoDaRodada(e).teto_execucao_anual).toBeNull()
+  it('o corpo NÃO carrega redistribuição nem teto de execução', () => {
+    // Os dois saíram da tela por decisão do produto: a verba de cada ano é a do
+    // cronograma, e o otimizador não a move entre anos. O teto só existia DENTRO
+    // da redistribuição — sem ela, o teto de cada ano já é a verba dele.
+    // `parametros.py` continua sabendo fazer o pré-processamento; voltar é
+    // reintroduzir o interruptor.
+    const corpo = corpoDaRodada({ ...estadoInicial(), unidadeId: 'u1' })
+    expect('redistribuir_orcamento' in corpo).toBe(false)
+    expect('teto_execucao_anual' in corpo).toBe(false)
   })
 
   it('o corpo NÃO carrega metas_cobertura — a fonte não é escolha da rodada', () => {

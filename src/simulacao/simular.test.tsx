@@ -92,11 +92,13 @@ describe('orçamento', () => {
     await waitFor(() => expect(screen.queryByLabelText('Verba de 2026, em milhões')).toBeNull())
   })
 
-  it('o teto de execução só aparece com a redistribuição ligada', async () => {
+  it('não há redistribuição de verba nem teto de execução', async () => {
+    // Saíram por decisão do produto: a verba de cada ano é a do cronograma. O teto
+    // só existia dentro da redistribuição, então foi junto.
     renderApp('/simular')
+    await screen.findByLabelText('Verba de 2026, em milhões')
+    expect(screen.queryByText('REDISTRIBUIR_ORCAMENTO')).toBeNull()
     expect(screen.queryByText('TETO_EXECUCAO_ANUAL')).toBeNull()
-    fireEvent.click(await screen.findByRole('switch', { name: /REDISTRIBUIR_ORCAMENTO/ }))
-    expect(await screen.findByText('TETO_EXECUCAO_ANUAL')).toBeTruthy()
   })
 })
 
