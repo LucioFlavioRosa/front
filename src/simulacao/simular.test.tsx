@@ -86,7 +86,7 @@ describe('dicionário dos parâmetros', () => {
     // Estes não têm controle na tela. Sem um lugar para perguntar, a resposta só
     // existiria no commit.
     renderApp('/simular')
-    fireEvent.click(await screen.findByRole('button', { name: /Por que "solver 1000 s" é fixo\?/ }))
+    fireEvent.click(await screen.findByRole('button', { name: /Por que "solver 5000 s" é fixo\?/ }))
 
     const painel = await screen.findByRole('complementary', { name: 'Dicionário de dados' })
     expect(within(painel).getByText('Tempo do solver')).toBeTruthy()

@@ -696,7 +696,7 @@ Três detalhes que o front garante e o backend **não deve assumir**:
 - **NÃO existem `max_time_s` nem `workers` no corpo.** Tempo de solver e
   paralelismo são afinação de execução, não decisão de negócio.
 
-  > `MAX_TIME_S` é **fixado em 1000s** por `app/dominio/parametros.py` e **viaja no
+  > `MAX_TIME_S` é **fixado em 5000s** por `app/dominio/parametros.py` e **viaja no
   > `params`** — sem a chave, cada consumidor usaria o próprio default e a mesma
   > rodada teria tempos diferentes conforme quem a executasse. `WORKERS` **não
   > viaja**: paralelismo depende da máquina que executa, e fixá-lo aqui seria

@@ -174,10 +174,10 @@ export const DICT_SIMULACAO: Record<string, Verbete> = {
     rotulo: 'Tempo do solver',
     tec: 'MAX_TIME_S',
     origem: FIXO,
-    tipo: '1000 segundos',
+    tipo: '5000 segundos',
     oque: 'Quanto tempo o solver tem para procurar a melhor solução.',
     porque:
-      'É afinação de execução, não decisão de negócio — e o efeito só aparece depois de rodar. Tempo curto demais numa unidade grande faz o solver devolver a melhor solução que achou até ali, ou nenhuma.',
-    exemplo: '1000',
+      'É afinação de execução, não decisão de negócio — e o efeito só aparece depois de rodar. Tempo curto demais numa unidade grande faz o solver parar em "viável" e deixar obras obrigatórias de fora. Era 1000s até uma rodada real na maior unidade mostrar que o limite estava mordendo o resultado.',
+    exemplo: '5000',
   },
 }

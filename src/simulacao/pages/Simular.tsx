@@ -549,7 +549,7 @@ export function Simular() {
                 ['METAS_COBERTURA', 'metas do cadastro'],
                 ['ANOS_EXTRA_CONCLUSAO', 'sem anos extra'],
                 ['PESO_CIDADE', 'cidades com peso 1'],
-                ['MAX_TIME_S', 'solver 1000 s'],
+                ['MAX_TIME_S', 'solver 5000 s'],
               ] as const
             ).map(([chave, texto]) => (
               <button
@@ -609,7 +609,7 @@ export function Simular() {
             <Item k="Usar CTS" v={e.usarCts ? 'sim' : 'não'} />
             <Item k="Incluir industrial" v={e.incluirIndustrial ? 'sim' : 'não'} />
             <Item k="ETE" v="nova em pacote · existente por módulos" />
-            <Item k="Solver" v="1000 s" />
+            <Item k="Solver" v="5000 s" />
           </dl>
         </div>
 

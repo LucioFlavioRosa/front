@@ -245,7 +245,7 @@ describe('corpoDaRodada', () => {
 
   it('o corpo NÃO carrega afinação de execução', () => {
     // `max_time_s` e `workers` são execução, não decisão de negócio. O tempo é
-    // fixado em 1000s pelo backend (e viaja no `params`, para o histórico
+    // fixado em 5000s pelo backend (e viaja no `params`, para o histórico
     // registrar); os workers ficam com o padrão do executor.
     const corpo = corpoDaRodada({ ...estadoInicial(), unidadeId: 'u1' })
     expect('max_time_s' in corpo).toBe(false)
