@@ -4,7 +4,6 @@
  */
 import { describe, expect, it } from 'vitest'
 import {
-  aceitaFoco,
   bloqueado,
   corpoDaRodada,
   derivarOrcamento,
@@ -82,25 +81,6 @@ describe('cronograma inválido bloqueia em vez de enviar outra coisa', () => {
     const e = { ...estadoInicial(), unidadeId: 'u1' }
     e.orcamento = [{ ano: '2026', valor: '-5' }]
     expect(bloqueado(validar(e, PRONTA))).toBe(true)
-  })
-})
-
-describe('aceitaFoco — digitação intermediária preservada', () => {
-  it('deixa digitar "0", "0," e "0,3" sem reescrever no meio', () => {
-    // Quem quer "0,35" digita "0," antes. Corrigir aqui apagaria a digitacao.
-    expect(aceitaFoco('0')).toBe('0')
-    expect(aceitaFoco('0,')).toBe('0,')
-    expect(aceitaFoco('0,3')).toBe('0,3')
-  })
-
-  it('clampa o que sai da faixa 0–1', () => {
-    // O campo nunca pode exibir numero diferente do que sera enviado.
-    expect(aceitaFoco('5')).toBe('1')
-    expect(aceitaFoco('-2')).toBe('0')
-  })
-
-  it('aceita o extremo 1', () => {
-    expect(aceitaFoco('1')).toBe('1')
   })
 })
 
@@ -222,13 +202,6 @@ describe('validar — o que bloqueia e o que só avisa', () => {
     expect('ete_fixo' in corpo).toBe(false)
   })
 
-  it('prioridade de cidade incompleta avisa que será ignorada', () => {
-    const e = { ...estadoInicial(), unidadeId: 'u1', pesos: [{ cidade: '', peso: '5' }] }
-    const c = validar(e, PRONTA)
-    expect(bloqueado(c)).toBe(false)
-    expect(c.some((x) => x.texto.includes('ignorada'))).toBe(true)
-  })
-
   it('tudo em ordem não gera nem bloqueio nem aviso', () => {
     const e = { ...estadoInicial(), unidadeId: 'u1' }
     const c = validar(e, PRONTA)
@@ -270,16 +243,11 @@ describe('corpoDaRodada', () => {
     expect('metas_cobertura' in corpoDaRodada({ ...estadoInicial(), unidadeId: 'u1' })).toBe(false)
   })
 
-  it('descarta prioridade de cidade incompleta', () => {
-    const e = {
-      ...estadoInicial(),
-      unidadeId: 'u1',
-      pesos: [
-        { cidade: 'Cabo Frio', peso: '5' },
-        { cidade: '', peso: '3' },
-      ],
-    }
-    expect(corpoDaRodada(e).peso_cidade).toEqual({ 'Cabo Frio': 5 })
+  it('o corpo NÃO carrega peso_cidade — todas as cidades pesam 1', () => {
+    // A ausência É o padrão pedido: o motor multiplica por
+    // `peso_cidade.get(cidade, 1.0)`, então sem o parâmetro o multiplicador é 1
+    // para todas. Mandar `{}` daria no mesmo e sugeriria que há escolha.
+    expect('peso_cidade' in corpoDaRodada({ ...estadoInicial(), unidadeId: 'u1' })).toBe(false)
   })
 
   it('no modo valor único manda orcamento_anual + horizonte, e não o mapa', () => {
@@ -304,12 +272,17 @@ describe('corpoDaRodada', () => {
 })
 
 describe('rótulos', () => {
-  it('o foco ganha um rótulo legível', () => {
+  it('o foco ganha um rótulo legível nas três escolhas da tela', () => {
     expect(rotuloFoco(0)).toBe('só VPL')
     expect(rotuloFoco(0.5)).toBe('equilíbrio')
     expect(rotuloFoco(1)).toBe('cobertura em 1º lugar')
-    expect(rotuloFoco(0.2)).toContain('VPL')
-    expect(rotuloFoco(0.8)).toContain('cobertura')
+  })
+
+  it('valor fora das três ainda responde — o payload aceita a faixa toda', () => {
+    // A tela so produz 0, 0,5 e 1, mas um pedido montado fora dela pode trazer
+    // qualquer valor entre 0 e 1. O resumo nao pode ficar sem rotulo por isso.
+    expect(rotuloFoco(0.2)).toBe('equilíbrio')
+    expect(rotuloFoco(0.8)).toBe('equilíbrio')
   })
 
   it('as etapas do progresso seguem a ordem do job', () => {

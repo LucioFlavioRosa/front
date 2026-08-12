@@ -641,8 +641,7 @@ tela mostra o nome técnico ao lado de cada controle).
   "horizonte_capex": 8,
 
   "foco_cobertura": 1.0, // 0 a 1
-  "penalidade_cobertura": "meta+cobertura", // meta+cobertura | meta | ligacao
-  "peso_cidade": { "Cabo Frio": 5 }, // {} quando não há prioridade
+  "penalidade_cobertura": "meta+cobertura", // meta+cobertura | meta
 
   "base_receita": "arrecadada", // arrecadada | faturada
   "curva_adocao": "scurve", // scurve | linear
@@ -696,6 +695,16 @@ Três detalhes que o front garante e o backend **não deve assumir**:
 
 - **A janela de CAPEX é derivada**, nunca enviada: ela é o intervalo dos anos com
   verba em `orcamento`. Não existe campo de janela no modo cronograma.
+- **NÃO existe `peso_cidade` no corpo, e a ausência É o padrão:** todas as cidades
+  pesam **1**. O motor multiplica a contribuição de cada uma por
+  `peso_cidade.get(cidade, 1.0)` — sem o parâmetro, o multiplicador é 1 para
+  todas. Mandar `{}` daria no mesmo e sugeriria que há escolha.
+
+- **`penalidade_cobertura` tem DUAS opções**, `meta+cobertura` e `meta`. O modo
+  `ligacao` — penalizar por ligação não atendida, independente da meta — saiu da
+  tela: a meta é sempre a referência. O motor continua entendendo o modo; ele é
+  que não é mais oferecido.
+
 - **NÃO existe `anos_extra_conclusao` no corpo, e ele vale ZERO.** A obra inicia e
   conclui **dentro** da janela de CAPEX, sem "rabo" custeado pela sobra acumulada.
 

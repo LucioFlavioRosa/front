@@ -13,7 +13,12 @@
 export const MILHAO = 1_000_000
 
 export type ModoOrcamento = 'ano' | 'unico'
-export type Penalidade = 'meta+cobertura' | 'meta' | 'ligacao'
+/**
+ * `ligacao` SAIU: penalizava por ligacao nao atendida, independente da meta — e a
+ * decisao de produto e que a meta e sempre a referencia. O motor continua
+ * entendendo o modo; a tela e que nao o oferece.
+ */
+export type Penalidade = 'meta+cobertura' | 'meta'
 export type BaseReceita = 'arrecadada' | 'faturada'
 export type CurvaAdocao = 'scurve' | 'linear'
 
@@ -21,12 +26,6 @@ export type CurvaAdocao = 'scurve' | 'linear'
 export interface LinhaOrcamento {
   ano: string
   valor: string
-}
-
-/** Prioridade de uma cidade (`PESO_CIDADE`). Linha incompleta e ignorada. */
-export interface PesoCidade {
-  cidade: string
-  peso: string
 }
 
 export interface EstadoSimulacao {
@@ -40,7 +39,6 @@ export interface EstadoSimulacao {
   horizonte: string
   foco: string
   penalidade: Penalidade
-  pesos: PesoCidade[]
   baseReceita: BaseReceita
   curvaAdocao: CurvaAdocao
   usarCts: boolean
@@ -83,7 +81,6 @@ export function estadoInicial(): EstadoSimulacao {
     horizonte: '8',
     foco: '1',
     penalidade: 'meta+cobertura',
-    pesos: [],
     baseReceita: 'arrecadada',
     curvaAdocao: 'scurve',
     usarCts: true,
@@ -132,23 +129,6 @@ export function numOuNulo(v: string | number): number | null {
 /** O mesmo parser, com 0 no lugar de `null` — para somas e derivacoes. */
 export function num(v: string | number): number {
   return numOuNulo(v) ?? 0
-}
-
-/**
- * Aceita o que esta sendo digitado num campo de 0 a 1.
- *
- * "0", "0," e "0,3" sao estados VALIDOS de digitacao e nao podem ser reescritos
- * no meio — quem tenta digitar "0,35" digita "0," antes. So corrige (clampa)
- * quando o valor sai da faixa, porque o campo nunca deve exibir numero diferente
- * do que sera enviado.
- */
-export function aceitaFoco(bruto: string): string {
-  if (bruto === '' || /^[01]?[.,]?\d*$/.test(bruto)) {
-    const n = num(bruto)
-    if (n >= 0 && n <= 1) return bruto
-  }
-  const clampado = Math.min(1, Math.max(0, num(bruto)))
-  return String(clampado).replace('.', ',')
 }
 
 export interface DerivadoOrcamento {
@@ -201,8 +181,14 @@ export function derivarOrcamento(e: EstadoSimulacao): DerivadoOrcamento {
 export function rotuloFoco(v: number): string {
   if (v === 0) return 'só VPL'
   if (v === 1) return 'cobertura em 1º lugar'
-  if (v < 0.35) return 'puxando para VPL'
-  if (v > 0.65) return 'puxando para cobertura'
+  // A tela oferece TRES escolhas (0 · 0,5 · 1), entao so estes tres rotulos
+  // ocorrem. Havia "puxando para VPL" e "puxando para cobertura" para traduzir
+  // valor digitado no meio da faixa — e a necessidade daquela traducao era o
+  // sintoma de que o numero livre nao dizia nada a quem escolhia.
+  //
+  // O intervalo continua respondendo, e nao com string vazia: o payload aceita
+  // qualquer valor entre 0 e 1, e um pedido montado fora da tela nao pode fazer
+  // o resumo mentir por omissao.
   return 'equilíbrio'
 }
 
@@ -348,13 +334,6 @@ export function validar(e: EstadoSimulacao, prontidao: Prontidao | undefined): I
     })
   }
 
-  if (e.pesos.some((p) => p.cidade === '' || p.peso === '')) {
-    itens.push({
-      severidade: 'avisa',
-      texto: 'Há prioridade de cidade incompleta — será ignorada.',
-    })
-  }
-
   return itens
 }
 
@@ -377,7 +356,6 @@ export interface CorpoNovaRodada {
   horizonte_capex?: number
   foco_cobertura: number
   penalidade_cobertura: Penalidade
-  peso_cidade: Record<string, number>
   base_receita: BaseReceita
   curva_adocao: CurvaAdocao
   usar_cts: boolean
@@ -393,11 +371,6 @@ export function corpoDaRodada(e: EstadoSimulacao): CorpoNovaRodada {
     nome: e.nome.trim() || null,
     foco_cobertura: Math.min(1, Math.max(0, num(e.foco))),
     penalidade_cobertura: e.penalidade,
-    peso_cidade: Object.fromEntries(
-      e.pesos
-        .filter((p) => p.cidade !== '' && p.peso !== '')
-        .map((p) => [p.cidade, num(p.peso)] as const),
-    ),
     base_receita: e.baseReceita,
     curva_adocao: e.curvaAdocao,
     usar_cts: e.usarCts,
