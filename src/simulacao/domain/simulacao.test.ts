@@ -4,7 +4,6 @@
  */
 import { describe, expect, it } from 'vitest'
 import {
-  aceitaFoco,
   bloqueado,
   corpoDaRodada,
   derivarOrcamento,
@@ -82,25 +81,6 @@ describe('cronograma inválido bloqueia em vez de enviar outra coisa', () => {
     const e = { ...estadoInicial(), unidadeId: 'u1' }
     e.orcamento = [{ ano: '2026', valor: '-5' }]
     expect(bloqueado(validar(e, PRONTA))).toBe(true)
-  })
-})
-
-describe('aceitaFoco — digitação intermediária preservada', () => {
-  it('deixa digitar "0", "0," e "0,3" sem reescrever no meio', () => {
-    // Quem quer "0,35" digita "0," antes. Corrigir aqui apagaria a digitacao.
-    expect(aceitaFoco('0')).toBe('0')
-    expect(aceitaFoco('0,')).toBe('0,')
-    expect(aceitaFoco('0,3')).toBe('0,3')
-  })
-
-  it('clampa o que sai da faixa 0–1', () => {
-    // O campo nunca pode exibir numero diferente do que sera enviado.
-    expect(aceitaFoco('5')).toBe('1')
-    expect(aceitaFoco('-2')).toBe('0')
-  })
-
-  it('aceita o extremo 1', () => {
-    expect(aceitaFoco('1')).toBe('1')
   })
 })
 
@@ -304,12 +284,17 @@ describe('corpoDaRodada', () => {
 })
 
 describe('rótulos', () => {
-  it('o foco ganha um rótulo legível', () => {
+  it('o foco ganha um rótulo legível nas três escolhas da tela', () => {
     expect(rotuloFoco(0)).toBe('só VPL')
     expect(rotuloFoco(0.5)).toBe('equilíbrio')
     expect(rotuloFoco(1)).toBe('cobertura em 1º lugar')
-    expect(rotuloFoco(0.2)).toContain('VPL')
-    expect(rotuloFoco(0.8)).toContain('cobertura')
+  })
+
+  it('valor fora das três ainda responde — o payload aceita a faixa toda', () => {
+    // A tela so produz 0, 0,5 e 1, mas um pedido montado fora dela pode trazer
+    // qualquer valor entre 0 e 1. O resumo nao pode ficar sem rotulo por isso.
+    expect(rotuloFoco(0.2)).toBe('equilíbrio')
+    expect(rotuloFoco(0.8)).toBe('equilíbrio')
   })
 
   it('as etapas do progresso seguem a ordem do job', () => {

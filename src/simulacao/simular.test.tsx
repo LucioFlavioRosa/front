@@ -68,6 +68,45 @@ describe('parâmetros e rastreabilidade', () => {
   })
 })
 
+describe('foco em cobertura', () => {
+  it('são TRÊS escolhas, e não um número digitável', async () => {
+    // O campo livre entre 0 e 1 saiu com a barra e a régua: quem decide entre VPL
+    // e cobertura escolhe uma postura. O valor intermediário precisava de um
+    // rótulo ("puxando para VPL") para ser entendido — e essa tradução era o
+    // sintoma de que o número não dizia nada a quem escolhia.
+    renderApp('/simular')
+    expect(await screen.findByText('FOCO_COBERTURA')).toBeTruthy()
+
+    const grupo = screen.getByRole('group', { name: 'Foco em cobertura' })
+    for (const nome of ['Só VPL', 'Equilíbrio', 'Cobertura primeiro']) {
+      expect(within(grupo).getByText(nome)).toBeTruthy()
+    }
+    // E NENHUM campo de digitação. `queryByLabelText` não serve aqui: o próprio
+    // grupo responde por `aria-label`. O que precisa não existir é entrada de
+    // texto dentro dele.
+    expect(within(grupo).queryByRole('textbox')).toBeNull()
+    expect(grupo.querySelector('input')).toBeNull()
+  })
+
+  it('clicar numa escolha muda o que vai no payload', async () => {
+    estado.respostas['/runs'] = { runId: 'run_foco', status: 'RODANDO' }
+    dados['/runs/run_foco/status'] = { runId: 'run_foco', status: 'RODANDO', progresso: 5 }
+    renderApp('/simular')
+    await escolherUnidade()
+
+    const grupo = screen.getByRole('group', { name: 'Foco em cobertura' })
+    fireEvent.click(within(grupo).getByText('Só VPL'))
+    await waitFor(() => {
+      const b = screen.getByRole('button', { name: 'Iniciar simulação' }) as HTMLButtonElement
+      expect(b.disabled).toBe(false)
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Iniciar simulação' }))
+
+    await waitFor(() => expect(estado.posts.length).toBe(1))
+    expect(estado.posts[0][1].foco_cobertura).toBe(0)
+  })
+})
+
 describe('orçamento', () => {
   it('a janela de CAPEX é derivada do cronograma, e acompanha a edição', async () => {
     renderApp('/simular')

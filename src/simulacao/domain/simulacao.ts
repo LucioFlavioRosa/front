@@ -134,23 +134,6 @@ export function num(v: string | number): number {
   return numOuNulo(v) ?? 0
 }
 
-/**
- * Aceita o que esta sendo digitado num campo de 0 a 1.
- *
- * "0", "0," e "0,3" sao estados VALIDOS de digitacao e nao podem ser reescritos
- * no meio — quem tenta digitar "0,35" digita "0," antes. So corrige (clampa)
- * quando o valor sai da faixa, porque o campo nunca deve exibir numero diferente
- * do que sera enviado.
- */
-export function aceitaFoco(bruto: string): string {
-  if (bruto === '' || /^[01]?[.,]?\d*$/.test(bruto)) {
-    const n = num(bruto)
-    if (n >= 0 && n <= 1) return bruto
-  }
-  const clampado = Math.min(1, Math.max(0, num(bruto)))
-  return String(clampado).replace('.', ',')
-}
-
 export interface DerivadoOrcamento {
   /** Verba de cada ano, em milhoes, na ordem do cronograma. */
   valores: number[]
@@ -201,8 +184,14 @@ export function derivarOrcamento(e: EstadoSimulacao): DerivadoOrcamento {
 export function rotuloFoco(v: number): string {
   if (v === 0) return 'só VPL'
   if (v === 1) return 'cobertura em 1º lugar'
-  if (v < 0.35) return 'puxando para VPL'
-  if (v > 0.65) return 'puxando para cobertura'
+  // A tela oferece TRES escolhas (0 · 0,5 · 1), entao so estes tres rotulos
+  // ocorrem. Havia "puxando para VPL" e "puxando para cobertura" para traduzir
+  // valor digitado no meio da faixa — e a necessidade daquela traducao era o
+  // sintoma de que o numero livre nao dizia nada a quem escolhia.
+  //
+  // O intervalo continua respondendo, e nao com string vazia: o payload aceita
+  // qualquer valor entre 0 e 1, e um pedido montado fora da tela nao pode fazer
+  // o resumo mentir por omissao.
   return 'equilíbrio'
 }
 

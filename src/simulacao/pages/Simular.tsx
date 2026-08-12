@@ -6,7 +6,6 @@ import { useStatusRodada, type FilaDaRodada } from '@/comum/api/rodada'
 import { decorrido, demorandoDemais } from '@/comum/domain/espera'
 import { useApp } from '@/comum/state/AppContext'
 import {
-  aceitaFoco,
   bloqueado,
   corpoDaRodada,
   derivarOrcamento,
@@ -375,26 +374,16 @@ export function Simular() {
           descricao="O que o otimizador deve maximizar quando os dois entram em conflito."
         >
           <div>
-            <Rotulo texto="Foco em cobertura" tecnico="FOCO_COBERTURA" htmlFor="sim-foco" />
-            <div className={styles.focoLinha}>
-              <input
-                id="sim-foco"
-                className={styles.focoInput}
-                value={e.foco}
-                inputMode="decimal"
-                onChange={(ev) => set('foco', aceitaFoco(ev.target.value))}
-              />
-              <div className={styles.focoBarra} aria-hidden="true">
-                <div className={styles.focoPreenchida} style={{ width: `${focoV * 100}%` }} />
-              </div>
-              <span className={styles.focoRotulo}>{rotuloFoco(focoV)}</span>
-            </div>
-            <div className={styles.focoEscala} aria-hidden="true">
-              <span>0 · só VPL</span>
-              <span>0,5 · equilíbrio</span>
-              <span>1 · cobertura primeiro</span>
-            </div>
-            <div className={styles.atalhos}>
+            <Rotulo texto="Foco em cobertura" tecnico="FOCO_COBERTURA" />
+            {/* TRÊS ESCOLHAS, e não um número livre entre 0 e 1.
+                O campo digitável saiu com a barra e a régua: quem decide entre VPL
+                e cobertura escolhe uma POSTURA, não calibra um peso. O valor
+                intermediário existia e ninguém sabia o que 0,37 significava — a
+                própria tela precisava de um rótulo ("puxando para VPL") para
+                traduzi-lo de volta.
+                O payload continua levando o número (0 · 0,5 · 1): o que saiu foi a
+                digitação, não o parâmetro. */}
+            <div className={styles.atalhos} role="group" aria-label="Foco em cobertura">
               {(
                 [
                   ['0', 0, 'Só VPL', 'Ignora a meta e maximiza retorno.'],

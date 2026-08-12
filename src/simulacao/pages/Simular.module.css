@@ -290,57 +290,6 @@
 }
 
 /* ---------- foco ---------- */
-.focoLinha {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.focoInput {
-  font-family: inherit;
-  font-size: 15px;
-  font-weight: 800;
-  width: 78px;
-  padding: 7px 10px;
-  border: 1.5px solid #cbd5e1;
-  border-radius: var(--radius-field);
-  color: var(--res-teal);
-  font-variant-numeric: tabular-nums;
-}
-.focoInput:focus-visible {
-  outline: 2px solid var(--brand);
-  outline-offset: 1px;
-}
-
-.focoBarra {
-  flex: 1;
-  height: 8px;
-  background: #eef1f4;
-  border-radius: 999px;
-  overflow: hidden;
-  min-width: 80px;
-}
-
-.focoPreenchida {
-  height: 100%;
-  background: var(--res-teal);
-  border-radius: 999px;
-}
-
-.focoRotulo {
-  font-size: 11.5px;
-  font-weight: 700;
-  color: var(--res-teal);
-  white-space: nowrap;
-}
-
-.focoEscala {
-  display: flex;
-  justify-content: space-between;
-  font-size: 10px;
-  color: var(--text-400);
-  margin-top: 5px;
-}
 
 .atalhos {
   display: grid;
