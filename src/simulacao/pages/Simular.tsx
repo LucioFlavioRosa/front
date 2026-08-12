@@ -353,6 +353,22 @@ export function Simular() {
               para o histórico registrar o que foi usado.
               ATENÇÃO ao mexer: o default do motor é 3, não 0. Deixar de mandar a
               chave NÃO dá zero — dá três. */}
+
+          {/* A DATA DE INÍCIO mora aqui, e não mais em "ETE e solver": ela é do
+              mesmo assunto que o cronograma — quando o dinheiro começa a poder ser
+              gasto. O primeiro ano-calendário fica parcial a partir dela. */}
+          <div>
+            <Campo
+              rotulo="Data de início"
+              tecnico="DATA_INICIO"
+              valor={e.dataInicio}
+              onChange={(v) => set('dataInicio', v)}
+              placeholder="2026-06"
+              largura={120}
+              inputMode="text"
+            />
+            <Ajuda>Vazia = janeiro do ano-base do cadastro. Formato AAAA-MM.</Ajuda>
+          </div>
         </Secao>
 
         {/* ---------------- 03 OBJETIVO ---------------- */}
@@ -499,8 +515,8 @@ export function Simular() {
         {/* ---------------- 05 ETE E SOLVER ---------------- */}
         <Secao
           numero="05"
-          titulo="ETE e execução do solver"
-          descricao="Avançado — os padrões atendem à maioria das rodadas."
+          titulo="ETE"
+          descricao="Como cada estação entra no plano — decidido pela ficha dela, não por esta tela."
         >
           {/* NÃO HÁ INTERRUPTOR DE ETE, e a ausência é a regra do negócio.
               Qual tratamento a ETE recebe não é escolha da rodada: é o que a ficha
@@ -519,33 +535,11 @@ export function Simular() {
             módulos informados) entra como pacote único; a que já existe é expandida em módulos,
             conforme a vazão conectada passa da capacidade ociosa.
           </p>
-          <div className={styles.linha3}>
-            <Campo
-              rotulo="Data de início"
-              tecnico="DATA_INICIO"
-              valor={e.dataInicio}
-              onChange={(v) => set('dataInicio', v)}
-              placeholder="2026-06"
-              largura={120}
-              inputMode="text"
-            />
-            <Campo
-              rotulo="Tempo do solver"
-              tecnico="MAX_TIME_S"
-              valor={e.maxTimeS}
-              onChange={(v) => set('maxTimeS', v)}
-              sufixo="s"
-              largura={90}
-            />
-            <Campo
-              rotulo="Workers"
-              tecnico="WORKERS"
-              valor={e.workers}
-              onChange={(v) => set('workers', v)}
-              largura={70}
-            />
-          </div>
-          <Ajuda>Data vazia = janeiro do ano-base do cadastro.</Ajuda>
+          {/* TEMPO DE SOLVER e WORKERS saíram: são afinação de execução, não
+              decisão de negócio, e quem dispara a rodada não tem como calibrá-los.
+              `MAX_TIME_S` é fixado em 1000s por `app/dominio/parametros.py` e viaja
+              no `params` — o histórico registra o que a rodada usou. `WORKERS` não
+              viaja: o executor usa o próprio padrão. */}
         </Secao>
       </div>
 
@@ -592,7 +586,7 @@ export function Simular() {
             <Item k="Usar CTS" v={e.usarCts ? 'sim' : 'não'} />
             <Item k="Incluir industrial" v={e.incluirIndustrial ? 'sim' : 'não'} />
             <Item k="ETE" v="nova em pacote · existente por módulos" />
-            <Item k="Solver" v={`${e.maxTimeS} s · ${e.workers} workers`} />
+            <Item k="Solver" v="1000 s" />
           </dl>
         </div>
 

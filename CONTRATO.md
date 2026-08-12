@@ -649,8 +649,6 @@ tela mostra o nome técnico ao lado de cada controle).
   "incluir_industrial": true,
 
   "data_inicio": null, // null = janeiro do ano-base; ou "2026-06"
-  "max_time_s": 300,
-  "workers": 8,
 }
 ```
 
@@ -695,6 +693,15 @@ Três detalhes que o front garante e o backend **não deve assumir**:
 
 - **A janela de CAPEX é derivada**, nunca enviada: ela é o intervalo dos anos com
   verba em `orcamento`. Não existe campo de janela no modo cronograma.
+- **NÃO existem `max_time_s` nem `workers` no corpo.** Tempo de solver e
+  paralelismo são afinação de execução, não decisão de negócio.
+
+  > `MAX_TIME_S` é **fixado em 1000s** por `app/dominio/parametros.py` e **viaja no
+  > `params`** — sem a chave, cada consumidor usaria o próprio default e a mesma
+  > rodada teria tempos diferentes conforme quem a executasse. `WORKERS` **não
+  > viaja**: paralelismo depende da máquina que executa, e fixá-lo aqui seria
+  > decidir por uma máquina que não conhecemos — o executor usa o próprio padrão.
+
 - **NÃO existe `peso_cidade` no corpo, e a ausência É o padrão:** todas as cidades
   pesam **1**. O motor multiplica a contribuição de cada uma por
   `peso_cidade.get(cidade, 1.0)` — sem o parâmetro, o multiplicador é 1 para

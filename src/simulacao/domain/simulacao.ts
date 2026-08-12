@@ -44,8 +44,6 @@ export interface EstadoSimulacao {
   usarCts: boolean
   incluirIndustrial: boolean
   dataInicio: string
-  maxTimeS: string
-  workers: string
 }
 
 /**
@@ -86,8 +84,6 @@ export function estadoInicial(): EstadoSimulacao {
     usarCts: true,
     incluirIndustrial: true,
     dataInicio: '',
-    maxTimeS: '300',
-    workers: '8',
   }
 }
 
@@ -361,8 +357,6 @@ export interface CorpoNovaRodada {
   usar_cts: boolean
   incluir_industrial: boolean
   data_inicio: string | null
-  max_time_s: number
-  workers: number
 }
 
 export function corpoDaRodada(e: EstadoSimulacao): CorpoNovaRodada {
@@ -376,8 +370,6 @@ export function corpoDaRodada(e: EstadoSimulacao): CorpoNovaRodada {
     usar_cts: e.usarCts,
     incluir_industrial: e.incluirIndustrial,
     data_inicio: e.dataInicio.trim() || null,
-    max_time_s: Math.max(1, Math.round(num(e.maxTimeS))),
-    workers: Math.max(1, Math.round(num(e.workers))),
   }
 
   if (e.modoOrcamento === 'ano') {
