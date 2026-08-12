@@ -63,8 +63,9 @@ export const DICT: Record<string, Verbete> = {
     tec: 'potencial_crescimento',
     origem: 'você preenche',
     tipo: 'fator ≥ 1,0 · default 1,0',
-    oque: 'Multiplicador do universo de ligações da sub-bacia. 1,0 = sem crescimento; 1,5 = universo 50% maior.',
-    porque: 'Amplia SÓ o denominador da meta de cobertura.',
+    oque: 'Multiplicador do universo da sub-bacia. 1,0 = sem crescimento; 1,5 = universo 50% maior.',
+    porque:
+      'Amplia o denominador da meta de cobertura E as novas das obras — ligações, economias e população passam a ser universo × potencial − atuais. Antes só o denominador crescia: a meta subia e o meio de alcançá-la, não.',
     exemplo: '1,0',
   },
   quantidade: {

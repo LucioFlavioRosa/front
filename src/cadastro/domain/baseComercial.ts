@@ -44,6 +44,15 @@ export interface CampoDb {
    * total" e o tipo de coisa que ninguem adivinha olhando a celula.
    */
   dict?: string
+  /**
+   * O campo e DERIVADO, e destas duas colunas: `universo x potencial - atuais`.
+   *
+   * Quando presente, a celula vira calculada (ƒ) e para de aceitar override — o
+   * valor que a simulacao usa e sempre a conta, e deixar alguem corrigir a mao um
+   * numero que o motor recalcula seria oferecer um controle que nao controla.
+   * O Databricks pode ate trazer a coluna; ela vira conferencia, nao entrada.
+   */
+  derivado?: { universo: keyof SubBaciaDb; atuais: keyof SubBaciaDb }
 }
 
 /**
@@ -58,11 +67,23 @@ export const CAMPOS_DB: CampoDb[] = [
 
   { rotulo: 'Ligações — universo', chave: 'ligU', unidade: '', regua: 'ligacoes' },
   { rotulo: 'Ligações atuais', chave: 'ligA', unidade: '', regua: 'ligacoes' },
-  { rotulo: 'Ligações novas (obras)', chave: 'ligN', unidade: '', regua: 'ligacoes' },
+  {
+    rotulo: 'Ligações novas (obras)',
+    chave: 'ligN',
+    unidade: '',
+    regua: 'ligacoes',
+    derivado: { universo: 'ligU', atuais: 'ligA' },
+  },
 
   { rotulo: 'Economias — universo', chave: 'ecoU', unidade: '', regua: 'economias' },
   { rotulo: 'Economias atuais', chave: 'ecoA', unidade: '', regua: 'economias' },
-  { rotulo: 'Economias novas (obras)', chave: 'ecoN', unidade: '', regua: 'economias' },
+  {
+    rotulo: 'Economias novas (obras)',
+    chave: 'ecoN',
+    unidade: '',
+    regua: 'economias',
+    derivado: { universo: 'ecoU', atuais: 'ecoA' },
+  },
 
   // Recorte industrial: as mesmas medidas do topo, so da categoria industria.
   // Sem `regua` de proposito — nao e denominador de meta; e o que explica o
@@ -125,7 +146,7 @@ export function camposParametros(escopo: 'sub-bacia' | 'cts'): CampoParam[] {
     // leu assim e estranhou a ficha continuar incompleta. Placeholder nunca pode
     // ser um valor que o campo aceita.
     ['Vazão nova industrial', 'vazInd', 'vazao_contribuicao_industrial', 'L/s', 'sem indústria', 'Parcela industrial da vazão acima — já contida nela, não some as duas. Opcional: em branco vale como sem indústria.'],
-    ['Potencial de crescimento', 'pot', 'potencial_crescimento', 'fator', '1,0', 'Multiplica o universo de ligações (1,0 = sem). Só amplia o denominador da meta.'],
+    ['Potencial de crescimento', 'pot', 'potencial_crescimento', 'fator', '1,0', 'Multiplica o universo de ligações (1,0 = sem). Amplia o denominador da meta E as novas das obras.'],
   ]
 }
 

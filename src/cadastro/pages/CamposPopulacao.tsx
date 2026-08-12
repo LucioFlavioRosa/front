@@ -63,7 +63,7 @@ export function CamposPopulacao({
         <FieldRow
           rotulo="População nova (obras)"
           tecnico="populacao_novas_obras"
-          ajuda="Calculado: universo − atendida hoje. É a população que as obras deste plano passam a atender."
+          ajuda="Calculado: universo × potencial de crescimento − atendida hoje. É a população que as obras deste plano passam a atender."
           unidade="hab."
           valor={popNovas(params)}
           variant="calc"

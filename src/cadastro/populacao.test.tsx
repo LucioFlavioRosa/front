@@ -42,7 +42,17 @@ function rotuloDb(rotulo: string): HTMLElement {
 /** Valor exibido numa célula do card do Databricks. */
 function celula(rotulo: string): string {
   const label = rotuloDb(rotulo)
-  return (label.parentElement?.textContent ?? '').replace(label.textContent ?? '', '').trim()
+  const bloco = label.parentElement
+  // A NOTA DA CONTA sai junto: campo derivado ("universo × potencial − atuais")
+  // descreve como o número saiu, e ela vive no mesmo bloco do valor. Sem tirá-la,
+  // toda asserção de valor passaria a comparar valor + explicação.
+  // O `id` do hint termina em `-hint` (`DbCard`, `aria-describedby`); a classe do
+  // CSS Module vira hash, entao o sufixo do id e a ancora estavel.
+  const hint = bloco?.querySelector('[id$="-hint"]')?.textContent ?? ''
+  return (bloco?.textContent ?? '')
+    .replace(label.textContent ?? '', '')
+    .replace(hint, '')
+    .trim()
 }
 
 /** A célula está marcada como parte da régua da meta desta cidade? */
