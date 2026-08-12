@@ -48,8 +48,6 @@ export interface EstadoSimulacao {
   curvaAdocao: CurvaAdocao
   usarCts: boolean
   incluirIndustrial: boolean
-  eteFaseada: boolean
-  eteFixo: boolean
   dataInicio: string
   maxTimeS: string
   workers: string
@@ -96,8 +94,6 @@ export function estadoInicial(): EstadoSimulacao {
     curvaAdocao: 'scurve',
     usarCts: true,
     incluirIndustrial: true,
-    eteFaseada: true,
-    eteFixo: false,
     dataInicio: '',
     maxTimeS: '300',
     workers: '8',
@@ -358,12 +354,6 @@ export function validar(e: EstadoSimulacao, prontidao: Prontidao | undefined): I
     })
   }
 
-  if (e.eteFixo && e.eteFaseada) {
-    itens.push({
-      severidade: 'avisa',
-      texto: 'ETE faseada com número fixo de módulos: a expansão não será otimizada.',
-    })
-  }
   if (e.pesos.some((p) => p.cidade === '' || p.peso === '')) {
     itens.push({
       severidade: 'avisa',
@@ -401,8 +391,6 @@ export interface CorpoNovaRodada {
   curva_adocao: CurvaAdocao
   usar_cts: boolean
   incluir_industrial: boolean
-  ete_faseada: boolean
-  ete_fixo: boolean
   data_inicio: string | null
   max_time_s: number
   workers: number
@@ -426,8 +414,6 @@ export function corpoDaRodada(e: EstadoSimulacao): CorpoNovaRodada {
     curva_adocao: e.curvaAdocao,
     usar_cts: e.usarCts,
     incluir_industrial: e.incluirIndustrial,
-    ete_faseada: e.eteFaseada,
-    ete_fixo: e.eteFixo,
     data_inicio: e.dataInicio.trim() || null,
     max_time_s: Math.max(1, Math.round(num(e.maxTimeS))),
     workers: Math.max(1, Math.round(num(e.workers))),

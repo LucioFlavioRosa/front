@@ -53,7 +53,10 @@ describe('parâmetros e rastreabilidade', () => {
     expect(screen.getByText('USAR_CTS')).toBeTruthy()
     expect(screen.getByText('INCLUIR_INDUSTRIAL')).toBeTruthy()
     expect(screen.getByText('ANOS_EXTRA_CONCLUSAO')).toBeTruthy()
-    expect(screen.getByText('ETE_FASEADA')).toBeTruthy()
+    // ETE_FASEADA e ETE_FIXO NAO estao mais aqui: o tratamento da ETE sai da
+    // ficha dela, e nao de um controle da rodada.
+    expect(screen.queryByText('ETE_FASEADA')).toBeNull()
+    expect(screen.queryByText('ETE_FIXO')).toBeNull()
   })
 
   it('abre com os defaults do notebook', async () => {

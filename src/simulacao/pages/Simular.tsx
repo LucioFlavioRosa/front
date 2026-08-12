@@ -599,20 +599,23 @@ export function Simular() {
           titulo="ETE e execução do solver"
           descricao="Avançado — os padrões atendem à maioria das rodadas."
         >
-          <Interruptor
-            rotulo="ETE faseada"
-            tecnico="ETE_FASEADA"
-            descricao="Permite construir a ETE em módulos, conforme a vazão conectada cresce."
-            ligado={e.eteFaseada}
-            onToggle={() => set('eteFaseada', !e.eteFaseada)}
-          />
-          <Interruptor
-            rotulo="ETE com número fixo de módulos"
-            tecnico="ETE_FIXO"
-            descricao="Trava a quantidade de módulos no que está cadastrado, sem otimizar a expansão."
-            ligado={e.eteFixo}
-            onToggle={() => set('eteFixo', !e.eteFixo)}
-          />
+          {/* NÃO HÁ INTERRUPTOR DE ETE, e a ausência é a regra do negócio.
+              Qual tratamento a ETE recebe não é escolha da rodada: é o que a ficha
+              dela diz. ETE com terreno e número de módulos informados é NOVA, e
+              entra como pacote único — sem faseamento. ETE que já existe é
+              expandida em módulos, conforme a vazão passa da capacidade ociosa. O
+              motor decide isso por ETE (`otimizador_capex_v62.py`, detecção por
+              `nova=Sim` ou `capex_terreno > 0`), e não por rodada.
+              Havia aqui dois interruptores. `ETE_FASEADA` oferecia desligar o
+              tratamento por módulos — e o modo desligado trata a expansão PIOR,
+              porque o CP-SAT força o pré-dimensionamento pelo total do sistema.
+              `ETE_FIXO` era controle morto: com faseada ligada, o motor sai do
+              fluxo antes de olhar para ele. */}
+          <p className={styles.metasNota}>
+            <strong>ETE.</strong> Cada ETE é tratada conforme a ficha dela: a nova (terreno e
+            módulos informados) entra como pacote único; a que já existe é expandida em módulos,
+            conforme a vazão conectada passa da capacidade ociosa.
+          </p>
           <div className={styles.linha3}>
             <Campo
               rotulo="Data de início"
@@ -693,10 +696,7 @@ export function Simular() {
             <Item k="Curva de adesão" v={e.curvaAdocao === 'scurve' ? 'curva S' : 'linear'} />
             <Item k="Usar CTS" v={e.usarCts ? 'sim' : 'não'} />
             <Item k="Incluir industrial" v={e.incluirIndustrial ? 'sim' : 'não'} />
-            <Item
-              k="ETE"
-              v={`${e.eteFaseada ? 'faseada' : 'não faseada'}${e.eteFixo ? ' · módulos fixos' : ''}`}
-            />
+            <Item k="ETE" v="nova em pacote · existente por módulos" />
             <Item k="Solver" v={`${e.maxTimeS} s · ${e.workers} workers`} />
           </dl>
         </div>

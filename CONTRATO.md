@@ -653,8 +653,6 @@ tela mostra o nome técnico ao lado de cada controle).
   "usar_cts": true,
   "incluir_industrial": true,
 
-  "ete_faseada": true,
-  "ete_fixo": false,
   "data_inicio": null, // null = janeiro do ano-base; ou "2026-06"
   "max_time_s": 300,
   "workers": 8,
@@ -704,6 +702,23 @@ Três detalhes que o front garante e o backend **não deve assumir**:
   verba em `orcamento`. Não existe campo de janela no modo cronograma.
 - **`teto_execucao_anual: null` ≠ 0.** `null` significa "usa o pico do
   cronograma"; `0` significaria "não pode executar nada".
+- **NÃO existem `ete_faseada` nem `ete_fixo` no corpo.** O tratamento da ETE sai
+  da **ficha dela**, e não da rodada: ETE com terreno e número de módulos
+  informados é **nova** e entra como pacote único, sem faseamento; a que já existe
+  é expandida em módulos conforme a vazão passa da capacidade ociosa. O motor
+  decide isso por ETE (detecção por `nova=Sim` ou `capex_terreno > 0`).
+
+  > **Atenção de quem for implementar o job:** aqui a regra do `metas_cobertura`
+  > NÃO se aplica. Lá, a chave ausente dá o comportamento certo porque coincide
+  > com o default do motor. Aqui o default de `ete_faseada` no `ler_banco` é
+  > **`False`** — omitir o argumento **desligaria** o tratamento por módulos. Quem
+  > executa precisa **afirmar `ete_faseada=True`**, sempre.
+  >
+  > Havia dois controles na tela. `ETE_FASEADA` permitia desligar o tratamento por
+  > módulos, e o modo desligado trata a expansão **pior** (o CP-SAT força o
+  > pré-dimensionamento pelo total do sistema). `ETE_FIXO` era inerte: com faseada
+  > ligada, o motor sai do fluxo antes de olhar para ele. Os dois saíram.
+
 - **NÃO existe `metas_cobertura` no corpo, e a ausência é a regra.** As metas de
   cobertura vêm **sempre** da base — a fonte não é escolha de quem dispara a
   rodada. O único descarte legítimo é por **ano**: meta fora da janela de CAPEX

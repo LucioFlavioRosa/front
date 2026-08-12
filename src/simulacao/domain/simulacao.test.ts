@@ -212,9 +212,14 @@ describe('validar — o que bloqueia e o que só avisa', () => {
     expect(c.some((x) => x.texto.includes('metas'))).toBe(false)
   })
 
-  it('ETE faseada + módulos fixos avisa da contradição', () => {
-    const e = { ...estadoInicial(), unidadeId: 'u1', eteFaseada: true, eteFixo: true }
-    expect(validar(e, PRONTA).some((x) => x.severidade === 'avisa')).toBe(true)
+  it('o corpo NÃO carrega os flags de ETE — o tratamento é da ficha, não da rodada', () => {
+    // ETE nova (terreno + módulos informados) entra como pacote único; a que já
+    // existe é expandida em módulos. Quem decide é o dado de CADA ETE, no motor.
+    // `ETE_FASEADA` oferecia desligar isso — e o modo desligado trata a expansão
+    // pior. `ETE_FIXO` era morto: o motor sai do fluxo antes de olhar para ele.
+    const corpo = corpoDaRodada({ ...estadoInicial(), unidadeId: 'u1' })
+    expect('ete_faseada' in corpo).toBe(false)
+    expect('ete_fixo' in corpo).toBe(false)
   })
 
   it('prioridade de cidade incompleta avisa que será ignorada', () => {
@@ -289,8 +294,6 @@ describe('corpoDaRodada', () => {
     expect(corpo.curva_adocao).toBe('scurve')
     expect(corpo.usar_cts).toBe(true)
     expect(corpo.incluir_industrial).toBe(true)
-    expect(corpo.ete_faseada).toBe(true)
-    expect(corpo.ete_fixo).toBe(false)
     expect(corpo.max_time_s).toBe(300)
     expect(corpo.workers).toBe(8)
   })
