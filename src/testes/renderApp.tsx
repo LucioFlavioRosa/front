@@ -21,7 +21,9 @@ export function renderApp(path: string) {
   return render(
     <QueryClientProvider client={qc}>
       <AppProvider>
-        <RouterProvider router={router} />
+        {/* Mesmo `future` do `main.tsx`, de propósito: teste que roda com uma
+            configuração de router diferente da produção mede outra coisa. */}
+        <RouterProvider router={router} future={{ v7_startTransition: true }} />
       </AppProvider>
     </QueryClientProvider>,
   )

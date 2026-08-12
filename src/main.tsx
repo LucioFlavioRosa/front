@@ -39,7 +39,13 @@ async function bootstrap() {
     <React.StrictMode>
       <QueryClientProvider client={queryClient}>
         <AppProvider>
-          <RouterProvider router={router} />
+          {/* `v7_startTransition` opta ANTES do v7, e não só para calar o aviso:
+              ele envolve as trocas de estado do router em `React.startTransition`,
+              e é melhor descobrir o efeito disso agora do que na migração, com
+              todo o resto mudando junto.
+              Ligado igual em `testes/renderApp.tsx` — teste que se comporta
+              diferente da produção mede outra coisa. */}
+          <RouterProvider router={router} future={{ v7_startTransition: true }} />
           {Faixa ? <Faixa /> : null}
         </AppProvider>
       </QueryClientProvider>
