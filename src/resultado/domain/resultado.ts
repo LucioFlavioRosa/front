@@ -86,6 +86,17 @@ export interface RunResumo {
   progresso?: number
   /** Causa da falha, quando o job ou a fila reportaram uma. */
   erro?: string | null
+  /**
+   * O que o SOLVER chegou a devolver, quando chegou — `"VIAVEL(limite de tempo) |
+   * obrig 106/126  VPL=-227.126.290"`.
+   *
+   * Existe porque uma rodada pode morrer ENTRE o solver e a publicacao. Quando
+   * isso acontece nao ha nada em `otim_*` e o card mostrava so "ERRO": o plano
+   * tinha sido calculado, o VPL tambem, e os dois viviam apenas numa linha de log
+   * do executor. Ausente quando o solver nem chegou a rodar — e a ausencia diz
+   * isso.
+   */
+  solver?: string | null
   /** Ausente enquanto a rodada nao publica: eles saem de `otim_meta`. */
   parametros?: ParametrosRodada
   metricas?: MetricasCapa
