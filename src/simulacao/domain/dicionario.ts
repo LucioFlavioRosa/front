@@ -7,16 +7,15 @@
  * rotulo. O cadastro ja resolveu esse problema com o "?" e um painel de verbete;
  * isto e a mesma coisa, do outro lado do produto.
  *
- * TAMBEM EXPLICA O QUE NAO SE ESCOLHE. Varios parametros sairam da tela nesta
- * versao (metas, ETE, prioridade por cidade, tempo de solver, anos extra), e a
- * pergunta "por que nao posso mexer nisso?" e tao legitima quanto "o que isto
- * faz?". Sem verbete, a resposta so existiria no commit.
+ * HA UM VERBETE PARA CADA CONTROLE DA TELA, e so para eles: o que a rodada nao
+ * escolhe nao aparece aqui, porque o painel so abre por chave — verbete sem "?"
+ * que o abra e texto que ninguem le. O que o backend fixa esta documentado onde
+ * e fixado, em `app/dominio/parametros.py`.
  */
 import type { Verbete } from '@/comum/domain/dicionario'
 
 /** Quem decide o valor. Espelha o selo de origem do cadastro. */
 const VOCE = 'você escolhe'
-const FIXO = 'fixo nesta versão'
 
 export const DICT_SIMULACAO: Record<string, Verbete> = {
   // ------------------------------------------------------------- 01 escopo
@@ -52,6 +51,16 @@ export const DICT_SIMULACAO: Record<string, Verbete> = {
       'É o teto anual que o otimizador respeita. A JANELA DE CAPEX é derivada dele — os anos com verba —, e não digitada: duas fontes para a mesma verdade divergiriam no primeiro ano zerado.',
     exemplo: '2027: 60 Mi · 2028: 50 Mi',
   },
+  HORIZONTE_CAPEX: {
+    rotulo: 'Horizonte',
+    tec: 'HORIZONTE_CAPEX',
+    origem: VOCE,
+    tipo: 'anos',
+    oque: 'Por quantos anos a verba única se repete.',
+    porque:
+      'Só existe no modo "valor único": ele monta um cronograma de N anos com a mesma verba em cada um. No modo por ano, quem define a janela é o próprio cronograma.',
+    exemplo: '8',
+  },
   DATA_INICIO: {
     rotulo: 'Data de início',
     tec: 'DATA_INICIO',
@@ -71,7 +80,7 @@ export const DICT_SIMULACAO: Record<string, Verbete> = {
     tipo: '0 · 0,5 · 1',
     oque: 'O que o otimizador prioriza quando VPL e cobertura entram em conflito.',
     porque:
-      'Só VPL (0) maximiza retorno e ignora a meta. Cobertura primeiro (1) prioriza cumprir o contrato. Equilíbrio (0,5) pondera os dois. Eram três escolhas travadas de propósito: o campo livre entre 0 e 1 precisava de um rótulo para ser entendido, e isso é sinal de que o número não comunicava.',
+      'Só VPL (0) maximiza retorno e ignora a meta. Cobertura primeiro (1) prioriza cumprir o contrato. Equilíbrio (0,5) pondera os dois.',
     exemplo: 'Cobertura primeiro',
   },
   PENALIDADE_COBERTURA: {
@@ -81,18 +90,8 @@ export const DICT_SIMULACAO: Record<string, Verbete> = {
     tipo: 'meta+cobertura · meta',
     oque: 'Como o descumprimento é cobrado na função objetivo.',
     porque:
-      '"meta+cobertura" penaliza não bater a meta E ficar abaixo do possível. "meta" penaliza só o descumprimento do ano. Havia um terceiro modo, por ligação não atendida; saiu porque a meta é sempre a referência.',
+      '"meta+cobertura" penaliza não bater a meta E ficar abaixo do possível. "meta" penaliza só o descumprimento do ano.',
     exemplo: 'meta + cobertura',
-  },
-  METAS_COBERTURA: {
-    rotulo: 'Metas de cobertura',
-    tec: 'METAS_COBERTURA',
-    origem: FIXO,
-    tipo: 'sempre as do cadastro',
-    oque: 'As metas contratuais vêm sempre da base — não há o que escolher aqui.',
-    porque:
-      'O único descarte legítimo é por ANO: meta fora da janela de CAPEX não é cobrada. Com CAPEX até 2031, a meta de 2030 conta e a de 2032 não. Houve uma opção de "ignorar as metas": ela nunca funcionou e, quando passou a funcionar, produzia rodada sem meta nenhuma — que a regra não admite.',
-    exemplo: 'do cadastro',
   },
 
   // ------------------------------------------------------------- 04 receita
@@ -137,47 +136,5 @@ export const DICT_SIMULACAO: Record<string, Verbete> = {
     porque:
       'As colunas normais JÁ SÃO o total (residencial + industrial). Sim: usa o total como está. Não: subtrai a parcela industrial — residencial = total − industrial. O CAPEX não muda nos dois casos.',
     exemplo: 'sim',
-  },
-  ETE_FASEADA: {
-    rotulo: 'Tratamento da ETE',
-    tec: 'ETE_FASEADA',
-    origem: FIXO,
-    tipo: 'decidido pela ficha',
-    oque: 'Cada ETE entra no plano conforme o cadastro dela, não conforme a rodada.',
-    porque:
-      'ETE com terreno e número de módulos informados é NOVA: entra como pacote único, sem faseamento. A que já existe é expandida em módulos, conforme a vazão passa da capacidade ociosa. Havia um interruptor para desligar o tratamento por módulos, e o modo desligado tratava a expansão pior.',
-    exemplo: 'nova em pacote · existente por módulos',
-  },
-
-  // ------------------------------------------------------- fixos, sem controle
-  ANOS_EXTRA_CONCLUSAO: {
-    rotulo: 'Anos extra para concluir',
-    tec: 'ANOS_EXTRA_CONCLUSAO',
-    origem: FIXO,
-    tipo: '0 anos',
-    oque: 'A obra inicia e conclui dentro da janela de CAPEX.',
-    porque:
-      'Com valor maior que zero, uma obra iniciada na janela poderia concluir depois dela, com o "rabo" custeado pela sobra acumulada. A decisão desta versão é não ter rabo.',
-    exemplo: '0',
-  },
-  PESO_CIDADE: {
-    rotulo: 'Prioridade por cidade',
-    tec: 'PESO_CIDADE',
-    origem: FIXO,
-    tipo: 'todas com peso 1',
-    oque: 'Nenhuma cidade tem prioridade sobre outra.',
-    porque:
-      'O peso multiplica a contribuição de cada cidade no objetivo. Sem prioridade declarada, o multiplicador é 1 para todas — que é exatamente o padrão desta versão.',
-    exemplo: '1 para todas',
-  },
-  MAX_TIME_S: {
-    rotulo: 'Tempo do solver',
-    tec: 'MAX_TIME_S',
-    origem: FIXO,
-    tipo: '5000 segundos',
-    oque: 'Quanto tempo o solver tem para procurar a melhor solução.',
-    porque:
-      'É afinação de execução, não decisão de negócio — e o efeito só aparece depois de rodar. Tempo curto demais numa unidade grande faz o solver parar em "viável" e deixar obras obrigatórias de fora. Era 1000s até uma rodada real na maior unidade mostrar que o limite estava mordendo o resultado.',
-    exemplo: '5000',
   },
 }

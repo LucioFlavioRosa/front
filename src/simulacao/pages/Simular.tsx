@@ -40,7 +40,7 @@ export function Simular() {
   /** Rodada CONCLUÍDA idêntica que o servidor devolveu em vez de criar (R5). */
   const [jaExistente, setJaExistente] = useState<string | null>(null)
   const navigate = useNavigate()
-  const { toast, openDict } = useApp()
+  const { toast } = useApp()
 
   const regionais = useRegionais()
   const unidades = useUnidades(e.regionalId || null)
@@ -151,9 +151,7 @@ export function Simular() {
               </select>
             </div>
             <div className={styles.campo}>
-              <label className={styles.rot} htmlFor="sim-unidade">
-                Unidade
-              </label>
+              <Rotulo texto="Unidade" tecnico="UNIDADE" htmlFor="sim-unidade" />
               <select
                 id="sim-unidade"
                 className={styles.select}
@@ -172,9 +170,7 @@ export function Simular() {
           </div>
 
           <div className={styles.campo}>
-            <label className={styles.rot} htmlFor="sim-nome">
-              Nome da simulação
-            </label>
+            <Rotulo texto="Nome da simulação" tecnico="ROTULO" htmlFor="sim-nome" />
             <input
               id="sim-nome"
               className={styles.input}
@@ -336,27 +332,9 @@ export function Simular() {
             </span>
           </div>
 
-          {/* A REDISTRIBUIÇÃO NÃO É OFERECIDA hoje, por decisão do produto — a
-              verba de cada ano é a que está no cronograma acima, e o otimizador
-              não a move entre anos.
-              O `TETO_EXECUCAO_ANUAL` saiu junto porque só existia dentro dela: era
-              o teto que cada ano recebia DEPOIS do achatamento. Sem redistribuir,
-              o teto de cada ano já é a própria verba dele.
-              Nada disso existe no motor — são pré-processamento que
-              `app/dominio/parametros.py` faz (célula 3 do notebook), e o backend
-              continua sabendo fazê-lo. Voltar é reintroduzir este interruptor. */}
-
-          {/* "Anos extra para concluir" saiu da tela e vale ZERO: a obra inicia e
-              conclui dentro da janela de CAPEX, sem rabo custeado pela sobra.
-              O parâmetro CONTINUA existindo no backend e no motor — quem o fixa em
-              0 é `app/dominio/parametros.py`, e ele viaja no `params` da rodada
-              para o histórico registrar o que foi usado.
-              ATENÇÃO ao mexer: o default do motor é 3, não 0. Deixar de mandar a
-              chave NÃO dá zero — dá três. */}
-
-          {/* A DATA DE INÍCIO mora aqui, e não mais em "ETE e solver": ela é do
-              mesmo assunto que o cronograma — quando o dinheiro começa a poder ser
-              gasto. O primeiro ano-calendário fica parcial a partir dela. */}
+          {/* A DATA DE INÍCIO é do mesmo assunto que o cronograma: quando o
+              dinheiro começa a poder ser gasto. O primeiro ano-calendário fica
+              parcial a partir dela. */}
           <div>
             <Campo
               rotulo="Data de início"
@@ -375,18 +353,12 @@ export function Simular() {
         <Secao
           numero="03"
           titulo="Objetivo — VPL x cobertura"
-          descricao="O que o otimizador deve maximizar quando os dois entram em conflito."
+          descricao="O que o otimizador deve maximizar quando os dois entram em conflito. As metas são as do cadastro da unidade; as que caem fora da janela de CAPEX não são cobradas nesta rodada."
         >
           <div>
             <Rotulo texto="Foco em cobertura" tecnico="FOCO_COBERTURA" />
-            {/* TRÊS ESCOLHAS, e não um número livre entre 0 e 1.
-                O campo digitável saiu com a barra e a régua: quem decide entre VPL
-                e cobertura escolhe uma POSTURA, não calibra um peso. O valor
-                intermediário existia e ninguém sabia o que 0,37 significava — a
-                própria tela precisava de um rótulo ("puxando para VPL") para
-                traduzi-lo de volta.
-                O payload continua levando o número (0 · 0,5 · 1): o que saiu foi a
-                digitação, não o parâmetro. */}
+            {/* TRÊS POSTURAS, e não um peso calibrável: quem decide entre VPL e
+                cobertura escolhe uma delas. O payload leva o número (0 · 0,5 · 1). */}
             <div className={styles.atalhos} role="group" aria-label="Foco em cobertura">
               {(
                 [
@@ -422,33 +394,6 @@ export function Simular() {
             <Ajuda>{AJUDA_PENALIDADE[e.penalidade]}</Ajuda>
           </div>
 
-          {/* NÃO HÁ ESCOLHA DE FONTE DAS METAS, e a ausência é a regra.
-              As metas vêm sempre da base. O único descarte legítimo é por ANO: meta
-              fora da janela de CAPEX não é cobrada — com CAPEX até 2031, a meta de
-              2030 conta e a de 2032 não. Isso o motor já faz sozinho
-              (`otimizador_capex_v62.py`, na avaliação: `idx >= anos_capex → continue`),
-              e não é decisão de quem dispara a rodada.
-              Houve aqui um seletor "Ignorar as metas nesta rodada". Ele nunca
-              funcionou — o backend colapsava as duas opções no mesmo valor, e o
-              motor carregava as metas de qualquer jeito. Quando o colapso foi
-              corrigido, a opção passou a produzir rodada sem meta nenhuma, que a
-              regra não admite. Saiu inteira, em vez de virar um controle que só
-              tem uma escolha certa. */}
-          <div>
-            <Rotulo texto="Metas de cobertura" tecnico="METAS_COBERTURA" />
-            <p className={styles.metasNota}>
-              Sempre as do cadastro. Metas em anos fora da janela de CAPEX não são cobradas nesta
-              rodada.
-            </p>
-          </div>
-
-          {/* PRIORIDADE POR CIDADE saiu, e a ausência É o padrão pedido: todas as
-              cidades pesam 1. O motor multiplica a contribuição de cada cidade por
-              `peso_cidade.get(cidade, 1.0)` — sem o parâmetro, o multiplicador é 1
-              para todas, que é exatamente "peso igual".
-              Não há valor a afirmar aqui, ao contrário do `ANOS_EXTRA_CONCLUSAO`:
-              lá o default do motor era 3 e precisávamos de 0; aqui o default já é
-              o que se quer. Mandar `{}` daria no mesmo e sugeriria uma escolha. */}
         </Secao>
 
         {/* ---------------- 04 RECEITA E ADESÃO ---------------- */}
@@ -487,7 +432,7 @@ export function Simular() {
               />
               <Opcao
                 titulo="Linear"
-                descricao="Adesão constante mês a mês (comportamento antigo)."
+                descricao="Adesão constante mês a mês, do primeiro ao último."
                 ativa={e.curvaAdocao === 'linear'}
                 onClick={() => set('curvaAdocao', 'linear')}
               />
@@ -499,7 +444,7 @@ export function Simular() {
         <Secao
           numero="05"
           titulo="O que entra no plano"
-          descricao="Quais estruturas e qual demanda a rodada considera."
+          descricao="Quais estruturas e qual demanda a rodada considera. Cada ETE entra conforme a ficha dela: a nova (com terreno e módulos informados) como pacote único, a que já existe expandida em módulos."
         >
           <Interruptor
             rotulo="Usar CTS (coletor de tempo seco)"
@@ -518,51 +463,6 @@ export function Simular() {
             onToggle={() => set('incluirIndustrial', !e.incluirIndustrial)}
           />
 
-          {/* NÃO HÁ INTERRUPTOR DE ETE, e a ausência é a regra do negócio.
-              Qual tratamento a ETE recebe não é escolha da rodada: é o que a ficha
-              dela diz. ETE com terreno e número de módulos informados é NOVA, e
-              entra como pacote único — sem faseamento. ETE que já existe é
-              expandida em módulos, conforme a vazão passa da capacidade ociosa. O
-              motor decide isso por ETE (`otimizador_capex_v62.py`, detecção por
-              `nova=Sim` ou `capex_terreno > 0`), e não por rodada.
-              Havia aqui dois interruptores. `ETE_FASEADA` oferecia desligar o
-              tratamento por módulos — e o modo desligado trata a expansão PIOR,
-              porque o CP-SAT força o pré-dimensionamento pelo total do sistema.
-              `ETE_FIXO` era controle morto: com faseada ligada, o motor sai do
-              fluxo antes de olhar para ele. */}
-          <div>
-            <Rotulo texto="Tratamento da ETE" tecnico="ETE_FASEADA" />
-            <p className={styles.metasNota}>
-              Cada ETE é tratada conforme a ficha dela: a nova (terreno e módulos informados) entra
-              como pacote único; a que já existe é expandida em módulos, conforme a vazão conectada
-              passa da capacidade ociosa.
-            </p>
-          </div>
-          {/* OS FIXOS TÊM VERBETE, e por isso têm onde ser clicados.
-              Eles saíram da tela porque não são escolha — mas "por que não posso
-              mexer nisto?" é pergunta tão legítima quanto "o que isto faz?", e sem
-              um lugar para perguntar a resposta só existiria no commit. */}
-          <div className={styles.fixos}>
-            <span className={styles.fixosRotulo}>Fixos nesta versão</span>
-            {(
-              [
-                ['METAS_COBERTURA', 'metas do cadastro'],
-                ['ANOS_EXTRA_CONCLUSAO', 'sem anos extra'],
-                ['PESO_CIDADE', 'cidades com peso 1'],
-                ['MAX_TIME_S', 'solver 5000 s'],
-              ] as const
-            ).map(([chave, texto]) => (
-              <button
-                key={chave}
-                type="button"
-                className={styles.fixoChip}
-                aria-label={`Por que "${texto}" é fixo?`}
-                onClick={() => openDict(chave)}
-              >
-                {texto} <span aria-hidden="true">?</span>
-              </button>
-            ))}
-          </div>
         </Secao>
       </div>
 
@@ -602,14 +502,10 @@ export function Simular() {
               v={`${focoV.toFixed(2).replace('.', ',')} · ${rotuloFoco(focoV)}`}
             />
             <Item k="Penalidade" v={e.penalidade} />
-            <Item k="Metas" v="do cadastro" />
-            <Item k="Prioridade de cidade" v="todas com peso 1" />
             <Item k="Base de receita" v={e.baseReceita} />
             <Item k="Curva de adesão" v={e.curvaAdocao === 'scurve' ? 'curva S' : 'linear'} />
             <Item k="Usar CTS" v={e.usarCts ? 'sim' : 'não'} />
             <Item k="Incluir industrial" v={e.incluirIndustrial ? 'sim' : 'não'} />
-            <Item k="ETE" v="nova em pacote · existente por módulos" />
-            <Item k="Solver" v="5000 s" />
           </dl>
         </div>
 
