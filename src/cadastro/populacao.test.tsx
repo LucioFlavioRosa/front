@@ -42,7 +42,17 @@ function rotuloDb(rotulo: string): HTMLElement {
 /** Valor exibido numa célula do card do Databricks. */
 function celula(rotulo: string): string {
   const label = rotuloDb(rotulo)
-  return (label.parentElement?.textContent ?? '').replace(label.textContent ?? '', '').trim()
+  const bloco = label.parentElement
+  // A NOTA DA CONTA sai junto: campo derivado ("universo × potencial − atuais")
+  // descreve como o número saiu, e ela vive no mesmo bloco do valor. Sem tirá-la,
+  // toda asserção de valor passaria a comparar valor + explicação.
+  // O `id` do hint termina em `-hint` (`DbCard`, `aria-describedby`); a classe do
+  // CSS Module vira hash, entao o sufixo do id e a ancora estavel.
+  const hint = bloco?.querySelector('[id$="-hint"]')?.textContent ?? ''
+  return (bloco?.textContent ?? '')
+    .replace(label.textContent ?? '', '')
+    .replace(hint, '')
+    .trim()
 }
 
 /** A célula está marcada como parte da régua da meta desta cidade? */
@@ -247,22 +257,23 @@ describe('CTS', () => {
   })
 })
 
-describe('recorte industrial', () => {
-  it('traz as quatro medidas, e nenhuma delas é régua de meta', async () => {
+describe('recorte residencial', () => {
+  it('traz as quatro medidas, e nenhuma delas é régua de meta por padrão', async () => {
     renderApp('/unidade/u-jacarei/sub-bacias')
     await screen.findByRole('button', { name: 'Salvar sub-bacia' })
 
-    // b2_1_4: 10 das 360 ligações são industriais, e elas respondem por
-    // 1.148 dos 6.380 de receita — pouca ligação, muita receita. É esse
-    // desequilíbrio que o recorte existe para mostrar.
-    expect(celula('Ligações industriais — universo')).toBe('10')
-    expect(celula('Ligações industriais atuais')).toBe('3')
-    expect(celula('Receita faturada industrial (12m)')).toBe('1.148 R$/mês')
-    expect(celula('Receita arrecadada industrial (12m)')).toBe('1.015 R$/mês')
+    // b2_1_4: 350 das 360 ligações são residenciais. O recorte existe para a
+    // rodada que mede a meta só nelas — e ele vem APURADO da base comercial, não
+    // deduzido subtraindo indústria, como era antes.
+    expect(celula('Ligações residenciais — universo')).toBe('350')
+    expect(celula('Ligações residenciais atuais')).toBe('113')
+    expect(celula('Economias residenciais — universo')).toBe('385')
+    expect(celula('Economias residenciais atuais')).toBe('124')
 
-    // Qualifica a base, não é denominador de meta nenhuma.
-    expect(ehRegua('Ligações industriais — universo')).toBe(false)
-    expect(ehRegua('Ligações industriais atuais')).toBe(false)
+    // A régua marca o trio que a cidade usa por padrão. Estes campos só viram
+    // denominador quando a RODADA pede — não são a régua da ficha.
+    expect(ehRegua('Ligações residenciais — universo')).toBe(false)
+    expect(ehRegua('Economias residenciais — universo')).toBe(false)
   })
 
   it('é corrigível como qualquer dado do Databricks, com trilha de override', async () => {
@@ -271,17 +282,16 @@ describe('recorte industrial', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Editar dados do Databricks' }))
     fireEvent.click(await screen.findByRole('button', { name: 'Sim, editar' }))
-    fireEvent.change(screen.getByLabelText('Ligações industriais atuais'), {
-      target: { value: '7' },
+    fireEvent.change(screen.getByLabelText('Ligações residenciais atuais'), {
+      target: { value: '110' },
     })
     fireEvent.click(screen.getByRole('button', { name: 'Salvar sub-bacia' }))
 
     await waitFor(() => expect(api.puts).toHaveLength(1))
     const [, corpo] = api.puts[0]
-    expect(corpo.db.ligAInd).toBe('7')
-    // A trilha do que mudou é do SERVIDOR agora (ele compara o gravado com o
-    // que chega), então o corpo não a carrega. O que a tela garante é o que ela
-    // controla: o valor corrigido sobe no bloco certo.
+    expect(corpo.db.ligARes).toBe('110')
+    // A trilha do que mudou é do SERVIDOR (ele compara o gravado com o que
+    // chega), então o corpo não a carrega.
     expect('overrides' in corpo).toBe(false)
   })
 
@@ -289,21 +299,22 @@ describe('recorte industrial', () => {
     renderApp('/unidade/u-jacarei/cts')
     await screen.findByRole('button', { name: 'Salvar CTS' })
     // A primeira CTS da árvore é a de b3_1_1. São áreas sobrepostas, mas a base
-    // comercial — inclusive o recorte industrial — é de cada uma.
-    expect(celula('Ligações industriais — universo')).toBe('2')
-    expect(celula('Receita faturada industrial (12m)')).toBe('1.098 R$/mês')
+    // comercial — inclusive o recorte residencial — é de cada uma.
+    expect(celula('Ligações residenciais — universo')).toBe('202')
+    expect(celula('Economias residenciais atuais')).toBe('71')
   })
 })
 
-describe('como o recorte industrial deve ser lido', () => {
-  it('a nota do card avisa que é parcela, não parcela a somar', async () => {
+describe('como o recorte residencial deve ser lido', () => {
+  it('a nota do card avisa que é parcela, e que o recorte para na meta', async () => {
     renderApp('/unidade/u-jacarei/sub-bacias')
     await screen.findByRole('button', { name: 'Salvar sub-bacia' })
 
-    // O erro que isto evita é silencioso: quem soma 360 + 10 perde a diferença
-    // sem nunca ver um aviso.
+    // Dois erros silenciosos de uma vez: somar 360 + 350, e achar que o recorte
+    // muda o dinheiro. O segundo tem história — a versão anterior descontava
+    // indústria da receita e da vazão junto.
     expect(screen.getByText(/parcela já contida/)).toBeTruthy()
-    expect(screen.getByText(/total − industrial/)).toBeTruthy()
+    expect(screen.getByText(/receita, VPL e vazão usam sempre o total/i)).toBeTruthy()
   })
 
   it('o "?" abre o verbete com a regra e o exemplo numérico', async () => {
@@ -311,82 +322,53 @@ describe('como o recorte industrial deve ser lido', () => {
     await screen.findByRole('button', { name: 'Salvar sub-bacia' })
 
     fireEvent.click(
-      screen.getByRole('button', { name: 'O que é "Ligações industriais — universo"?' }),
+      screen.getByRole('button', { name: 'O que é "Ligações residenciais — universo"?' }),
     )
-    expect(await screen.findByText(/1.000 − 80 = 920/)).toBeTruthy()
+    expect(await screen.findByText(/920 \(de um universo de 1.000\)/)).toBeTruthy()
   })
 
-  it('as quatro medidas industriais têm verbete; as outras células não têm "?"', async () => {
+  it('as quatro medidas residenciais têm verbete; as outras células não têm "?"', async () => {
     renderApp('/unidade/u-jacarei/sub-bacias')
     await screen.findByRole('button', { name: 'Salvar sub-bacia' })
 
-    // 4 no card travado (o recorte) + 1 no card do usuário (a vazão industrial):
-    // são justamente os campos em que "parcela já contida" precisa ser dita.
-    const ajudas = screen.getAllByRole('button', { name: /^O que é ".*[Ii]ndustria/ })
-    expect(ajudas).toHaveLength(5)
+    // 4 no card travado. A vazão industrial, que era a quinta, deixou de existir:
+    // o recorte não toca em vazão.
+    const ajudas = screen.getAllByRole('button', { name: /^O que é ".*[Rr]esidencia/ })
+    expect(ajudas).toHaveLength(4)
     // As demais células do Databricks continuam sem "?": não há regra a explicar.
     expect(screen.queryByRole('button', { name: 'O que é "Ligações — universo"?' })).toBeNull()
   })
 })
 
-describe('vazão industrial (parâmetro do usuário)', () => {
-  it('fica no bloco "você preenche", logo abaixo da vazão total', async () => {
+describe('a vazão industrial saiu do cadastro', () => {
+  it('não existe mais campo de vazão industrial', async () => {
     renderApp('/unidade/u-jacarei/sub-bacias')
     await screen.findByRole('button', { name: 'Salvar sub-bacia' })
 
-    // b2_1_4: 18,1 L/s de vazão nova, dos quais 1,5 são industriais.
+    // Ela existia para o motor subtrair a parcela da indústria na rodada "só
+    // residencial". Esse recorte deixou de tocar em vazão: ela dimensiona módulo
+    // de ETE e rateia obra compartilhada, e indústria manda esgoto mesmo quando
+    // não conta para a meta. Um campo a menos para a Regional preencher.
     expect(campo('Vazão nova').value).toBe('18,1')
-    expect(campo('Vazão nova industrial').value).toBe('1,5')
-    expect(screen.getByText(/já contida nela, não some as duas/)).toBeTruthy()
+    expect(screen.queryByLabelText('Vazão nova industrial')).toBeNull()
   })
 
-  it('NÃO conta pendência: a planilha não tem a coluna e a simulação não a usa', async () => {
+  it('a CTS também perdeu o campo', async () => {
+    renderApp('/unidade/u-jacarei/cts')
+    await screen.findByRole('button', { name: 'Salvar CTS' })
+    expect(screen.queryByLabelText('Vazão nova industrial')).toBeNull()
+  })
+
+  it('e não viaja mais no params do PUT', async () => {
     renderApp('/unidade/u-jacarei/sub-bacias')
     await screen.findByRole('button', { name: 'Salvar sub-bacia' })
 
-    // Este teste afirmava o contrário, e estava certo para a regra de então. A
-    // regra mudou: `vazao_contribuicao_industrial` não existe na aba de
-    // sub-bacia da planilha (só na de CTS), então chega vazio nas 4.850 linhas
-    // e não há de onde preencher; e o motor só usa esse número para SUBTRAIR a
-    // parcela industrial quando se roda `INCLUIR_INDUSTRIAL=False`, que não é a
-    // análise de hoje. Cobrar travava as cinco unidades inteiras por nada.
-    const antes = chipDaFicha().textContent
-    fireEvent.change(campo('Vazão nova industrial'), { target: { value: '' } })
-    expect(chipDaFicha().textContent).toBe(antes)
-
-    // E continua editável e salvável — deixou de ser exigido, não de existir.
-    fireEvent.change(campo('Vazão nova industrial'), { target: { value: '2,4' } })
-    expect(chipDaFicha().textContent).toBe(antes)
-  })
-
-  it('o placeholder não finge ser um valor', async () => {
-    renderApp('/unidade/u-jacarei/sub-bacias')
-    await screen.findByRole('button', { name: 'Salvar sub-bacia' })
-
-    // Era '0'. Como o texto de ajuda dizia "sem indústria, informe 0", o campo
-    // vazio mostrava em cinza exatamente a resposta válida mais provável — e
-    // quem olhava via um zero preenchido. Placeholder nunca pode ser um valor
-    // que o campo aceita.
-    fireEvent.change(campo('Vazão nova industrial'), { target: { value: '' } })
-    expect(campo('Vazão nova industrial').placeholder).not.toBe('0')
-    expect(campo('Vazão nova industrial').placeholder).toBe('sem indústria')
-  })
-
-  it('vai no params do PUT, sem override (não é dado do Databricks)', async () => {
-    renderApp('/unidade/u-jacarei/sub-bacias')
-    await screen.findByRole('button', { name: 'Salvar sub-bacia' })
-
-    fireEvent.change(campo('Vazão nova industrial'), { target: { value: '2,4' } })
+    fireEvent.change(campo('Vazão nova'), { target: { value: '19,2' } })
     fireEvent.click(screen.getByRole('button', { name: 'Salvar sub-bacia' }))
 
     await waitFor(() => expect(api.puts).toHaveLength(1))
     const [, corpo] = api.puts[0]
-    expect(corpo.params.vazInd).toBe('2,4')
-  })
-
-  it('a CTS tem o mesmo parâmetro', async () => {
-    renderApp('/unidade/u-jacarei/cts')
-    await screen.findByRole('button', { name: 'Salvar CTS' })
-    expect(campo('Vazão nova industrial')).toBeTruthy()
+    expect(corpo.params.vaz).toBe('19,2')
+    expect('vazInd' in corpo.params).toBe(false)
   })
 })

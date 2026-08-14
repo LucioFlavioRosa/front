@@ -44,13 +44,22 @@ export interface CampoDb {
    * total" e o tipo de coisa que ninguem adivinha olhando a celula.
    */
   dict?: string
+  /**
+   * O campo e DERIVADO, e destas duas colunas: `universo x potencial - atuais`.
+   *
+   * Quando presente, a celula vira calculada (ƒ) e para de aceitar override — o
+   * valor que a simulacao usa e sempre a conta, e deixar alguem corrigir a mao um
+   * numero que o motor recalcula seria oferecer um controle que nao controla.
+   * O Databricks pode ate trazer a coluna; ela vira conferencia, nao entrada.
+   */
+  derivado?: { universo: keyof SubBaciaDb; atuais: keyof SubBaciaDb }
 }
 
 /**
- * 13 celulas do card travado. A ordem agrupa por sentido, e a grade do
+ * 12 celulas do card travado. A ordem agrupa por sentido, e a grade do
  * prototipo tem 4 colunas — cada bloco cai numa linha:
  *   receita total + inicio das ligacoes · fim das ligacoes + economias ·
- *   recorte industrial · ticket.
+ *   recorte residencial · ticket.
  */
 export const CAMPOS_DB: CampoDb[] = [
   { rotulo: 'Receita faturada (12m)', chave: 'fat', unidade: 'R$/mês' },
@@ -58,38 +67,54 @@ export const CAMPOS_DB: CampoDb[] = [
 
   { rotulo: 'Ligações — universo', chave: 'ligU', unidade: '', regua: 'ligacoes' },
   { rotulo: 'Ligações atuais', chave: 'ligA', unidade: '', regua: 'ligacoes' },
-  { rotulo: 'Ligações novas (obras)', chave: 'ligN', unidade: '', regua: 'ligacoes' },
+  {
+    rotulo: 'Ligações novas (obras)',
+    chave: 'ligN',
+    unidade: '',
+    regua: 'ligacoes',
+    derivado: { universo: 'ligU', atuais: 'ligA' },
+  },
 
   { rotulo: 'Economias — universo', chave: 'ecoU', unidade: '', regua: 'economias' },
   { rotulo: 'Economias atuais', chave: 'ecoA', unidade: '', regua: 'economias' },
-  { rotulo: 'Economias novas (obras)', chave: 'ecoN', unidade: '', regua: 'economias' },
+  {
+    rotulo: 'Economias novas (obras)',
+    chave: 'ecoN',
+    unidade: '',
+    regua: 'economias',
+    derivado: { universo: 'ecoU', atuais: 'ecoA' },
+  },
 
-  // Recorte industrial: as mesmas medidas do topo, so da categoria industria.
-  // Sem `regua` de proposito — nao e denominador de meta; e o que explica o
-  // ticket, porque industria e pouca ligacao respondendo por muita receita.
+  // Recorte RESIDENCIAL: quanto das medidas de cima e residencial. Vem apurado da
+  // base comercial, e nao deduzido subtraindo industria — foi essa deducao que a
+  // versao anterior fazia, e ela contaminava receita e vazao junto.
+  //
+  // Sem `regua`, e por um motivo diferente do bloco anterior: estes campos SAO
+  // denominador de meta, mas so na rodada que pede cobertura so residencial. A regua
+  // marca o trio que a cidade usa por padrao, e isso nao muda por causa deles.
   {
-    rotulo: 'Ligações industriais — universo',
-    chave: 'ligUInd',
+    rotulo: 'Ligações residenciais — universo',
+    chave: 'ligURes',
     unidade: '',
-    dict: 'universo_ligacoes_industrial',
+    dict: 'universo_ligacoes_residencial',
   },
   {
-    rotulo: 'Ligações industriais atuais',
-    chave: 'ligAInd',
+    rotulo: 'Ligações residenciais atuais',
+    chave: 'ligARes',
     unidade: '',
-    dict: 'ligacoes_atuais_industrial',
+    dict: 'ligacoes_atuais_residencial',
   },
   {
-    rotulo: 'Receita faturada industrial (12m)',
-    chave: 'fatInd',
-    unidade: 'R$/mês',
-    dict: 'receita_faturada_industrial',
+    rotulo: 'Economias residenciais — universo',
+    chave: 'ecoURes',
+    unidade: '',
+    dict: 'universo_economias_residencial',
   },
   {
-    rotulo: 'Receita arrecadada industrial (12m)',
-    chave: 'arrInd',
-    unidade: 'R$/mês',
-    dict: 'receita_arrecadada_industrial',
+    rotulo: 'Economias residenciais atuais',
+    chave: 'ecoARes',
+    unidade: '',
+    dict: 'economias_atuais_residencial',
   },
 
   { rotulo: 'Ticket derivado ƒ', chave: 'ticket', unidade: '/ligação' },
@@ -119,13 +144,7 @@ export function camposParametros(escopo: 'sub-bacia' | 'cts'): CampoParam[] {
     ['Início da arrecadação', 'tarr', 'tempo_arrecadacao', 'meses', 'meses', 'Tempo entre a obra ficar pronta e começar a faturar.'],
     ['Rampa de adesão', 'ramp', 'tempo_ramp_up', 'meses', 'meses', 'Tempo até a adesão plena. A receita cresce em curva S até o pleno neste prazo.'],
     ['Vazão nova', 'vaz', 'vazao_contribuicao', 'L/s', 'vazão', vazao],
-    // Placeholder ERA '0'. Como o proprio texto de ajuda diz "sem industria,
-    // informe 0", o campo vazio exibia em cinza exatamente a resposta valida
-    // mais provavel — e quem olhava via um zero preenchido. O dono do produto
-    // leu assim e estranhou a ficha continuar incompleta. Placeholder nunca pode
-    // ser um valor que o campo aceita.
-    ['Vazão nova industrial', 'vazInd', 'vazao_contribuicao_industrial', 'L/s', 'sem indústria', 'Parcela industrial da vazão acima — já contida nela, não some as duas. Opcional: em branco vale como sem indústria.'],
-    ['Potencial de crescimento', 'pot', 'potencial_crescimento', 'fator', '1,0', 'Multiplica o universo de ligações (1,0 = sem). Só amplia o denominador da meta.'],
+    ['Potencial de crescimento', 'pot', 'potencial_crescimento', 'fator', '1,0', 'Multiplica o universo de ligações (1,0 = sem). Amplia o denominador da meta E as novas das obras.'],
   ]
 }
 

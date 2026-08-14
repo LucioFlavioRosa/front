@@ -38,6 +38,13 @@ const excluidas = new Set<string>()
  */
 const favoritas = new Set<string>()
 
+/**
+ * Comentários da sessão. Ao contrário das favoritas, aqui um mapa por rodada — e
+ * não por usuário — é o comportamento CERTO, e não uma simplificação do mock: o
+ * comentário é compartilhado por desenho (`migracoes/010_run_comentario.sql`).
+ */
+const comentarios = new Map<string, { texto: string; autor: string; atualizadoEm: string }>()
+
 function existe(runId: string): boolean {
   return !excluidas.has(runId) && !!metas[runId]
 }
@@ -60,8 +67,37 @@ export const handlersResultado = [
       .filter((r) => !usuario || r.autor === usuario)
       // A marca vem do estado da sessao, e nao da fixture: e o que faz o clique
       // na estrela sobreviver ao refetch que a propria mutation dispara.
-      .map((r) => ({ ...r, favorita: favoritas.has(r.runId) }))
+      .map((r) => ({
+        ...r,
+        favorita: favoritas.has(r.runId),
+        // AUSENTE quando ninguem anotou, e nao `{texto: ''}` — o mock devolve a
+        // mesma forma que o backend, senao a tela passa aqui e falha la.
+        comentario: comentarios.get(r.runId) ?? null,
+      }))
     return HttpResponse.json(lista)
+  }),
+
+  http.put(`${BASE}/runs/:runId/comentario`, async ({ params, request }) => {
+    const runId = String(params.runId)
+    const { texto } = (await request.json()) as { texto?: string }
+    const limpo = (texto ?? '').trim()
+    // Texto vazio APAGA, como no backend: "sem comentario" tem uma representacao
+    // so, e e a ausencia da linha.
+    if (limpo) {
+      comentarios.set(runId, {
+        texto: limpo,
+        autor: 'dev@local',
+        atualizadoEm: new Date().toISOString(),
+      })
+    } else {
+      comentarios.delete(runId)
+    }
+    return new HttpResponse(null, { status: 204 })
+  }),
+
+  http.delete(`${BASE}/runs/:runId/comentario`, ({ params }) => {
+    comentarios.delete(String(params.runId))
+    return new HttpResponse(null, { status: 204 })
   }),
 
   http.put(`${BASE}/runs/:runId/favorita`, ({ params }) => {

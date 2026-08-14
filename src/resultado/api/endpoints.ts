@@ -58,6 +58,19 @@ export const resultados = {
   favoritar: (runId: string) => api.put<void>(`${BASE}/${runId}/favorita`),
   desfavoritar: (runId: string) => api.del<void>(`${BASE}/${runId}/favorita`),
 
+  /**
+   * Comentário da rodada — ao contrário da favorita, é COMPARTILHADO: o texto
+   * que esta pessoa grava é o que as outras vão ler.
+   *
+   * Um verbo só, e não um para criar e outro para editar: reescrever é o caso
+   * normal deste campo. Texto vazio APAGA no servidor, então a tela não precisa
+   * escolher entre `comentar('')` e `descomentar()` — as duas chegam no mesmo
+   * estado final. O `del` existe para quem prefere dizer isso pelo verbo.
+   */
+  comentar: (runId: string, texto: string) =>
+    api.put<void>(`${BASE}/${runId}/comentario`, { texto }),
+  descomentar: (runId: string) => api.del<void>(`${BASE}/${runId}/comentario`),
+
   /** Os 6 quadros do nivel global, num payload so. */
   painel: (runId: string) => api.get<PainelGlobal>(`${BASE}/${runId}/painel`),
 

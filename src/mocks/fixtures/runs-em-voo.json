@@ -40,5 +40,20 @@
     "publicada": false,
     "progresso": 10,
     "erro": "Fila de simulações não configurada neste ambiente."
+  },
+  {
+    "runId": "run_20260809_120300_dddddd",
+    "nome": "Cenário que morreu depois do solver",
+    "unidadeId": "uA1",
+    "unidadeNome": "Unidade Serrana",
+    "dataHora": "2026-08-09T12:03:00Z",
+    "autor": "ana@aegea",
+    "duracaoS": 4087,
+    "status": "ERRO",
+    "favorita": false,
+    "publicada": false,
+    "progresso": 99,
+    "erro": "O processo do executor morreu durante a materialização.",
+    "solver": "VIAVEL(limite de tempo) | obrig 106/126  VPL=-227.126.290"
   }
 ]

@@ -19,11 +19,13 @@ import {
   mkObras,
   type Obra,
   type SubBaciaParams,
+  notaDeNovas,
+  novasDeObras,
   type SubBaciaDb,
 } from '@/cadastro/domain/subbacia'
 import { CAMPOS_DB, camposParametros } from '@/cadastro/domain/baseComercial'
 import { NotaDaRegua } from '@/cadastro/components/NotaDaRegua'
-import { NotaIndustrial } from '@/cadastro/components/NotaIndustrial'
+import { NotaResidencial } from '@/cadastro/components/NotaResidencial'
 import { CamposPopulacao } from '@/cadastro/pages/CamposPopulacao'
 import styles from './GrupoSubBacias.module.css'
 
@@ -354,22 +356,37 @@ export function GrupoSubBacias() {
                   </>
                 }
               />,
-              <NotaIndustrial key="industrial" />,
+              <NotaResidencial key="residencial" />,
             ]}
           >
             <DbFieldGrid>
-              {CAMPOS_DB.map((campo) => (
-                <DbField
-                  key={campo.chave}
-                  rotulo={campo.rotulo}
-                  valor={cur.db[campo.chave]}
-                  unidade={campo.unidade}
-                  editando={override}
-                  ativo={!!campo.regua && campo.regua === regua}
-                  onHelp={campo.dict ? () => openDict(campo.dict!) : undefined}
-                  onChange={(v) => setDb(campo.chave, v)}
-                />
-              ))}
+              {CAMPOS_DB.map((campo) => {
+                // DERIVADO ganha a conta no lugar do valor do banco: o motor
+                // recalcula `universo x potencial - atuais` de qualquer forma, e
+                // mostrar aqui o que o Databricks trouxe faria a tela e a
+                // simulacao discordarem sobre o mesmo numero — em silencio.
+                const derivado = campo.derivado
+                  ? novasDeObras(
+                      cur.db[campo.derivado.universo],
+                      cur.db[campo.derivado.atuais],
+                      cur.params.pot,
+                    )
+                  : null
+                return (
+                  <DbField
+                    key={campo.chave}
+                    rotulo={campo.rotulo}
+                    valor={derivado ?? cur.db[campo.chave]}
+                    unidade={campo.unidade}
+                    editando={override}
+                    calculado={derivado !== null}
+                    hint={derivado === null ? undefined : notaDeNovas(derivado)}
+                    ativo={!!campo.regua && campo.regua === regua}
+                    onHelp={campo.dict ? () => openDict(campo.dict!) : undefined}
+                    onChange={(v) => setDb(campo.chave, v)}
+                  />
+                )
+              })}
             </DbFieldGrid>
           </DbCard>
 

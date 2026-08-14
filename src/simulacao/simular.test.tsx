@@ -40,7 +40,10 @@ async function escolherUnidade() {
   // sem `<option>` correspondente e um no-op silencioso.
   await waitFor(() => expect(reg.querySelectorAll('option').length).toBeGreaterThan(1))
   fireEvent.change(reg, { target: { value: 'r-sudeste' } })
-  const uni = await screen.findByLabelText('Unidade')
+  // Por PAPEL, e nao por label: o rotulo agora carrega o nome tecnico ao lado
+  // ("Unidade UNIDADE"), e o "?" do dicionario tem `aria-label` com o mesmo nome
+  // do parametro — buscar por texto acharia os dois.
+  const uni = await screen.findByRole('combobox', { name: /^Unidade/ })
   await waitFor(() => expect(uni.querySelectorAll('option').length).toBeGreaterThan(1))
   fireEvent.change(uni, { target: { value: 'u-jacarei' } })
 }
@@ -51,13 +54,26 @@ describe('parâmetros e rastreabilidade', () => {
     expect(await screen.findByText('FOCO_COBERTURA')).toBeTruthy()
     expect(screen.getByText('PENALIDADE_COBERTURA')).toBeTruthy()
     expect(screen.getByText('USAR_CTS')).toBeTruthy()
-    expect(screen.getByText('INCLUIR_INDUSTRIAL')).toBeTruthy()
-    // ETE_FASEADA e ETE_FIXO NAO estao mais aqui: o tratamento da ETE sai da
-    // ficha dela, e nao de um controle da rodada.
-    expect(screen.queryByText('ETE_FASEADA')).toBeNull()
-    // ANOS_EXTRA_CONCLUSAO tambem saiu: vale 0 sempre, fixado no backend.
-    expect(screen.queryByText('ANOS_EXTRA_CONCLUSAO')).toBeNull()
-    expect(screen.queryByText('ETE_FIXO')).toBeNull()
+    expect(screen.getByText('COBERTURA_SO_RESIDENCIAL')).toBeTruthy()
+    // UNIDADE e ROTULO viajam no corpo da rodada como qualquer outro, e por isso
+    // aparecem do mesmo jeito. Eram os dois únicos sem o código ao lado.
+    expect(screen.getByText('UNIDADE')).toBeTruthy()
+    expect(screen.getByText('ROTULO')).toBeTruthy()
+  })
+
+  it('a tela só mostra o que a rodada escolhe', async () => {
+    // Parâmetro que o backend fixa não é decisão de quem dispara, e ocupava a
+    // tela como se fosse: um rótulo com valor constante se lê como campo, e a
+    // pessoa procura onde clicar. Onde a regra importa para escolher, ela está na
+    // descrição da seção — não como campo desabilitado.
+    renderApp('/simular')
+    await screen.findByText('FOCO_COBERTURA')
+
+    for (const fixo of ['METAS_COBERTURA', 'ETE_FASEADA', 'ETE_FIXO', 'PESO_CIDADE', 'MAX_TIME_S']) {
+      expect(screen.queryByText(fixo)).toBeNull()
+    }
+    expect(screen.queryByText(/Fixos nesta versão/)).toBeNull()
+    expect(screen.queryByText(/ANOS_EXTRA/)).toBeNull()
   })
 
   it('abre com os defaults do notebook', async () => {
@@ -65,6 +81,38 @@ describe('parâmetros e rastreabilidade', () => {
     // 15 anos de cronograma, comecando em 60 Mi.
     expect(await screen.findByLabelText('Verba de 2026, em milhões')).toHaveProperty('value', '60')
     expect(screen.getByLabelText('Verba de 2040, em milhões')).toHaveProperty('value', '10')
+  })
+})
+
+describe('dicionário dos parâmetros', () => {
+  it('o "?" de um parâmetro abre o verbete dele', async () => {
+    // Mesmo gesto do cadastro, do outro lado do produto: a rodada é irreversível,
+    // e cada controle muda o plano de um jeito que o rótulo não entrega.
+    renderApp('/simular')
+    fireEvent.click(await screen.findByRole('button', { name: 'O que é "Foco em cobertura"?' }))
+
+    const painel = await screen.findByRole('complementary', { name: 'Dicionário de dados' })
+    expect(within(painel).getByText('Foco em cobertura')).toBeTruthy()
+    expect(within(painel).getByText(/maximiza retorno e ignora a meta/i)).toBeTruthy()
+  })
+
+  it('todo "?" da tela abre um verbete de verdade', async () => {
+    // O painel só renderiza por CHAVE: um "?" sem verbete abre "ainda não
+    // cadastrado", que é pior que não ter o botão. Era o caso do HORIZONTE_CAPEX.
+    renderApp('/simular')
+    await screen.findByText('FOCO_COBERTURA')
+    // Modo "valor único", que é onde o horizonte aparece.
+    fireEvent.click(screen.getByRole('button', { name: 'Valor único + horizonte' }))
+
+    // O painel só existe depois do primeiro clique, e por isso é buscado a cada
+    // volta: pegá-lo uma vez daria um nó desmontado nas seguintes.
+    const ajudas = screen.getAllByRole('button', { name: /^O que é ".+"\?$/ })
+    expect(ajudas.length).toBeGreaterThan(5)
+    for (const btn of ajudas) {
+      fireEvent.click(btn)
+      const painel = await screen.findByRole('complementary', { name: 'Dicionário de dados' })
+      expect(within(painel).queryByText(/ainda não cadastrado/)).toBeNull()
+    }
   })
 })
 
@@ -175,15 +223,15 @@ describe('bloqueio por cadastro incompleto', () => {
 })
 
 describe('avisos que não bloqueiam', () => {
-  it('não há seletor de fonte das metas, e a tela diz a regra', async () => {
-    // O seletor "Ignorar as metas nesta rodada" saiu. Ele nunca funcionou, e
-    // quando o bug que o neutralizava foi corrigido ele passou a produzir rodada
-    // sem meta nenhuma — que a regra de negócio não admite.
+  it('a regra das metas está onde ela muda uma escolha: no objetivo', async () => {
+    // As metas são sempre as do cadastro, e a que cai fora da janela de CAPEX não
+    // é cobrada. Isso não é um campo — é o que a pessoa precisa saber ao decidir
+    // entre VPL e cobertura, e por isso vive na descrição da seção 03.
     renderApp('/simular')
     await escolherUnidade()
 
-    expect(screen.queryByLabelText(/Metas de cobertura/)).toBeNull()
-    expect(await screen.findByText(/Sempre as do cadastro/)).toBeTruthy()
+    expect(screen.queryByRole('combobox', { name: /Metas de cobertura/ })).toBeNull()
+    expect(await screen.findByText(/as do cadastro da unidade/)).toBeTruthy()
     expect(screen.getByText(/fora da janela de CAPEX não são cobradas/)).toBeTruthy()
   })
 })
@@ -560,7 +608,7 @@ describe('o tamanho da unidade no resumo', () => {
       .getAllByRole('term')
       .map((t) => t.textContent)
     expect(chaves).not.toContain('Tamanho')
-    expect(chaves).toContain('Solver')
+    expect(chaves).toContain('Usar CTS')
   })
 })
 
@@ -573,6 +621,10 @@ describe('resumo', () => {
       .map((t) => t.textContent)
     expect(chaves.slice(0, 3)).toEqual(['Unidade', 'Orçamento total', 'Janela de CAPEX'])
     expect(chaves).toContain('Usar CTS')
-    expect(chaves).toContain('Solver')
+    // O resumo é a conferência do que VAI ser enviado como escolha desta rodada.
+    // Constante do backend ali não confere nada — só empurra para baixo o que a
+    // pessoa precisa reler antes de disparar.
+    expect(chaves).not.toContain('Solver')
+    expect(chaves).not.toContain('Metas')
   })
 })

@@ -92,6 +92,31 @@ describe('histórico com rodadas em voo', () => {
     expect(screen.queryByText(/esperando um executor/)).toBeNull()
   })
 
+  it('rodada que morreu DEPOIS do solver mostra o que ele achou', async () => {
+    // Sem isto, uma falha na publicação apaga um plano que EXISTIU: o VPL e as
+    // obrigatórias ficavam só numa linha de log do executor, que some quando
+    // alguém fecha o terminal. Aconteceu — 68 min de solver descartados.
+    renderApp('/resultados')
+    await screen.findByText('Cenário que morreu depois do solver')
+
+    // O parágrafo inteiro, e não o `<strong>` que o abre: o que importa aqui é a
+    // frase completa que a pessoa lê.
+    const nota = (await screen.findByText(/O solver chegou a:/)).parentElement
+    expect(nota?.textContent).toMatch(/obrig 106\/126/)
+    expect(nota?.textContent).toMatch(/VPL=-227\.126\.290/)
+    expect(nota?.textContent).toMatch(/não chegou a ser publicado/)
+  })
+
+  it('a rodada que falhou ANTES do solver não inventa desfecho nenhum', async () => {
+    // A ausência é informação: "a fila nem estava configurada" e "o solver rodou
+    // 68 min e morreu na publicação" são falhas diferentes, e o card tem que
+    // deixar isso claro em vez de mostrar a mesma linha nas duas.
+    renderApp('/resultados')
+    await screen.findByText('Cenário que falhou')
+
+    expect(screen.getAllByText(/O solver chegou a:/)).toHaveLength(1)
+  })
+
   it('a rodada que falhou não ganha relógio nem destaque de espera', async () => {
     // O tempo desde o pedido não é espera nenhuma numa rodada que já parou:
     // "pedida há 54h" sobre algo que falhou anteontem é ruído com cara de alerta.

@@ -73,18 +73,17 @@
         "ecoU": "9.642",
         "ecoA": "3.953",
         "ecoN": "5.689",
-        "ligUInd": "67",
-        "ligAInd": "28",
-        "fatInd": "36.535",
-        "arrInd": "29.630",
-        "ticket": "R$ 198"
+        "ticket": "R$ 198",
+        "ligURes": "3.147",
+        "ligARes": "1.290",
+        "ecoURes": "9.441",
+        "ecoARes": "3.869"
       },
       "params": {
         "preco": "784",
         "tarr": "6",
         "ramp": "2",
         "vaz": "165,9",
-        "vazInd": "10,4",
         "pot": "1,0",
         "popU": "30.854",
         "popA": "12.650"
@@ -169,18 +168,17 @@
         "ecoU": "174",
         "ecoA": "56",
         "ecoN": "118",
-        "ligUInd": "6",
-        "ligAInd": "2",
-        "fatInd": "1.986",
-        "arrInd": "1.771",
-        "ticket": "R$ 177"
+        "ticket": "R$ 177",
+        "ligURes": "152",
+        "ligARes": "49",
+        "ecoURes": "167",
+        "ecoARes": "54"
       },
       "params": {
         "preco": "1.334",
         "tarr": "2",
         "ramp": "2",
         "vaz": "7,9",
-        "vazInd": "0,9",
         "pot": "1,0",
         "popU": "557",
         "popA": "179"
@@ -265,18 +263,17 @@
         "ecoU": "318",
         "ecoA": "102",
         "ecoN": "216",
-        "ligUInd": "3",
-        "ligAInd": "1",
-        "fatInd": "1.841",
-        "arrInd": "1.453",
-        "ticket": "R$ 220"
+        "ticket": "R$ 220",
+        "ligURes": "286",
+        "ligARes": "92",
+        "ecoURes": "315",
+        "ecoARes": "101"
       },
       "params": {
         "preco": "533",
         "tarr": "1",
         "ramp": "12",
         "vaz": "14,5",
-        "vazInd": "0,5",
         "pot": "1,0",
         "popU": "1.018",
         "popA": "326"
@@ -361,18 +358,17 @@
         "ecoU": "387",
         "ecoA": "124",
         "ecoN": "263",
-        "ligUInd": "17",
-        "ligAInd": "5",
-        "fatInd": "7.847",
-        "arrInd": "6.521",
-        "ticket": "R$ 224"
+        "ticket": "R$ 224",
+        "ligURes": "335",
+        "ligARes": "108",
+        "ecoURes": "368",
+        "ecoARes": "119"
       },
       "params": {
         "preco": "1.312",
         "tarr": "5",
         "ramp": "12",
         "vaz": "",
-        "vazInd": "",
         "pot": "1,0",
         "popU": "1.238",
         "popA": "397"
@@ -457,18 +453,17 @@
         "ecoU": "396",
         "ecoA": "127",
         "ecoN": "269",
-        "ligUInd": "10",
-        "ligAInd": "3",
-        "fatInd": "1.148",
-        "arrInd": "1.015",
-        "ticket": "R$ 55"
+        "ticket": "R$ 55",
+        "ligURes": "350",
+        "ligARes": "113",
+        "ecoURes": "385",
+        "ecoARes": "124"
       },
       "params": {
         "preco": "",
         "tarr": "",
         "ramp": "3",
         "vaz": "18,1",
-        "vazInd": "1,5",
         "pot": "1,0",
         "popU": "1.267",
         "popA": "406"
@@ -553,18 +548,17 @@
         "ecoU": "156",
         "ecoA": "85",
         "ecoN": "71",
-        "ligUInd": "9",
-        "ligAInd": "5",
-        "fatInd": "6.047",
-        "arrInd": "5.260",
-        "ticket": "R$ 204"
+        "ticket": "R$ 204",
+        "ligURes": "133",
+        "ligARes": "73",
+        "ecoURes": "146",
+        "ecoARes": "80"
       },
       "params": {
         "preco": "1.105",
         "tarr": "8",
         "ramp": "12",
         "vaz": "7,6",
-        "vazInd": "1,4",
         "pot": "1,0",
         "popU": "499",
         "popA": "272"
@@ -649,18 +643,17 @@
         "ecoU": "166",
         "ecoA": "91",
         "ecoN": "75",
-        "ligUInd": "3",
-        "ligAInd": "1",
-        "fatInd": "1.424",
-        "arrInd": "1.114",
-        "ticket": "R$ 143"
+        "ticket": "R$ 143",
+        "ligURes": "148",
+        "ligARes": "82",
+        "ecoURes": "163",
+        "ecoARes": "90"
       },
       "params": {
         "preco": "564",
         "tarr": "4",
         "ramp": "",
         "vaz": "8,1",
-        "vazInd": "0,5",
         "pot": "1,0",
         "popU": "531",
         "popA": "291"
@@ -745,18 +738,17 @@
         "ecoU": "294",
         "ecoA": "161",
         "ecoN": "133",
-        "ligUInd": "10",
-        "ligAInd": "6",
-        "fatInd": "7.920",
-        "arrInd": "6.392",
-        "ticket": "R$ 217"
+        "ticket": "R$ 217",
+        "ligURes": "257",
+        "ligARes": "140",
+        "ecoURes": "283",
+        "ecoARes": "154"
       },
       "params": {
         "preco": "",
         "tarr": "11",
         "ramp": "2",
         "vaz": "",
-        "vazInd": "",
         "pot": "1,0",
         "popU": "941",
         "popA": "515"

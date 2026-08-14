@@ -42,7 +42,7 @@ export interface EstadoSimulacao {
   baseReceita: BaseReceita
   curvaAdocao: CurvaAdocao
   usarCts: boolean
-  incluirIndustrial: boolean
+  coberturaSoResidencial: boolean
   dataInicio: string
 }
 
@@ -82,7 +82,7 @@ export function estadoInicial(): EstadoSimulacao {
     baseReceita: 'arrecadada',
     curvaAdocao: 'scurve',
     usarCts: true,
-    incluirIndustrial: true,
+    coberturaSoResidencial: false,
     dataInicio: '',
   }
 }
@@ -355,7 +355,7 @@ export interface CorpoNovaRodada {
   base_receita: BaseReceita
   curva_adocao: CurvaAdocao
   usar_cts: boolean
-  incluir_industrial: boolean
+  cobertura_so_residencial: boolean
   data_inicio: string | null
 }
 
@@ -368,7 +368,7 @@ export function corpoDaRodada(e: EstadoSimulacao): CorpoNovaRodada {
     base_receita: e.baseReceita,
     curva_adocao: e.curvaAdocao,
     usar_cts: e.usarCts,
-    incluir_industrial: e.incluirIndustrial,
+    cobertura_so_residencial: e.coberturaSoResidencial,
     data_inicio: e.dataInicio.trim() || null,
   }
 

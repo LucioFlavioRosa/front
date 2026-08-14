@@ -154,8 +154,8 @@ diferente**, e a régua da meta da cidade (`Cidade.cob`) decide o que aparece:
 
 | Onde     | Campos                                                                                                                       | Origem                                                   |
 | -------- | ---------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| `db`     | `fat`, `arr`, `ligU`/`ligA`/`ligN`, `ecoU`/`ecoA`/`ecoN` (`economias_novas_obras`), o recorte industrial (abaixo) e `ticket` | **Databricks** — travado, corrigível com override        |
-| `params` | `preco`, `tarr`, `ramp`, `vaz`, `vazInd` (`vazao_contribuicao_industrial`), `pot`                                            | **a Regional preenche**                                  |
+| `db`     | `fat`, `arr`, `ligU`/`ligA`/`ligN`, `ecoU`/`ecoA`/`ecoN` (`economias_novas_obras`), o recorte residencial (abaixo) e `ticket` | **Databricks** — travado, corrigível com override        |
+| `params` | `preco`, `tarr`, `ramp`, `vaz`, `pot`                                                                                        | **a Regional preenche**                                  |
 | `params` | `popU`, `popA`                                                                                                               | **a Regional preenche** — visíveis só na régua população |
 
 > **`params` viaja sempre inteiro**, inclusive `popU`/`popA`. A régua da cidade
@@ -167,47 +167,46 @@ diferente**, e a régua da meta da cidade (`Cidade.cob`) decide o que aparece:
 
 Quatro consequências para o backend:
 
-- **Recorte industrial**: as mesmas medidas do topo, restritas à categoria.
+- **Recorte residencial**: quanto das medidas do topo é residencial.
 
-  | Chave     | Coluna                          |
-  | --------- | ------------------------------- |
-  | `ligUInd` | `universo_ligacoes_industrial`  |
-  | `ligAInd` | `ligacoes_atuais_industrial`    |
-  | `fatInd`  | `receita_faturada_industrial`   |
-  | `arrInd`  | `receita_arrecadada_industrial` |
+  | Chave     | Coluna                           |
+  | --------- | -------------------------------- |
+  | `ligURes` | `universo_ligacoes_residencial`  |
+  | `ligARes` | `ligacoes_atuais_residencial`    |
+  | `ecoURes` | `universo_economias_residencial` |
+  | `ecoARes` | `economias_atuais_residencial`   |
 
   **A regra que não pode ser esquecida:** as colunas "normais"
   (`universo_ligacoes`, `receita_faturada`, `vazao_contribuicao`…) **já são o
-  total** — residencial **mais** industrial. As colunas `_industrial` guardam a
-  **parcela** industrial, que já está contida nesse total. Então:
+  total** — residencial **mais** industrial. As `_residencial` guardam a
+  **parcela** residencial, já contida nesse total, e vêm **apuradas** da base
+  comercial (não são deduzidas subtraindo indústria). Nunca somar as duas.
 
-  | Rodada                       | Como ler                                                                                                      |
-  | ---------------------------- | ------------------------------------------------------------------------------------------------------------- |
-  | `INCLUIR_INDUSTRIAL = True`  | usa as colunas normais **como estão** (já são o total). As `_industrial` são ignoradas — **não se soma nada** |
-  | `INCLUIR_INDUSTRIAL = False` | **residencial = total − industrial**: subtrai a parcela das colunas normais                                   |
+  **O RECORTE ACABA NA COBERTURA:**
 
-  Exemplo: uma sub-bacia com `universo_ligacoes = 1.000` e
-  `universo_ligacoes_industrial = 80` → com indústria, usa **1.000**; só
-  residencial, **1.000 − 80 = 920**.
+  | Rodada                             | O que muda                                                                                              |
+  | ---------------------------------- | ------------------------------------------------------------------------------------------------------- |
+  | `COBERTURA_SO_RESIDENCIAL = False` | a meta é medida nos totais (padrão, e o comportamento de sempre)                                          |
+  | `COBERTURA_SO_RESIDENCIAL = True`  | universo e base atendida da meta saem das colunas `_residencial`. **Receita, VPL, vazão e CAPEX não mudam** |
 
-  Não é "normal + industrial" para somar, nem "só o normal" para o residencial.
-  Somar duplicaria receita e cobertura; ignorar a parcela numa rodada só
-  residencial contaria demanda que não existe naquele cenário.
+  Quem paga a conta é a ligação, seja de casa ou de fábrica; e a indústria manda
+  esgoto que a ETE precisa tratar. Por isso o recorte não toca em dinheiro nem em
+  vazão. **A versão anterior tocava** — havia um `INCLUIR_INDUSTRIAL` que
+  subtraía a parcela industrial de ligações, receita e vazão, e por causa dele
+  duas rodadas do mesmo cenário não eram comparáveis.
 
-  **A mesma regra vale para a vazão**, que é campo da Regional e não do
-  Databricks: `vazao_contribuicao` é o total e `vazao_contribuicao_industrial`
-  (`vazInd`, em `params`) é a parcela contida nele. Sem indústria na área, o
-  valor é `0` — e, por ser resposta com valor próprio, **conta pendência**
-  quando fica em branco.
+  Cidade que mede a meta em **população** ignora estas colunas: indústria não
+  mora, então o universo de população já é residencial.
 
-  `INCLUIR_INDUSTRIAL` é **parâmetro da rodada de simulação**, não deste
-  cadastro — como o `usar_cts`. O app não oferece a escolha; ele só carrega os
-  dois números e explica a leitura (nota no card + dicionário de dados).
+  `COBERTURA_SO_RESIDENCIAL` é **parâmetro da rodada de simulação**, não deste
+  cadastro — como o `usar_cts`. O app não oferece a escolha aqui; ele carrega os
+  quatro números e explica a leitura (nota no card + dicionário de dados).
 
-  Por consequência: os valores são **subconjuntos** dos totais
-  (`ligUInd ≤ ligU`, `fatInd ≤ fat`) e não é trio de cobertura — **não vira
-  denominador de meta nenhuma**. É o que explica o ticket, porque indústria
-  costuma ser pouca ligação respondendo por uma fatia desproporcional da receita.
+  Consequência: os valores são **subconjuntos** dos totais (`ligURes ≤ ligU`,
+  `ecoARes ≤ ecoA`).
+
+  **`vazao_contribuicao_industrial` deixou de existir** — coluna, campo e verbete.
+  Ela só servia para a subtração que saiu de cena.
 
 - **`db` sempre com ligações e economias completas**, para toda sub-bacia e CTS.
   A tela mostra os dois trios em qualquer régua e destaca o que é o denominador

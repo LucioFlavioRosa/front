@@ -619,13 +619,3 @@
   font-weight: 400;
   opacity: 0.85;
 }
-
-/* A regra das metas, no lugar onde havia um seletor. Texto e não controle porque
-   não há o que escolher: a fonte é sempre o cadastro, e o único descarte é por
-   ano de CAPEX — que o motor aplica sozinho. */
-.metasNota {
-  margin: 0;
-  font-size: 12.5px;
-  line-height: 1.5;
-  color: var(--texto-2, #64748b);
-}

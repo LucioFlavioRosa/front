@@ -182,13 +182,16 @@ Query opcional: `unidade`, `usuario`.
     "duracaoS": 274, // segundos de solver
     "status": "OPTIMAL", // OPTIMAL | FEASIBLE | INFEASIBLE
     "favorita": true,
+    // A anotação de quem ANALISA a rodada. `null` quando ninguém anotou — o
+    // servidor não devolve `{texto: ""}`, porque apagar o texto apaga a linha.
+    "comentario": { "texto": "melhor cenário até agora", "autor": "ana@aegea", "atualizadoEm": "2026-08-14T02:43:07Z" },
     "parametros": {
       "baseReceita": "arrecadada", // arrecadada | faturada
       "usarCts": true,
       "janelaCapex": 8, // anos
       "orcamento": 410000000, // reais
       "focoCobertura": 1.0, // 0 a 1
-      "incluirIndustrial": true,
+      "coberturaSoResidencial": false,
     },
     // AS VARIÁVEIS COM QUE A RODADA FOI PEDIDA — as chaves de `controle.run_request`,
     // como vieram. `parametros` acima traz seis campos tipados (os que o card
@@ -252,6 +255,29 @@ Não há checagem de posse na escrita, e é deliberado: favoritar só afeta a pr
 lista de quem pede. O que protege o dado dos outros é a **leitura** — `GET /runs`
 já recorta por posse e escopo, então uma rodada que a pessoa não pode ver não
 aparece para ela nem favoritada.
+
+### 3.2.2 Comentário
+
+`PUT /runs/{run_id}/comentario` grava; `DELETE /runs/{run_id}/comentario` apaga. Os
+dois respondem `204`. O corpo do `PUT` é `{"texto": "..."}`, com no máximo 4000
+caracteres — `422` acima disso.
+
+**É COMPARTILHADO, ao contrário da favorita.** O texto que uma pessoa grava é o que
+as outras leem, e por isso `autor` e `atualizadoEm` viajam na resposta de `GET /runs`:
+num campo que qualquer um reescreve, quem escreveu e quando é o mínimo para o texto
+significar algo.
+
+**Texto vazio APAGA a linha.** Assim "sem comentário" tem uma representação só, e a
+lista devolve `comentario: null` em vez de um bloco com texto vazio. O `DELETE` existe
+para quem prefere dizer isso pelo verbo.
+
+**Escrever exige o mesmo alcance que ler** — posse (`usuario`) e escopo (unidade), as
+mesmas duas regras de `GET /runs`. Não é o caso da favorita, que dispensa recorte
+porque só afeta a lista de quem pede. Rodada fora do alcance responde `404`, e não
+`403`: dizer "existe, mas você não pode" já entrega que ela existe.
+
+É a única parte **mutável** de uma rodada. O resto é imutável de propósito — o
+comentário não é registro da execução, é leitura humana sobre ela.
 
 ### 3.3 `GET /runs/{run_id}/meta` — KPIs do nível global
 
@@ -646,7 +672,7 @@ tela mostra o nome técnico ao lado de cada controle).
   "base_receita": "arrecadada", // arrecadada | faturada
   "curva_adocao": "scurve", // scurve | linear
   "usar_cts": true,
-  "incluir_industrial": true,
+  "cobertura_so_residencial": false,
 
   "data_inicio": null, // null = janeiro do ano-base; ou "2026-06"
 }
@@ -696,7 +722,7 @@ Três detalhes que o front garante e o backend **não deve assumir**:
 - **NÃO existem `max_time_s` nem `workers` no corpo.** Tempo de solver e
   paralelismo são afinação de execução, não decisão de negócio.
 
-  > `MAX_TIME_S` é **fixado em 1000s** por `app/dominio/parametros.py` e **viaja no
+  > `MAX_TIME_S` é **fixado em 5000s** por `app/dominio/parametros.py` e **viaja no
   > `params`** — sem a chave, cada consumidor usaria o próprio default e a mesma
   > rodada teria tempos diferentes conforme quem a executasse. `WORKERS` **não
   > viaja**: paralelismo depende da máquina que executa, e fixá-lo aqui seria

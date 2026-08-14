@@ -136,10 +136,15 @@ Duas origens convivem em cada ficha, e a tela deixa isso explícito:
 
 Um conceito de negócio que vale saber antes de ler as telas: as medidas
 "normais" (ligações, receita, vazão) são o **total** — residencial mais
-industrial —, e as colunas `_industrial` são a **parcela já contida** nesse
-total. Somar as duas duplica receita e cobertura. Quem decide se a indústria
-entra é a rodada de simulação, não este cadastro. A regra completa, com exemplo
-numérico, está no [`DEPLOY.md`](DEPLOY.md) e no dicionário de dados do app.
+industrial —, e as colunas `_residencial` são a **parcela já contida** nesse
+total. Somar as duas duplica cobertura.
+
+E o recorte residencial **para na meta**: quando a rodada pede para medir a
+cobertura só em residenciais, receita, VPL, vazão e CAPEX continuam no total —
+quem paga a conta é a ligação, seja de casa ou de fábrica, e a indústria manda
+esgoto que a ETE precisa tratar. Quem decide é a rodada de simulação, não este
+cadastro. A regra completa, com exemplo numérico, está no
+[`DEPLOY.md`](DEPLOY.md) e no dicionário de dados do app.
 
 ## Mapa do código
 

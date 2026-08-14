@@ -188,6 +188,31 @@ export function useAlternarFavorita() {
   })
 }
 
+/**
+ * Grava (ou apaga) o comentário de uma rodada.
+ *
+ * PESSIMISTA, ao contrário da favorita logo acima, e a diferença não é gosto: ali
+ * o usuário clica uma estrela e não há nada em voo que ele possa digitar por
+ * cima; aqui ele está DIGITANDO. Um update otimista revertido pelo `onError`
+ * apagaria o texto que ele continuou escrevendo durante o voo — que foi
+ * exatamente o defeito que fez criar/remover CTS voltarem a ser pessimistas no
+ * cadastro. O texto só muda na tela depois que o servidor aceita.
+ *
+ * `onSuccess` no NÍVEL DO HOOK, e não no `mutate` da página: ele precisa rodar
+ * mesmo que a pessoa feche o modal antes da resposta, senão a lista fica sem a
+ * anotação que já foi gravada.
+ */
+export function useComentarDaRodada() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ runId, texto }: { runId: string; texto: string }) =>
+      resultados.comentar(runId, texto),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['runs', 'lista'] })
+    },
+  })
+}
+
 // `RunMeta`/`RunResumo` NAO sao re-exportados daqui: quem precisa dos tipos os
 // importa de `@/resultado/domain/resultado`, que e onde eles sao definidos. Um
 // re-export sem importador so cria um segundo caminho para a mesma coisa — e

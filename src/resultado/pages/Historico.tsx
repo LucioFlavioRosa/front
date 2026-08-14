@@ -317,7 +317,7 @@ function CardRodada({
           <Param k="foco" v={String(r.parametros.focoCobertura)} />
           <Param k="usar CTS" v={r.parametros.usarCts ? 'sim' : 'não'} />
           <Param k="base de receita" v={r.parametros.baseReceita} />
-          <Param k="indústria" v={r.parametros.incluirIndustrial ? 'incluída' : 'só residencial'} />
+          <Param k="meta" v={r.parametros.coberturaSoResidencial ? 'só residencial' : 'todas as ligações'} />
         </ul>
       )}
 
@@ -407,10 +407,21 @@ function AvisoEmVoo({ run: r }: { run: RunResumo }) {
   const alerta = esperando && (!!fila?.atencao || (!emExecucao && demorandoDemais(pedidaEm)))
 
   return (
-    <p className={alerta ? styles.avisoAtencao : styles.aviso}>
-      {texto}
-      {espera && <span className={styles.espera}> · pedida {espera}</span>}
-    </p>
+    <>
+      <p className={alerta ? styles.avisoAtencao : styles.aviso}>
+        {texto}
+        {espera && <span className={styles.espera}> · pedida {espera}</span>}
+      </p>
+      {/* O QUE O SOLVER ACHOU, quando a rodada morreu depois dele. Sem isto, uma
+          falha na publicação apaga um plano que existiu — e o número só ficava no
+          log do executor, que some quando alguém fecha o terminal. */}
+      {r.solver && (
+        <p className={styles.solverNota}>
+          <strong>O solver chegou a:</strong> {r.solver}
+          {' — '}o resultado não chegou a ser publicado, então não há o que abrir.
+        </p>
+      )}
+    </>
   )
 }
 

@@ -6,7 +6,10 @@ import {
   camposDaSub,
   capex,
   deTerceiros,
+  fatorCrescimento,
   mkObras,
+  notaDeNovas,
+  novasDeObras,
   num,
   popNovas,
   subPend,
@@ -153,18 +156,43 @@ describe('CTS — a irmã da sub-bacia', () => {
 
 describe('população nova (obras) — campo calculado', () => {
   it('é universo menos atendida hoje, em pt-BR', () => {
-    expect(popNovas({ popU: '1.267', popA: '406' })).toBe('861')
-    expect(popNovas({ popU: '30.854', popA: '12.650' })).toBe('18.204')
+    expect(popNovas({ popU: '1.267', popA: '406', pot: '1' })).toBe('861')
+    expect(popNovas({ popU: '30.854', popA: '12.650', pot: '1' })).toBe('18.204')
   })
 
   it('sem um dos dois lados vira travessão (melhor nada que número errado)', () => {
-    expect(popNovas({ popU: '', popA: '406' })).toBe('—')
-    expect(popNovas({ popU: '1.267', popA: '' })).toBe('—')
-    expect(popNovas({ popU: 'n/d', popA: '406' })).toBe('—')
+    expect(popNovas({ popU: '', popA: '406', pot: '1' })).toBe('—')
+    expect(popNovas({ popU: '1.267', popA: '', pot: '1' })).toBe('—')
+    expect(popNovas({ popU: 'n/d', popA: '406', pot: '1' })).toBe('—')
   })
 
   it('diferença negativa aparece como está: é dado inconsistente do Databricks', () => {
-    expect(popNovas({ popU: '100', popA: '150' })).toBe('-50')
+    expect(popNovas({ popU: '100', popA: '150', pot: '1' })).toBe('-50')
+  })
+
+  it('o POTENCIAL DE CRESCIMENTO entra na conta', () => {
+    // A mudanca: o fator ampliava so o denominador da meta, e as novas ficavam
+    // sendo a diferenca crua. A meta subia e o meio de alcanca-la, nao.
+    expect(novasDeObras('1.000', '400', '1')).toBe('600')
+    expect(novasDeObras('1.000', '400', '1,5')).toBe('1.100') // 1500 − 400
+    expect(novasDeObras('1.000', '400', '0,5')).toBe('100') //  500 − 400
+  })
+
+  it('fator ausente ou inválido é 1 — o neutro, nunca zero', () => {
+    // Zerar o universo por causa de um campo em branco seria apagar a sub-bacia
+    // do plano em silencio. `1` e a mesma tolerancia que o motor tem.
+    expect(fatorCrescimento('')).toBe(1)
+    expect(fatorCrescimento('n/d')).toBe(1)
+    expect(fatorCrescimento('0')).toBe(1)
+    expect(fatorCrescimento('-2')).toBe(1)
+    expect(novasDeObras('1.000', '400', '')).toBe('600')
+  })
+
+  it('a nota avisa quando o negativo não é o que a simulação usa', () => {
+    // O motor trunca em zero; a tela mostra o negativo para denunciar o dado.
+    // Sem a nota, quem le -50 supoe que a simulacao vai usar -50.
+    expect(notaDeNovas('600')).not.toContain('simulação usa 0')
+    expect(notaDeNovas('-50')).toContain('simulação usa 0')
   })
 })
 

@@ -24,11 +24,15 @@ import { seeded, type State } from '@/cadastro/state/cadastroReducer'
  * v4: colunas novas nas duas fichas — recorte industrial (`ligUInd`, `ligAInd`,
  *     `fatInd`, `arrInd`) em `db`, `vazInd` em `params`, e as obras trocaram
  *     `ini` por `tPred`/`anoObrig`/`proibAte`.
+ * v5: o recorte industrial VIROU residencial — `ligUInd`/`ligAInd`/`fatInd`/`arrInd`
+ *     sairam e entraram `ligURes`/`ligARes`/`ecoURes`/`ecoARes`; `vazInd` saiu de
+ *     `params` sem substituto. Rascunho v4 hidratado aqui deixaria `pendDe` lendo
+ *     chave que nao existe mais e mostraria campo fantasma na tela.
  *
  * Subir este numero e OBRIGATORIO a cada mudanca de formato — mas depender de
  * alguem lembrar ja falhou duas vezes, por isso existe `formatoCompativel`.
  */
-const VERSAO = 4
+const VERSAO = 5
 
 const chave = (unidadeId: string) => `cadastro:rascunho:v${VERSAO}:${unidadeId}`
 

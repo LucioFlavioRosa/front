@@ -20,23 +20,26 @@ export interface SubBaciaDb {
   ligA: string
   ligN: string
   /**
-   * Recorte INDUSTRIAL das mesmas quatro medidas de cima. Nao e um trio de
-   * cobertura (nao vira denominador de meta nenhuma): e o que explica o ticket,
-   * porque industria e um punhado de ligacoes respondendo por uma fatia
-   * desproporcional da receita.
+   * Recorte RESIDENCIAL: quanto das medidas de cima e residencial. Vem APURADO da
+   * base comercial — nao e estimativa de quem cadastra, e nao se deduz subtraindo
+   * uma parcela industrial, como era antes.
+   *
+   * Serve a UMA coisa: a rodada que mede a meta so em ligacoes residenciais. Nao
+   * entra em receita, VPL, vazao nem CAPEX, que seguem no total em qualquer modo —
+   * quem paga a conta e a ligacao, seja de casa ou de fabrica.
    */
-  /** `universo_ligacoes_industrial` */
-  ligUInd: string
-  /** `ligacoes_atuais_industrial` */
-  ligAInd: string
-  /** `receita_faturada_industrial` */
-  fatInd: string
-  /** `receita_arrecadada_industrial` */
-  arrInd: string
+  /** `universo_ligacoes_residencial` */
+  ligURes: string
+  /** `ligacoes_atuais_residencial` */
+  ligARes: string
   ecoU: string
   ecoA: string
   /** Economias que as obras passam a atender (`economias_novas_obras`). */
   ecoN: string
+  /** `universo_economias_residencial` — o par de `ligURes`, para a cidade que mede a meta em economias. */
+  ecoURes: string
+  /** `economias_atuais_residencial` */
+  ecoARes: string
   ticket: string
 }
 
@@ -46,14 +49,6 @@ export interface SubBaciaParams {
   tarr: string
   ramp: string
   vaz: string
-  /**
-   * `vazao_contribuicao_industrial` — a parcela INDUSTRIAL da vazao nova, ja
-   * contida em `vaz`. Mesma leitura do recorte industrial da base comercial:
-   * com industria vale `vaz`; so residencial, `vaz − vazInd` (analise que o
-   * produto ainda nao faz — por isso o campo nao conta pendencia). Sem industria na
-   * area, o valor e `0` — vazio nao e resposta.
-   */
-  vazInd: string
   pot: string
   /**
    * Populacao do universo e populacao ja atendida. So existem como campo
@@ -188,12 +183,11 @@ export function mkObras(override: Record<string, Partial<Obra>>): Obra[] {
     })
 }
 
-// `vazInd` NAO entra na regua. A planilha de origem nao tem a coluna
-// `vazao_contribuicao_industrial` para sub-bacia (so para CTS): chega NULL nas
-// 4.850 linhas e nao ha de onde preencher. E o motor so usa esse numero para
-// SUBTRAIR a parcela industrial quando se roda `INCLUIR_INDUSTRIAL=False` — na
-// analise de hoje ele nao entra na conta. Cobrar campo que a origem nao tem,
-// para uma simulacao que nao o usa, travava a unidade inteira por nada.
+// A vazao industrial SAIU do cadastro. Ela existia para o motor subtrair a parcela
+// da industria quando a rodada era "so residencial" — e esse recorte deixou de tocar
+// em vazao: ela dimensiona modulo de ETE e rateia obra compartilhada, e industria
+// contribui com esgoto mesmo quando nao conta para a meta. Descontar ali
+// subdimensionaria a estacao. Um campo a menos para a Regional preencher.
 const PARAM_KEYS: (keyof SubBaciaParams)[] = ['preco', 'tarr', 'ramp', 'vaz', 'pot']
 /** Quantos parametros a ficha cobra fora da regua de populacao. */
 export const CAMPOS_PARAMS = PARAM_KEYS.length
@@ -319,17 +313,58 @@ export function inteiro(n: number | null): string {
 }
 
 /**
- * Populacao que as obras passam a atender = universo − atendida hoje.
+ * O POTENCIAL DE CRESCIMENTO como numero, com 1,0 quando nao ha o que ler.
  *
- * Campo calculado (ƒ), nao digitado: o valor que a simulacao usa e sempre a
- * diferenca. Um dos dois vazio devolve travessao — melhor nao mostrar numero do
- * que mostrar um numero errado. Diferenca negativa e devolvida como esta: e
- * dado inconsistente do Databricks, e esconder isso nao ajuda ninguem.
+ * `1` e o neutro da multiplicacao, entao campo vazio, texto invalido ou valor nao
+ * positivo se comportam como "sem crescimento" — nunca zeram o universo. E a
+ * mesma tolerancia que o motor tem (`_pot`), e ela precisa ser a mesma dos dois
+ * lados: tela e simulacao discordando sobre o fator seria pior que nao mostrar.
  */
-export function popNovas(params: Pick<SubBaciaParams, 'popU' | 'popA'>): string {
-  const universo = num(params.popU)
-  const atual = num(params.popA)
-  return universo == null || atual == null ? '—' : inteiro(universo - atual)
+export function fatorCrescimento(pot: string): number {
+  const p = num(pot)
+  return p != null && p > 0 ? p : 1
+}
+
+/**
+ * As medidas que as obras passam a atender = universo × potencial − atendidas.
+ *
+ * O POTENCIAL ENTRA AQUI, e essa e a mudanca. Ele multiplicava so o denominador
+ * da meta — o universo agregado por cidade —, e as "novas" ficavam sendo a
+ * diferenca crua. O efeito era uma sub-bacia com crescimento previsto exigir mais
+ * cobertura sem que as obras dela passassem a atender mais ninguem: a meta subia
+ * e o meio de alcanca-la, nao.
+ *
+ * Campo calculado (ƒ), nunca digitado. Um dos dois vazio devolve travessao —
+ * melhor nao mostrar numero que mostrar um numero errado.
+ *
+ * DIFERENCA NEGATIVA e devolvida como esta, e a decisao e antiga: e dado
+ * inconsistente do Databricks (atuais > universo), e esconder isso nao ajuda
+ * ninguem. Mas o MOTOR trunca em zero (`max(0.0, ...)`), entao a tela mostraria
+ * -50 enquanto a simulacao usa 0 — e tela e simulacao discordando em silencio
+ * sobre o mesmo numero foi exatamente o defeito que esta mudanca veio corrigir.
+ * Por isso `notaDeNovas` existe: o valor denuncia, e a nota diz o que roda.
+ */
+export function novasDeObras(universo: string, atuais: string, pot: string): string {
+  const u = num(universo)
+  const a = num(atuais)
+  if (u == null || a == null) return '—'
+  return inteiro(u * fatorCrescimento(pot) - a)
+}
+
+/**
+ * A nota da celula derivada — a conta, e o que o motor faz com ela.
+ *
+ * Sem o segundo caso, o negativo seria uma armadilha: quem le -50 supoe que a
+ * simulacao vai usar -50.
+ */
+export function notaDeNovas(valor: string): string {
+  const conta = 'universo × potencial de crescimento − atuais'
+  return valor.startsWith('-') ? `${conta} · negativo: a simulação usa 0` : conta
+}
+
+/** Populacao que as obras passam a atender. Ver `novasDeObras`. */
+export function popNovas(params: Pick<SubBaciaParams, 'popU' | 'popA' | 'pot'>): string {
+  return novasDeObras(params.popU, params.popA, params.pot)
 }
 
 /** CAPEX = quantidade × preço unitário (campo calculado ƒ). */

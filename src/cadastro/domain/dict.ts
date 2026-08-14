@@ -2,17 +2,13 @@
  * Dicionario de dados (aba "02 Dicionario de Dados" da planilha, exposto no
  * prototipo como objeto DICT). Copy FINAL — extraido do Cadastro de Dados.dc.html
  * (linhas 834-851). Chave = nome tecnico da coluna.
+ *
+ * O TIPO e o selo de origem vivem em `comum/domain/dicionario.ts`: a simulacao
+ * tem o dicionario dela, e o painel que exibe os dois e um so.
  */
-export interface Verbete {
-  rotulo: string
-  tec: string
-  origem: string
-  tipo: string
-  oque: string
-  porque: string
-  exemplo: string
-}
+import type { Verbete } from '@/comum/domain/dicionario'
 
+export type { Verbete }
 export const DICT: Record<string, Verbete> = {
   preco_por_ligacao: {
     rotulo: 'Taxa de ligação',
@@ -49,26 +45,17 @@ export const DICT: Record<string, Verbete> = {
     tipo: 'vazão · mesma unidade da ETE',
     oque: 'A vazão NOVA que a sub-bacia passa a mandar quando conectada — não a vazão já existente. É o TOTAL: residencial mais industrial.',
     porque:
-      'Dimensiona os módulos da ETE e é o peso do rateio das obras compartilhadas. Errar aqui distorce quem paga o quê. A parcela industrial está em `vazao_contribuicao_industrial`, já contida neste número.',
+      'Dimensiona os módulos da ETE e é o peso do rateio das obras compartilhadas. Errar aqui distorce quem paga o quê. É sempre o total, inclusive na rodada que mede a meta só em residenciais: indústria contribui com esgoto mesmo quando não conta para a meta, e descontá-la subdimensionaria a estação.',
     exemplo: '165,9',
-  },
-  vazao_contribuicao_industrial: {
-    rotulo: 'Vazão nova industrial',
-    tec: 'vazao_contribuicao_industrial',
-    origem: 'você preenche · 0 quando não há indústria',
-    tipo: 'vazão · parcela já contida na vazão nova',
-    oque: 'Quanto da vazão nova vem da indústria. NÃO é um número a somar: `vazao_contribuicao` já é o total, e este diz quanto daquele total é industrial.',
-    porque:
-      'A rodada de simulação escolhe se considera a indústria. COM indústria: usa a vazão total como está. SEM indústria: residencial = total − industrial. Exemplo: 165,9 L/s de vazão nova, 12,4 industriais → com indústria usa 165,9; só residencial, 165,9 − 12,4 = 153,5. Sem indústria na área, informe 0 — vazio não é resposta.',
-    exemplo: '12,4 (de 165,9 L/s)',
   },
   potencial_crescimento: {
     rotulo: 'Potencial de crescimento',
     tec: 'potencial_crescimento',
     origem: 'você preenche',
     tipo: 'fator ≥ 1,0 · default 1,0',
-    oque: 'Multiplicador do universo de ligações da sub-bacia. 1,0 = sem crescimento; 1,5 = universo 50% maior.',
-    porque: 'Amplia SÓ o denominador da meta de cobertura.',
+    oque: 'Multiplicador do universo da sub-bacia. 1,0 = sem crescimento; 1,5 = universo 50% maior.',
+    porque:
+      'Amplia o denominador da meta de cobertura E as novas das obras — ligações, economias e população passam a ser universo × potencial − atuais. Antes só o denominador crescia: a meta subia e o meio de alcançá-la, não.',
     exemplo: '1,0',
   },
   quantidade: {
@@ -158,49 +145,49 @@ export const DICT: Record<string, Verbete> = {
       'Vale para a verificação da META e para a faixa de PARIDADE. A receita continua sempre por ligação.',
     exemplo: 'ligações',
   },
-  // ─── Recorte industrial ───────────────────────────────────────────────────
-  // Os quatro verbetes repetem a mesma regra de propósito: ela é a fonte do
-  // erro clássico (somar industrial ao total) e quem abre um deles pode não
-  // abrir os outros.
-  universo_ligacoes_industrial: {
-    rotulo: 'Ligações industriais — universo',
-    tec: 'universo_ligacoes_industrial',
+  // ─── Recorte residencial ──────────────────────────────────────────────────
+  // Os quatro verbetes repetem a mesma regra de propósito: ela é a fonte de dois
+  // erros clássicos — somar residencial ao total, e achar que o recorte muda a
+  // receita. Quem abre um deles pode não abrir os outros.
+  universo_ligacoes_residencial: {
+    rotulo: 'Ligações residenciais — universo',
+    tec: 'universo_ligacoes_residencial',
     origem: 'Databricks 🔒 · corrigível com override',
     tipo: 'ligações · parcela já contida no total',
-    oque: 'Quantas ligações do universo são industriais. NÃO é um número a somar: `universo_ligacoes` já é o total (residencial + industrial), e esta coluna diz quanto daquele total é indústria.',
+    oque: 'Quantas ligações do universo são residenciais. NÃO é um número a somar: `universo_ligacoes` já é o total (residencial + industrial), e esta coluna diz quanto daquele total é residência.',
     porque:
-      'A rodada de simulação escolhe se considera a indústria. COM indústria: usa o total como está. SEM indústria: residencial = total − industrial. Exemplo: 1.000 ligações no universo, 80 industriais → com indústria usa 1.000; só residencial, 1.000 − 80 = 920.',
-    exemplo: '80 (de um universo de 1.000)',
+      'A rodada de simulação escolhe se a META é medida só em ligações residenciais. Quando é, este número vira o denominador da cobertura no lugar do total. Receita, VPL e vazão seguem no total em qualquer caso — quem paga a conta é a ligação, seja de casa ou de fábrica.',
+    exemplo: '920 (de um universo de 1.000)',
   },
-  ligacoes_atuais_industrial: {
-    rotulo: 'Ligações industriais atuais',
-    tec: 'ligacoes_atuais_industrial',
+  ligacoes_atuais_residencial: {
+    rotulo: 'Ligações residenciais atuais',
+    tec: 'ligacoes_atuais_residencial',
     origem: 'Databricks 🔒 · corrigível com override',
     tipo: 'ligações · parcela já contida no total',
-    oque: 'Quantas das ligações já atendidas hoje são industriais. Parcela de `ligacoes_atuais`, não um acréscimo a ele.',
+    oque: 'Quantas das ligações já atendidas hoje são residenciais. Parcela de `ligacoes_atuais`, não um acréscimo a ele.',
     porque:
-      'Mesma regra do universo: com indústria, vale o total; só residencial, subtrai-se esta parcela. Somar os dois inflaria a cobertura atual e a meta pareceria mais perto do que está.',
-    exemplo: '28 (de 1.318 atuais)',
+      'É a base de partida da meta quando a rodada mede só residencial. As duas pontas da fração precisam vir do mesmo recorte: medir o atendido no total contra um universo residencial faria a cobertura nascer inflada.',
+    exemplo: '1.290 (de 1.318 atuais)',
   },
-  receita_faturada_industrial: {
-    rotulo: 'Receita faturada industrial',
-    tec: 'receita_faturada_industrial',
+  universo_economias_residencial: {
+    rotulo: 'Economias residenciais — universo',
+    tec: 'universo_economias_residencial',
     origem: 'Databricks 🔒 · corrigível com override',
-    tipo: 'R$/mês · parcela já contida no total',
-    oque: 'Quanto da receita faturada dos últimos 12 meses veio da indústria. É recorte de `receita_faturada`, não uma receita à parte.',
+    tipo: 'economias · parcela já contida no total',
+    oque: 'Quantas economias do universo são residenciais. Uma ligação pode ter várias economias — por isso o número não acompanha o de ligações.',
     porque:
-      'Indústria costuma ser pouca ligação com fatia grande da receita — é o que explica um ticket alto. Se a rodada rodar só residencial, esta parcela sai do total; somá-la contaria a mesma receita duas vezes.',
-    exemplo: '36.535 (de 260.964 faturados)',
+      'Só entra em cidade que mede a meta em ECONOMIAS. Nas que medem em ligações ela não é usada, e nas que medem em população também não: indústria não mora, então o universo de população já é residencial.',
+    exemplo: '9.441 (de 9.642)',
   },
-  receita_arrecadada_industrial: {
-    rotulo: 'Receita arrecadada industrial',
-    tec: 'receita_arrecadada_industrial',
+  economias_atuais_residencial: {
+    rotulo: 'Economias residenciais atuais',
+    tec: 'economias_atuais_residencial',
     origem: 'Databricks 🔒 · corrigível com override',
-    tipo: 'R$/mês · parcela já contida no total',
-    oque: 'Quanto da receita efetivamente arrecadada veio da indústria. Recorte de `receita_arrecadada`.',
+    tipo: 'economias · parcela já contida no total',
+    oque: 'Quantas das economias já atendidas são residenciais. Parcela de `economias_atuais`.',
     porque:
-      'Junto com a faturada, mostra a inadimplência da categoria. Vale a mesma regra: com indústria usa-se o total; só residencial, total − industrial.',
-    exemplo: '29.630 (de 211.642 arrecadados)',
+      'Fecha o par com o universo residencial de economias. É o que permite a cidade que mede em economias ter uma meta residencial coerente dos dois lados.',
+    exemplo: '3.869 (de 3.953)',
   },
 
   universo_populacao: {
@@ -283,16 +270,3 @@ export const DICT: Record<string, Verbete> = {
 }
 
 /** Cor do chip de origem no painel: Databricks = cyan, usuario = ambar. */
-export function origemStyle(origem: string): {
-  background: string
-  color: string
-  borderColor: string
-} {
-  return origem.includes('Databricks')
-    ? { background: 'var(--db-bg)', color: 'var(--db-text-2)', borderColor: 'var(--db-border)' }
-    : {
-        background: 'var(--pend-bg)',
-        color: 'var(--pend-text-3)',
-        borderColor: 'var(--pend-border-2)',
-      }
-}

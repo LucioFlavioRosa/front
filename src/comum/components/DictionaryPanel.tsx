@@ -1,17 +1,21 @@
 import { useEffect } from 'react'
 import { useApp } from '@/comum/state/AppContext'
-import { DICT, origemStyle } from '@/cadastro/domain/dict'
+import { origemStyle, type Verbete } from '@/comum/domain/dicionario'
 import styles from './DictionaryPanel.module.css'
 
 /**
- * Painel fixo a direita (360px) do dicionario de dados. Aberto pelo "?" das
- * FieldRows via dictKey (= nome tecnico da coluna). Copy final do DICT.
+ * Painel fixo a direita (360px) do dicionario. Aberto pelo "?" via `dictKey`.
+ *
+ * Ele NAO conhece os verbetes: quem os passa e a raiz de composicao (`app/`), que
+ * junta o dicionario do cadastro (colunas que a pessoa digita) com o da simulacao
+ * (parametros da rodada). Sem isso o painel viveria numa area e teria de importar
+ * da outra — que e o que a fronteira do ESLint recusa, e com razao.
  *
  * Nao rouba o foco ao abrir (o usuario continua no campo que estava lendo), mas
  * Esc fecha e o verbete e anunciado por aria-live — abrir o painel com o teclado
  * antes nao dava nenhum retorno.
  */
-export function DictionaryPanel() {
+export function DictionaryPanel({ verbetes }: { verbetes: Record<string, Verbete> }) {
   const { dictKey, closeDict } = useApp()
   const aberto = !!dictKey
 
@@ -26,7 +30,7 @@ export function DictionaryPanel() {
 
   if (!dictKey) return null
 
-  const v = DICT[dictKey]
+  const v = verbetes[dictKey]
 
   return (
     <aside

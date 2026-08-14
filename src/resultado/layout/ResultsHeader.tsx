@@ -138,7 +138,7 @@ export function ResultsHeader() {
 
 /**
  * Os parametros que mudam o resultado, na ordem em que o prototipo os mostra.
- * `incluirIndustrial` fica de fora do header por espaco — ele aparece no card do
+ * `coberturaSoResidencial` fica de fora do header por espaco — ele aparece no card do
  * historico, onde ha lugar para os cinco.
  */
 function chipsDeParametro(p: ParametrosRodada): { k: string; v: string }[] {

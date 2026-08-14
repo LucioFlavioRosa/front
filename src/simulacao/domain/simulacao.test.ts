@@ -245,7 +245,7 @@ describe('corpoDaRodada', () => {
 
   it('o corpo NÃO carrega afinação de execução', () => {
     // `max_time_s` e `workers` são execução, não decisão de negócio. O tempo é
-    // fixado em 1000s pelo backend (e viaja no `params`, para o histórico
+    // fixado em 5000s pelo backend (e viaja no `params`, para o histórico
     // registrar); os workers ficam com o padrão do executor.
     const corpo = corpoDaRodada({ ...estadoInicial(), unidadeId: 'u1' })
     expect('max_time_s' in corpo).toBe(false)
@@ -274,7 +274,9 @@ describe('corpoDaRodada', () => {
     expect(corpo.base_receita).toBe('arrecadada')
     expect(corpo.curva_adocao).toBe('scurve')
     expect(corpo.usar_cts).toBe(true)
-    expect(corpo.incluir_industrial).toBe(true)
+    // O default e NAO recortar: a meta conta todas as ligacoes, como sempre contou.
+    // Trocar o default mudaria em silencio o significado de toda rodada antiga.
+    expect(corpo.cobertura_so_residencial).toBe(false)
   })
 })
 
