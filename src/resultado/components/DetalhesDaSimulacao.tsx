@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useComentarDaRodada } from '@/resultado/api/queries'
 import { ordenarParametros, rotuloDoParametro, valorDoParametro } from '@/resultado/domain/pedido'
 import type { RunResumo } from '@/resultado/domain/resultado'
 import styles from './DetalhesDaSimulacao.module.css'
@@ -47,7 +48,11 @@ export function DetalhesDaSimulacao({ run, onFechar }: { run: RunResumo; onFecha
         return
       }
       if (e.key !== 'Tab') return
-      const focaveis = cardRef.current?.querySelectorAll<HTMLElement>('button, a[href]')
+      // `textarea` entra na lista: o comentário é editável aqui dentro, e um
+      // campo que o Tab pula é um campo que o teclado não alcança.
+      const focaveis = cardRef.current?.querySelectorAll<HTMLElement>(
+        'button, a[href], textarea',
+      )
       if (!focaveis?.length) return
       const primeiro = focaveis[0]
       const ultimo = focaveis[focaveis.length - 1]
@@ -113,6 +118,8 @@ export function DetalhesDaSimulacao({ run, onFechar }: { run: RunResumo; onFecha
           </p>
         )}
 
+        <Comentario run={run} />
+
         <div className={styles.acoes}>
           <button type="button" ref={fecharRef} className={styles.btn} onClick={onFechar}>
             Fechar
@@ -129,6 +136,89 @@ export function DetalhesDaSimulacao({ run, onFechar }: { run: RunResumo; onFecha
         </div>
       </div>
     </div>
+  )
+}
+
+/** Teto do texto — o mesmo que o backend recusa acima (`_MAX_COMENTARIO`). */
+const MAX = 4000
+
+/**
+ * A ANOTAÇÃO DA RODADA, escrita depois de ver o resultado.
+ *
+ * Fica aqui, e não no formulário de simulação, porque é isso que ela é: o nome da
+ * rodada descreve a intenção e é dado no disparo; o comentário descreve a
+ * conclusão e só existe depois. Quem abre a rodada semanas depois lê os dois.
+ *
+ * É COMPARTILHADO: qualquer pessoa que enxerga a rodada pode reescrever. Por isso
+ * o rodapé mostra quem escreveu por último e quando — sem isso, um texto que
+ * mudou sozinho aos olhos de quem já tinha lido não teria explicação.
+ *
+ * Salvar fica DESABILITADO sem mudança, como no cadastro: um botão que aceita
+ * clique sem ter o que gravar ensina que salvar não significa nada.
+ */
+function Comentario({ run }: { run: RunResumo }) {
+  const salvo = run.comentario?.texto ?? ''
+  const [texto, setTexto] = useState(salvo)
+  const comentar = useComentarDaRodada()
+  const id = useId()
+
+  // Se o servidor trouxer outra versão (outra pessoa escreveu, ou a lista
+  // recarregou), o campo acompanha — MAS só quando não há edição local pendente,
+  // senão o refetch apagaria o que está sendo digitado agora.
+  //
+  // Ajuste DURANTE O RENDER, e não num efeito: é o padrão do React para estado
+  // derivado de prop, e roda antes da pintura — o efeito faria a tela mostrar o
+  // texto velho por um quadro. É também o que evita mais um `eslint-disable` de
+  // `set-state-in-effect`, dos quais o projeto já carrega cinco.
+  const [salvoVisto, setSalvoVisto] = useState(salvo)
+  if (salvo !== salvoVisto) {
+    setSalvoVisto(salvo)
+    if (texto === '' || texto === salvoVisto) setTexto(salvo)
+  }
+
+  const mudou = texto.trim() !== salvo.trim()
+
+  return (
+    <>
+      <h3 className={styles.secao}>Comentário</h3>
+      <p className={styles.comentarioAjuda} id={`${id}-ajuda`}>
+        Anotação sobre esta rodada — o que ela mostrou, por que ela importa. Todo mundo que vê a
+        rodada lê e pode editar.
+      </p>
+      <textarea
+        id={id}
+        className={styles.comentarioCampo}
+        value={texto}
+        maxLength={MAX}
+        rows={3}
+        aria-describedby={`${id}-ajuda`}
+        placeholder="Ex.: melhor cenário até agora — o pico de CAPEX de 2029 desaparece."
+        onChange={(e) => setTexto(e.target.value)}
+      />
+      <div className={styles.comentarioRodape}>
+        <span className={styles.comentarioAutoria}>
+          {run.comentario?.autor
+            ? `Última edição de ${run.comentario.autor}, ${quando(run.comentario.atualizadoEm)}`
+            : 'Ninguém anotou esta rodada ainda.'}
+        </span>
+        <button
+          type="button"
+          className={styles.btn}
+          disabled={!mudou || comentar.isPending}
+          onClick={() => comentar.mutate({ runId: run.runId, texto: texto.trim() })}
+        >
+          {comentar.isPending ? 'Salvando…' : 'Salvar comentário'}
+        </button>
+      </div>
+      {/* Pessimista: o texto na tela só é o do servidor depois que ele aceita.
+          `role="alert"` porque a falha acontece longe do olho — o botão fica no
+          rodapé e a pessoa pode já estar lendo os parâmetros acima. */}
+      {comentar.isError && (
+        <p className={styles.comentarioErro} role="alert">
+          Não foi possível salvar o comentário. O texto continua aqui — tente de novo.
+        </p>
+      )}
+    </>
   )
 }
 

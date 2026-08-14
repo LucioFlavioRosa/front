@@ -62,6 +62,14 @@ export interface ParametrosRodada {
  */
 export type StatusRodada = StatusSolver | 'PENDENTE' | 'RODANDO' | 'ERRO' | 'CANCELADA'
 
+/** A anotação de uma rodada. Ver `RunResumo.comentario`. */
+export interface ComentarioDaRodada {
+  texto: string
+  /** Quem escreveu por ÚLTIMO — não é dono, é a última mão. */
+  autor: string | null
+  atualizadoEm: string | null
+}
+
 export interface RunResumo {
   runId: string
   nome: string
@@ -73,6 +81,18 @@ export interface RunResumo {
   duracaoS: number | null
   status: StatusRodada
   favorita: boolean
+  /**
+   * A anotação de quem ANALISA a rodada, escrita depois de ver o resultado.
+   *
+   * Não confundir com `nome`: aquele é dado no disparo e descreve a intenção;
+   * este é escrito depois e descreve a conclusão. É a única parte mutável de uma
+   * rodada, e é COMPARTILHADA — por isso vem com autor e data, que é o mínimo
+   * para o texto significar algo num campo que qualquer um pode reescrever.
+   *
+   * AUSENTE quando ninguém anotou. O backend não devolve `{texto: ''}`: apagar o
+   * texto apaga a linha, então "sem comentário" tem uma representação só.
+   */
+  comentario?: ComentarioDaRodada | null
   /**
    * A rodada tem resultado gravado em `otim_*`?
    *
