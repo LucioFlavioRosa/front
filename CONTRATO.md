@@ -184,7 +184,11 @@ Query opcional: `unidade`, `usuario`.
     "favorita": true,
     // A anotação de quem ANALISA a rodada. `null` quando ninguém anotou — o
     // servidor não devolve `{texto: ""}`, porque apagar o texto apaga a linha.
-    "comentario": { "texto": "melhor cenário até agora", "autor": "ana@aegea", "atualizadoEm": "2026-08-14T02:43:07Z" },
+    "comentario": {
+      "texto": "melhor cenário até agora",
+      "autor": "ana@aegea",
+      "atualizadoEm": "2026-08-14T02:43:07Z",
+    },
     "parametros": {
       "baseReceita": "arrecadada", // arrecadada | faturada
       "usarCts": true,
@@ -345,18 +349,30 @@ ganho, e o backend lê as tabelas da mesma rodada de qualquer jeito.
     // run_obra, somado por componente sobre as obras CONSTRUÍDAS. Três leituras do
     // mesmo elemento: quanto custou, quantas obras, e quanto foi entregue.
     {
-      "componente": "Rede coletora", "capex": 6782638, "pctDoTotal": 7.6,
-      "obras": 12, "unidadesConstruidas": 14823, "unidade": "m",
+      "componente": "Rede coletora",
+      "capex": 6782638,
+      "pctDoTotal": 7.6,
+      "obras": 12,
+      "unidadesConstruidas": 14823,
+      "unidade": "m",
     },
     // ETE: a unidade construída é a CAPACIDADE acrescentada pelos módulos.
     {
-      "componente": "ETE (módulo)", "capex": 36144260, "pctDoTotal": 40.5,
-      "obras": 23, "unidadesConstruidas": 2636, "unidade": "L/s de capacidade",
+      "componente": "ETE (módulo)",
+      "capex": 36144260,
+      "pctDoTotal": 40.5,
+      "obras": 23,
+      "unidadesConstruidas": 2636,
+      "unidade": "L/s de capacidade",
     },
     // `null` quando não há o que medir — a tela mostra travessão, nunca zero.
     {
-      "componente": "ETE", "capex": 12000000, "pctDoTotal": 13.4,
-      "obras": 2, "unidadesConstruidas": null, "unidade": null,
+      "componente": "ETE",
+      "capex": 12000000,
+      "pctDoTotal": 13.4,
+      "obras": 2,
+      "unidadesConstruidas": null,
+      "unidade": null,
     },
   ],
   "obrasPorAno": [

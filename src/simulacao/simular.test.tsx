@@ -69,7 +69,13 @@ describe('parâmetros e rastreabilidade', () => {
     renderApp('/simular')
     await screen.findByText('FOCO_COBERTURA')
 
-    for (const fixo of ['METAS_COBERTURA', 'ETE_FASEADA', 'ETE_FIXO', 'PESO_CIDADE', 'MAX_TIME_S']) {
+    for (const fixo of [
+      'METAS_COBERTURA',
+      'ETE_FASEADA',
+      'ETE_FIXO',
+      'PESO_CIDADE',
+      'MAX_TIME_S',
+    ]) {
       expect(screen.queryByText(fixo)).toBeNull()
     }
     expect(screen.queryByText(/Fixos nesta versão/)).toBeNull()

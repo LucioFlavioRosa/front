@@ -317,7 +317,10 @@ function CardRodada({
           <Param k="foco" v={String(r.parametros.focoCobertura)} />
           <Param k="usar CTS" v={r.parametros.usarCts ? 'sim' : 'não'} />
           <Param k="base de receita" v={r.parametros.baseReceita} />
-          <Param k="meta" v={r.parametros.coberturaSoResidencial ? 'só residencial' : 'todas as ligações'} />
+          <Param
+            k="meta"
+            v={r.parametros.coberturaSoResidencial ? 'só residencial' : 'todas as ligações'}
+          />
         </ul>
       )}
 

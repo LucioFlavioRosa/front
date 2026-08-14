@@ -152,11 +152,11 @@ e a tela não promete que alcança.
 A ficha de coleta (sub-bacia e CTS, que são iguais) tem **dois blocos de origem
 diferente**, e a régua da meta da cidade (`Cidade.cob`) decide o que aparece:
 
-| Onde     | Campos                                                                                                                       | Origem                                                   |
-| -------- | ---------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| Onde     | Campos                                                                                                                        | Origem                                                   |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
 | `db`     | `fat`, `arr`, `ligU`/`ligA`/`ligN`, `ecoU`/`ecoA`/`ecoN` (`economias_novas_obras`), o recorte residencial (abaixo) e `ticket` | **Databricks** — travado, corrigível com override        |
-| `params` | `preco`, `tarr`, `ramp`, `vaz`, `pot`                                                                                        | **a Regional preenche**                                  |
-| `params` | `popU`, `popA`                                                                                                               | **a Regional preenche** — visíveis só na régua população |
+| `params` | `preco`, `tarr`, `ramp`, `vaz`, `pot`                                                                                         | **a Regional preenche**                                  |
+| `params` | `popU`, `popA`                                                                                                                | **a Regional preenche** — visíveis só na régua população |
 
 > **`params` viaja sempre inteiro**, inclusive `popU`/`popA`. A régua da cidade
 > decide se esses dois **aparecem na tela** e se contam pendência — não se são
@@ -184,9 +184,9 @@ Quatro consequências para o backend:
 
   **O RECORTE ACABA NA COBERTURA:**
 
-  | Rodada                             | O que muda                                                                                              |
-  | ---------------------------------- | ------------------------------------------------------------------------------------------------------- |
-  | `COBERTURA_SO_RESIDENCIAL = False` | a meta é medida nos totais (padrão, e o comportamento de sempre)                                          |
+  | Rodada                             | O que muda                                                                                                  |
+  | ---------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+  | `COBERTURA_SO_RESIDENCIAL = False` | a meta é medida nos totais (padrão, e o comportamento de sempre)                                            |
   | `COBERTURA_SO_RESIDENCIAL = True`  | universo e base atendida da meta saem das colunas `_residencial`. **Receita, VPL, vazão e CAPEX não mudam** |
 
   Quem paga a conta é a ligação, seja de casa ou de fábrica; e a indústria manda

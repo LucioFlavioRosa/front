@@ -50,9 +50,7 @@ export function DetalhesDaSimulacao({ run, onFechar }: { run: RunResumo; onFecha
       if (e.key !== 'Tab') return
       // `textarea` entra na lista: o comentário é editável aqui dentro, e um
       // campo que o Tab pula é um campo que o teclado não alcança.
-      const focaveis = cardRef.current?.querySelectorAll<HTMLElement>(
-        'button, a[href], textarea',
-      )
+      const focaveis = cardRef.current?.querySelectorAll<HTMLElement>('button, a[href], textarea')
       if (!focaveis?.length) return
       const primeiro = focaveis[0]
       const ultimo = focaveis[focaveis.length - 1]

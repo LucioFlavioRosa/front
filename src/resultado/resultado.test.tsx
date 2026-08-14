@@ -176,9 +176,9 @@ describe('nível global', () => {
     renderApp(`/resultados/${RUN}`)
     const quadro = (await screen.findAllByText('CAPEX por elemento de obra'))[0].closest('figure')
     const texto = within(quadro as HTMLElement).getByRole('table').textContent ?? ''
-    expect(texto).toContain('14.823 m')       // rede coletora
-    expect(texto).toContain('8.012 ligacao')  // ligacoes de esgoto
-    expect(texto).toContain('L/s')            // ETE: capacidade, na unidade do banco
+    expect(texto).toContain('14.823 m') // rede coletora
+    expect(texto).toContain('8.012 ligacao') // ligacoes de esgoto
+    expect(texto).toContain('L/s') // ETE: capacidade, na unidade do banco
   })
 
   it('elemento sem quantidade apurada mostra travessão, e não zero', async () => {
@@ -189,8 +189,9 @@ describe('nível global', () => {
     const linhas = within(quadro as HTMLElement).getAllByRole('row')
     // `ETE` e `ETE (módulo)` comecam igual: a linha da ETE NOVA e a que nao tem
     // parenteses. Ela e a que nao tem quantidade fisica apurada.
-    const ete = linhas.find((l) => (l.textContent ?? '').startsWith('ETE') &&
-                                   !(l.textContent ?? '').startsWith('ETE ('))
+    const ete = linhas.find(
+      (l) => (l.textContent ?? '').startsWith('ETE') && !(l.textContent ?? '').startsWith('ETE ('),
+    )
     expect(ete).toBeTruthy()
     expect(ete?.textContent).toContain('—')
   })
