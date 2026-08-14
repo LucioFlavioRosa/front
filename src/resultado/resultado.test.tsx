@@ -169,6 +169,44 @@ describe('nível global', () => {
     expect(texto).not.toContain('Transporte')
   })
 
+  it('mostra o que foi CONSTRUÍDO por elemento, na unidade de cada um', async () => {
+    // O irmao do quadro de CAPEX: mesmas linhas, outra pergunta. Um diz quanto
+    // custou, o outro quanto foi feito — e e a leitura dos dois juntos que responde
+    // se um elemento que leva um terco do orcamento entrega um terco da obra.
+    renderApp(`/resultados/${RUN}`)
+    const quadro = (await screen.findAllByText('Unidades construídas por elemento'))[0].closest(
+      'figure',
+    )
+    const texto = within(quadro as HTMLElement).getByRole('table').textContent ?? ''
+    expect(texto).toContain('14.823 m')            // rede coletora
+    expect(texto).toContain('8.012 ligacao')       // ligacoes de esgoto
+    expect(texto).toContain('L/s') // ETE: capacidade acrescentada, na unidade do banco
+  })
+
+  it('elemento sem quantidade apurada mostra travessão, e não zero', async () => {
+    // Zero se leria como "nada construido", e o caso e outro: nao ha quantidade a
+    // medir naquele elemento. A ETE nova e o caso real disso.
+    renderApp(`/resultados/${RUN}`)
+    const quadro = (await screen.findAllByText('Unidades construídas por elemento'))[0].closest(
+      'figure',
+    )
+    const linhas = within(quadro as HTMLElement).getAllByRole('row')
+    // `ETE` e `ETE (módulo)` comecam igual: a linha da ETE NOVA e a que nao tem
+    // parenteses. Ela e a que nao tem quantidade fisica apurada.
+    const ete = linhas.find((l) => (l.textContent ?? '').startsWith('ETE') &&
+                                   !(l.textContent ?? '').startsWith('ETE ('))
+    expect(ete).toBeTruthy()
+    expect(ete?.textContent).toContain('—')
+  })
+
+  it('o histograma de VPL por sub-bacia saiu da tela', async () => {
+    // Ele mostrava a distribuicao mas nao dizia o que foi entregue. Este teste guarda
+    // a remocao: um quadro que volta sem decisao e um quadro que ninguem pediu.
+    renderApp(`/resultados/${RUN}`)
+    await screen.findByText('VPL do plano')
+    expect(screen.queryByText('Quantidade de sub-bacias por faixa de VPL')).toBeNull()
+  })
+
   it('a aba EBITDA diz que ele não entra na função objetivo', async () => {
     renderApp(`/resultados/${RUN}?aba=ebitda`)
     expect(await screen.findByText(/não entra na função objetivo/)).toBeTruthy()

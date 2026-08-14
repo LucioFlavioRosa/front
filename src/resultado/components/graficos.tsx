@@ -28,7 +28,6 @@ import type {
   AnoFinanceiro,
   CapexPorComponente,
   EbitdaAno,
-  FaixaVpl,
   MetaCobertura,
   ObrasDoAno,
   ParcelaCascata,
@@ -607,77 +606,113 @@ export function GraficoCapexComponente({ itens }: { itens: CapexPorComponente[] 
 }
 
 // ===========================================================================
-//  5 · HISTOGRAMA DE VPL POR SUB-BACIA
+//  5 · UNIDADES CONSTRUÍDAS POR ELEMENTO DE OBRA (barras horizontais)
 // ===========================================================================
-export function GraficoHistograma({
-  faixas,
-  positivas,
-  negativas,
-}: {
-  faixas: FaixaVpl[]
-  positivas: number
-  negativas: number
-}) {
-  if (faixas.length === 0)
+/**
+ * O irmão do quadro de CAPEX: mesmas linhas, mesma ordem, outra pergunta.
+ *
+ * Um vale quanto CUSTOU, o outro quanto FOI FEITO — 1.042.571 m de rede, 126.807
+ * ligações, 252 unidades de EEE. Juntos respondem a pergunta que nenhum dos dois
+ * responde sozinho: se um elemento leva um terço do orçamento, ele entrega um terço
+ * da obra? Por isso os dois leem a MESMA lista, filtrada pelas mesmas obras
+ * construídas — se viessem de consultas diferentes, poderiam discordar sobre quais
+ * obras entraram, e dois quadros da mesma tela discordando é pior que qualquer um
+ * dos dois errado sozinho.
+ *
+ * Substituiu o histograma de VPL por sub-bacia, que mostrava a distribuição mas não
+ * dizia o que foi entregue.
+ */
+export function GraficoUnidadesComponente({ itens }: { itens: CapexPorComponente[] }) {
+  // Elemento sem unidade não vira barra de tamanho zero: zero se lê como "nada
+  // construído", e o caso é outro — não há quantidade a medir naquele elemento.
+  const comQuantidade = itens.filter((i) => i.unidadesConstruidas != null)
+  if (comQuantidade.length === 0)
     return (
       <QuadroVazio
-        titulo="Quantidade de sub-bacias por faixa de VPL"
-        origem="run_subbacia"
-        motivo="Sem distribuição de VPL materializada."
+        titulo="Unidades construídas por elemento"
+        origem="run_obra"
+        motivo="Nenhum elemento desta rodada tem quantidade construída."
       />
     )
-  const cx = areaUtil(W, H)
-  const dominio = limites(faixas.map((f) => f.quantidade))
-  const y = escala(dominio, [cx.y + cx.altura, cx.y])
-  const larg = (cx.largura / faixas.length) * 0.82
+  const alturaLinha = 38
+  const alt = itens.length * alturaLinha + 26
+  const cx = areaUtil(W, alt, { topo: 10, direita: 200, baixo: 16, esquerda: 230 })
+  const max = Math.max(...comQuantidade.map((i) => i.unidadesConstruidas ?? 0), 1)
+  const x = escala([0, max], [cx.x, cx.x + cx.largura])
+  const qtd = (i: CapexPorComponente) =>
+    i.unidadesConstruidas == null ? '—' : `${inteiro(i.unidadesConstruidas)} ${i.unidade ?? ''}`.trim()
 
   return (
     <ChartFrame
-      titulo="Quantidade de sub-bacias por faixa de VPL"
-      subtitulo={`${inteiro(positivas)} criam valor · ${inteiro(negativas)} destroem`}
-      origem="run_subbacia"
-      legenda={[
-        { rotulo: 'VPL positivo', cor: COR.teal },
-        { rotulo: 'VPL negativo', cor: COR.vermelho },
-      ]}
+      titulo="Unidades construídas por elemento"
+      subtitulo="quanto foi entregue, na unidade física de cada elemento"
+      origem="run_obra"
+      nota={
+        <>
+          <strong>Cada elemento tem a sua unidade</strong> — ligação, metro, unidade —, então as
+          barras <strong>não se somam</strong>: elas comparam cada elemento com ele mesmo, não
+          entre si. Na <strong>ETE</strong> a unidade é a <strong>capacidade acrescentada</strong>{' '}
+          pelos módulos construídos, e não um número de peças. <strong>ETE nova</strong> aparece
+          com travessão: o executor não publica a capacidade dela por sistema, e estimar aqui
+          seria pior que não mostrar.
+        </>
+      }
       tabela={{
-        colunas: ['Faixa de VPL', 'Sub-bacias'],
-        linhas: faixas.map((f) => [`${brlMi(f.de)} a ${brlMi(f.ate)}`, inteiro(f.quantidade)]),
+        colunas: ['Componente', 'Unidades construídas', 'Obras', 'CAPEX'],
+        linhas: itens.map((i) => [i.componente, qtd(i), inteiro(i.obras), brl(i.capex)]),
       }}
     >
       {({ mostrar }) => (
-        <svg viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
-          <Eixos
-            cx={cx}
-            dominio={dominio}
-            rotuloY="sub-bacias"
-            formataY={(v) => String(Math.round(v))}
-            rotulosX={faixas.map((f, i) => ({
-              x: cx.x + (cx.largura / faixas.length) * (i + 0.5),
-              texto: milhoes(f.de),
-            }))}
-          />
-          {faixas.map((f, i) => {
-            const cxBarra = cx.x + (cx.largura / faixas.length) * (i + 0.5)
-            const cor = f.ate <= 0 ? COR.vermelho : COR.teal
+        <svg viewBox={`0 0 ${W} ${alt}`} aria-hidden="true">
+          {itens.map((i, idx) => {
+            const yLinha = cx.y + idx * alturaLinha
+            const larguraBarra =
+              i.unidadesConstruidas == null ? 0 : Math.max(1, x(i.unidadesConstruidas) - cx.x)
             return (
-              <rect
-                key={`${f.de}`}
-                x={cxBarra - larg / 2}
-                y={y(f.quantidade)}
-                width={larg}
-                height={Math.max(1, y(0) - y(f.quantidade))}
-                fill={cor}
-                rx={2}
+              <g
+                key={i.componente}
                 onMouseEnter={() =>
                   mostrar({
-                    x: (cxBarra / W) * 100,
-                    y: (y(f.quantidade) / H) * 100,
-                    titulo: `${brlMi(f.de)} a ${brlMi(f.ate)}`,
-                    linhas: [{ rotulo: 'sub-bacias', valor: inteiro(f.quantidade), cor }],
+                    x: ((cx.x + larguraBarra) / W) * 100,
+                    y: ((yLinha + 8) / alt) * 100,
+                    titulo: i.componente,
+                    linhas: [
+                      { rotulo: 'construído', valor: qtd(i), cor: COR.teal },
+                      { rotulo: 'obras', valor: inteiro(i.obras) },
+                      { rotulo: 'CAPEX', valor: brl(i.capex) },
+                    ],
                   })
                 }
-              />
+              >
+                <text
+                  x={cx.x - 14}
+                  y={yLinha + 21}
+                  textAnchor="end"
+                  fontSize={TXT.nome}
+                  fill="#334155"
+                >
+                  {i.componente}
+                </text>
+                {larguraBarra > 0 && (
+                  <rect
+                    x={cx.x}
+                    y={yLinha + 9}
+                    width={larguraBarra}
+                    height={18}
+                    fill={COR.teal}
+                    rx={3}
+                  />
+                )}
+                <text
+                  x={cx.x + larguraBarra + 12}
+                  y={yLinha + 23}
+                  fontSize={TXT.valor}
+                  fontWeight={700}
+                  fill="#475569"
+                >
+                  {qtd(i)} · {inteiro(i.obras)} obras
+                </text>
+              </g>
             )
           })}
         </svg>

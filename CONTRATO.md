@@ -342,12 +342,23 @@ ganho, e o backend lê as tabelas da mesma rodada de qualquer jeito.
     { "rotulo": "VPL", "valor": 168069034, "tipo": "total" },
   ],
   "capexPorComponente": [
-    // run_obra, somado por componente
-    { "componente": "ETE (módulo)", "capex": 137000000, "pctDoTotal": 45.1 },
+    // run_obra, somado por componente sobre as obras CONSTRUÍDAS. Três leituras do
+    // mesmo elemento: quanto custou, quantas obras, e quanto foi entregue.
+    {
+      "componente": "Rede coletora", "capex": 6782638, "pctDoTotal": 7.6,
+      "obras": 12, "unidadesConstruidas": 14823, "unidade": "m",
+    },
+    // ETE: a unidade construída é a CAPACIDADE acrescentada pelos módulos.
+    {
+      "componente": "ETE (módulo)", "capex": 36144260, "pctDoTotal": 40.5,
+      "obras": 23, "unidadesConstruidas": 2636, "unidade": "L/s de capacidade",
+    },
+    // `null` quando não há o que medir — a tela mostra travessão, nunca zero.
+    {
+      "componente": "ETE", "capex": 12000000, "pctDoTotal": 13.4,
+      "obras": 2, "unidadesConstruidas": null, "unidade": null,
+    },
   ],
-  "histogramaVpl": [{ "de": -2000000, "ate": -1000000, "quantidade": 61 }],
-  "subbaciasPositivas": 218,
-  "subbaciasNegativas": 684,
   "obrasPorAno": [
     { "ano": 2026, "porComponente": [{ "componente": "Ligação de esgoto", "quantidade": 20 }] },
   ],
@@ -364,6 +375,14 @@ Duas regras de conteúdo, não de formato:
   `Linha de recalque` vão sempre separados, nunca somados num "Transporte".
   Agrupar esconde justamente o elo que costuma travar a cadeia. `Linha de
 recalque` é o nome canônico.
+- **`unidadesConstruidas` é `null`, nunca `0`, quando não há o que medir.** Zero
+  se lê como "nada construído", e o caso é outro: o elemento não tem quantidade
+  física apurada (ETE nova) ou aparece com mais de uma unidade, e somar unidades
+  diferentes daria um número sem significado. A tela mostra travessão.
+- **As três leituras vêm da MESMA lista**, sobre as mesmas obras construídas.
+  Dois gráficos a consomem — CAPEX por elemento e unidades construídas por
+  elemento —, e vir de consultas separadas os faria discordar sobre quais obras
+  entraram na conta.
 
 Séries vazias são aceitas (o quadro mostra estado vazio), mas se houver rodada
 com plano, espera-se `anos` e `curvaS` não vazios.
