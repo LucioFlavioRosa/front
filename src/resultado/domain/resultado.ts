@@ -258,18 +258,32 @@ export interface PontoCurvaS {
   capexMes: number
 }
 
-/** CAPEX somado por componente (`run_obra`). Transporte NUNCA agrupado. */
+/**
+ * Um elemento de obra, somado sobre as obras CONSTRUIDAS (`run_obra`). Transporte
+ * NUNCA agrupado.
+ *
+ * Tres leituras do mesmo elemento, e e de proposito que venham juntas: quanto custou,
+ * quantas obras, e quanto foi entregue. Elas alimentam DOIS graficos que leem esta
+ * mesma lista — se viessem separadas, os dois poderiam discordar sobre quais obras
+ * entraram na conta.
+ */
 export interface CapexPorComponente {
   componente: string
   capex: number
   pctDoTotal: number
-}
-
-/** Uma barra do histograma de VPL por sub-bacia. */
-export interface FaixaVpl {
-  de: number
-  ate: number
-  quantidade: number
+  /** Quantas obras deste elemento foram construidas. */
+  obras: number
+  /**
+   * Quanto foi construido na unidade FISICA do elemento — 14.823 m de rede, 8.012
+   * ligacoes, 9 unidades de EEE. Na ETE e a CAPACIDADE acrescentada pelos modulos.
+   *
+   * `null` quando nao ha o que medir: a ETE nova nao tem capacidade publicada por
+   * sistema, e um elemento que aparece com mais de uma unidade no cadastro nao pode
+   * ser somado. A tela mostra travessao — zero seria lido como "nada construido".
+   */
+  unidadesConstruidas: number | null
+  /** A unidade de `unidadesConstruidas` (`m`, `ligacao`, `un`, `L/s de capacidade`). */
+  unidade: string | null
 }
 
 /** Obras iniciadas num ano, quebradas por componente (barra empilhada). */
@@ -292,9 +306,6 @@ export interface PainelGlobal {
   curvaS: PontoCurvaS[]
   cascata: ParcelaCascata[]
   capexPorComponente: CapexPorComponente[]
-  histogramaVpl: FaixaVpl[]
-  subbaciasPositivas: number
-  subbaciasNegativas: number
   obrasPorAno: ObrasDoAno[]
   /** Ano em que o CAPEX termina — vira linha de referencia em varios graficos. */
   fimCapex: number

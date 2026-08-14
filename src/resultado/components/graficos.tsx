@@ -28,7 +28,6 @@ import type {
   AnoFinanceiro,
   CapexPorComponente,
   EbitdaAno,
-  FaixaVpl,
   MetaCobertura,
   ObrasDoAno,
   ParcelaCascata,
@@ -520,6 +519,12 @@ export function GraficoCurvaS({ pontos }: { pontos: PontoCurvaS[] }) {
 // ===========================================================================
 //  4 · CAPEX POR ELEMENTO DE OBRA (barras horizontais)
 // ===========================================================================
+/** `14.823 m`, `9 un`, `2.636 L/s` — ou travessão quando não há o que medir. */
+const construido = (i: CapexPorComponente) =>
+  i.unidadesConstruidas == null
+    ? '—'
+    : `${inteiro(i.unidadesConstruidas)} ${i.unidade ?? ''}`.trim()
+
 export function GraficoCapexComponente({ itens }: { itens: CapexPorComponente[] }) {
   if (itens.length === 0)
     return (
@@ -539,17 +544,30 @@ export function GraficoCapexComponente({ itens }: { itens: CapexPorComponente[] 
   return (
     <ChartFrame
       titulo="CAPEX por elemento de obra"
-      subtitulo="Tronco, EEE e Linha de recalque aparecem sempre separados"
+      subtitulo="quanto custou, quantas obras e quanto foi construído — por elemento"
       origem="run_obra"
       nota={
         <>
           <strong>Transporte nunca é agrupado.</strong> Somar Tronco, EEE e Linha de recalque num
           único &quot;Transporte&quot; esconderia justamente o elo que costuma travar a cadeia.
+          <br />
+          <strong>A barra mede CAPEX</strong>, e só ele. A quantidade construída aparece ao lado em
+          número porque cada elemento tem a sua unidade — metro, ligação, unidade —, e desenhá-las
+          na mesma escala faria 9 unidades de EEE sumirem ao lado de 14 mil metros de rede. Na{' '}
+          <strong>ETE</strong> a unidade é a capacidade acrescentada pelos módulos; a{' '}
+          <strong>ETE nova</strong> aparece com travessão, porque o executor não publica a
+          capacidade dela por sistema.
         </>
       }
       tabela={{
-        colunas: ['Componente', 'CAPEX', '% do total'],
-        linhas: itens.map((i) => [i.componente, brl(i.capex), pct(i.pctDoTotal)]),
+        colunas: ['Componente', 'CAPEX', '% do total', 'Obras', 'Construído'],
+        linhas: itens.map((i) => [
+          i.componente,
+          brl(i.capex),
+          pct(i.pctDoTotal),
+          inteiro(i.obras),
+          construido(i),
+        ]),
       }}
     >
       {({ mostrar }) => (
@@ -567,6 +585,8 @@ export function GraficoCapexComponente({ itens }: { itens: CapexPorComponente[] 
                     linhas: [
                       { rotulo: 'CAPEX', valor: brl(i.capex), cor: COR.teal },
                       { rotulo: '% do total', valor: pct(i.pctDoTotal) },
+                      { rotulo: 'obras', valor: inteiro(i.obras) },
+                      { rotulo: 'construído', valor: construido(i) },
                     ],
                   })
                 }
@@ -595,89 +615,9 @@ export function GraficoCapexComponente({ itens }: { itens: CapexPorComponente[] 
                   fontWeight={700}
                   fill="#475569"
                 >
-                  {brlMi(i.capex)} · {pct(i.pctDoTotal)}
+                  {brlMi(i.capex)} · {inteiro(i.obras)} obras · {construido(i)}
                 </text>
               </g>
-            )
-          })}
-        </svg>
-      )}
-    </ChartFrame>
-  )
-}
-
-// ===========================================================================
-//  5 · HISTOGRAMA DE VPL POR SUB-BACIA
-// ===========================================================================
-export function GraficoHistograma({
-  faixas,
-  positivas,
-  negativas,
-}: {
-  faixas: FaixaVpl[]
-  positivas: number
-  negativas: number
-}) {
-  if (faixas.length === 0)
-    return (
-      <QuadroVazio
-        titulo="Quantidade de sub-bacias por faixa de VPL"
-        origem="run_subbacia"
-        motivo="Sem distribuição de VPL materializada."
-      />
-    )
-  const cx = areaUtil(W, H)
-  const dominio = limites(faixas.map((f) => f.quantidade))
-  const y = escala(dominio, [cx.y + cx.altura, cx.y])
-  const larg = (cx.largura / faixas.length) * 0.82
-
-  return (
-    <ChartFrame
-      titulo="Quantidade de sub-bacias por faixa de VPL"
-      subtitulo={`${inteiro(positivas)} criam valor · ${inteiro(negativas)} destroem`}
-      origem="run_subbacia"
-      legenda={[
-        { rotulo: 'VPL positivo', cor: COR.teal },
-        { rotulo: 'VPL negativo', cor: COR.vermelho },
-      ]}
-      tabela={{
-        colunas: ['Faixa de VPL', 'Sub-bacias'],
-        linhas: faixas.map((f) => [`${brlMi(f.de)} a ${brlMi(f.ate)}`, inteiro(f.quantidade)]),
-      }}
-    >
-      {({ mostrar }) => (
-        <svg viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
-          <Eixos
-            cx={cx}
-            dominio={dominio}
-            rotuloY="sub-bacias"
-            formataY={(v) => String(Math.round(v))}
-            rotulosX={faixas.map((f, i) => ({
-              x: cx.x + (cx.largura / faixas.length) * (i + 0.5),
-              texto: milhoes(f.de),
-            }))}
-          />
-          {faixas.map((f, i) => {
-            const cxBarra = cx.x + (cx.largura / faixas.length) * (i + 0.5)
-            const cor = f.ate <= 0 ? COR.vermelho : COR.teal
-            return (
-              <rect
-                key={`${f.de}`}
-                x={cxBarra - larg / 2}
-                y={y(f.quantidade)}
-                width={larg}
-                height={Math.max(1, y(0) - y(f.quantidade))}
-                fill={cor}
-                rx={2}
-                onMouseEnter={() =>
-                  mostrar({
-                    x: (cxBarra / W) * 100,
-                    y: (y(f.quantidade) / H) * 100,
-                    titulo: `${brlMi(f.de)} a ${brlMi(f.ate)}`,
-                    linhas: [{ rotulo: 'sub-bacias', valor: inteiro(f.quantidade), cor }],
-                  })
-                }
-              />
             )
           })}
         </svg>

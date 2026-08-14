@@ -393,7 +393,6 @@ export function Simular() {
             </select>
             <Ajuda>{AJUDA_PENALIDADE[e.penalidade]}</Ajuda>
           </div>
-
         </Secao>
 
         {/* ---------------- 04 RECEITA E ADESÃO ---------------- */}
@@ -462,7 +461,6 @@ export function Simular() {
             ligado={e.coberturaSoResidencial}
             onToggle={() => set('coberturaSoResidencial', !e.coberturaSoResidencial)}
           />
-
         </Secao>
       </div>
 
