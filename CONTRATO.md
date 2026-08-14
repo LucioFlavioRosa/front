@@ -379,10 +379,11 @@ recalque` é o nome canônico.
   se lê como "nada construído", e o caso é outro: o elemento não tem quantidade
   física apurada (ETE nova) ou aparece com mais de uma unidade, e somar unidades
   diferentes daria um número sem significado. A tela mostra travessão.
-- **As três leituras vêm da MESMA lista**, sobre as mesmas obras construídas.
-  Dois gráficos a consomem — CAPEX por elemento e unidades construídas por
-  elemento —, e vir de consultas separadas os faria discordar sobre quais obras
-  entraram na conta.
+- **As três leituras vêm da MESMA lista**, sobre as mesmas obras construídas, e
+  aparecem no MESMO quadro: a barra mede CAPEX, e obras e quantidade construída
+  vêm ao lado em número. Chegou a existir um segundo gráfico só de quantidades, e
+  ele saiu: com metro, ligação e unidade na mesma escala linear, 9 unidades de EEE
+  viravam 1 pixel ao lado de 14 mil metros de rede.
 
 Séries vazias são aceitas (o quadro mostra estado vazio), mas se houver rodada
 com plano, espera-se `anos` e `curvaS` não vazios.

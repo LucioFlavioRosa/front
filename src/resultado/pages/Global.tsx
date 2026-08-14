@@ -10,7 +10,6 @@ import {
   GraficoCurvaS,
   GraficoDesembolso,
   GraficoEbitda,
-  GraficoUnidadesComponente,
   GraficoObrasPorAno,
 } from '@/resultado/components/graficos'
 import type { CidadeLinha } from '@/resultado/domain/resultado'
@@ -118,7 +117,6 @@ export function Global() {
             origem="run_subbacia"
           />
           <GraficoCapexComponente itens={p.capexPorComponente} />
-          <GraficoUnidadesComponente itens={p.capexPorComponente} />
           <GraficoObrasPorAno anos={p.obrasPorAno} />
         </div>
       ) : (

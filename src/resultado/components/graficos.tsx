@@ -519,6 +519,12 @@ export function GraficoCurvaS({ pontos }: { pontos: PontoCurvaS[] }) {
 // ===========================================================================
 //  4 · CAPEX POR ELEMENTO DE OBRA (barras horizontais)
 // ===========================================================================
+/** `14.823 m`, `9 un`, `2.636 L/s` — ou travessão quando não há o que medir. */
+const construido = (i: CapexPorComponente) =>
+  i.unidadesConstruidas == null
+    ? '—'
+    : `${inteiro(i.unidadesConstruidas)} ${i.unidade ?? ''}`.trim()
+
 export function GraficoCapexComponente({ itens }: { itens: CapexPorComponente[] }) {
   if (itens.length === 0)
     return (
@@ -538,17 +544,30 @@ export function GraficoCapexComponente({ itens }: { itens: CapexPorComponente[] 
   return (
     <ChartFrame
       titulo="CAPEX por elemento de obra"
-      subtitulo="Tronco, EEE e Linha de recalque aparecem sempre separados"
+      subtitulo="quanto custou, quantas obras e quanto foi construído — por elemento"
       origem="run_obra"
       nota={
         <>
           <strong>Transporte nunca é agrupado.</strong> Somar Tronco, EEE e Linha de recalque num
           único &quot;Transporte&quot; esconderia justamente o elo que costuma travar a cadeia.
+          <br />
+          <strong>A barra mede CAPEX</strong>, e só ele. A quantidade construída aparece ao lado em
+          número porque cada elemento tem a sua unidade — metro, ligação, unidade —, e desenhá-las
+          na mesma escala faria 9 unidades de EEE sumirem ao lado de 14 mil metros de rede. Na{' '}
+          <strong>ETE</strong> a unidade é a capacidade acrescentada pelos módulos; a{' '}
+          <strong>ETE nova</strong> aparece com travessão, porque o executor não publica a
+          capacidade dela por sistema.
         </>
       }
       tabela={{
-        colunas: ['Componente', 'CAPEX', '% do total'],
-        linhas: itens.map((i) => [i.componente, brl(i.capex), pct(i.pctDoTotal)]),
+        colunas: ['Componente', 'CAPEX', '% do total', 'Obras', 'Construído'],
+        linhas: itens.map((i) => [
+          i.componente,
+          brl(i.capex),
+          pct(i.pctDoTotal),
+          inteiro(i.obras),
+          construido(i),
+        ]),
       }}
     >
       {({ mostrar }) => (
@@ -566,6 +585,8 @@ export function GraficoCapexComponente({ itens }: { itens: CapexPorComponente[] 
                     linhas: [
                       { rotulo: 'CAPEX', valor: brl(i.capex), cor: COR.teal },
                       { rotulo: '% do total', valor: pct(i.pctDoTotal) },
+                      { rotulo: 'obras', valor: inteiro(i.obras) },
+                      { rotulo: 'construído', valor: construido(i) },
                     ],
                   })
                 }
@@ -594,123 +615,7 @@ export function GraficoCapexComponente({ itens }: { itens: CapexPorComponente[] 
                   fontWeight={700}
                   fill="#475569"
                 >
-                  {brlMi(i.capex)} · {pct(i.pctDoTotal)}
-                </text>
-              </g>
-            )
-          })}
-        </svg>
-      )}
-    </ChartFrame>
-  )
-}
-
-// ===========================================================================
-//  5 · UNIDADES CONSTRUÍDAS POR ELEMENTO DE OBRA (barras horizontais)
-// ===========================================================================
-/**
- * O irmão do quadro de CAPEX: mesmas linhas, mesma ordem, outra pergunta.
- *
- * Um vale quanto CUSTOU, o outro quanto FOI FEITO — 1.042.571 m de rede, 126.807
- * ligações, 252 unidades de EEE. Juntos respondem a pergunta que nenhum dos dois
- * responde sozinho: se um elemento leva um terço do orçamento, ele entrega um terço
- * da obra? Por isso os dois leem a MESMA lista, filtrada pelas mesmas obras
- * construídas — se viessem de consultas diferentes, poderiam discordar sobre quais
- * obras entraram, e dois quadros da mesma tela discordando é pior que qualquer um
- * dos dois errado sozinho.
- *
- * Substituiu o histograma de VPL por sub-bacia, que mostrava a distribuição mas não
- * dizia o que foi entregue.
- */
-export function GraficoUnidadesComponente({ itens }: { itens: CapexPorComponente[] }) {
-  // Elemento sem unidade não vira barra de tamanho zero: zero se lê como "nada
-  // construído", e o caso é outro — não há quantidade a medir naquele elemento.
-  const comQuantidade = itens.filter((i) => i.unidadesConstruidas != null)
-  if (comQuantidade.length === 0)
-    return (
-      <QuadroVazio
-        titulo="Unidades construídas por elemento"
-        origem="run_obra"
-        motivo="Nenhum elemento desta rodada tem quantidade construída."
-      />
-    )
-  const alturaLinha = 38
-  const alt = itens.length * alturaLinha + 26
-  const cx = areaUtil(W, alt, { topo: 10, direita: 200, baixo: 16, esquerda: 230 })
-  const max = Math.max(...comQuantidade.map((i) => i.unidadesConstruidas ?? 0), 1)
-  const x = escala([0, max], [cx.x, cx.x + cx.largura])
-  const qtd = (i: CapexPorComponente) =>
-    i.unidadesConstruidas == null ? '—' : `${inteiro(i.unidadesConstruidas)} ${i.unidade ?? ''}`.trim()
-
-  return (
-    <ChartFrame
-      titulo="Unidades construídas por elemento"
-      subtitulo="quanto foi entregue, na unidade física de cada elemento"
-      origem="run_obra"
-      nota={
-        <>
-          <strong>Cada elemento tem a sua unidade</strong> — ligação, metro, unidade —, então as
-          barras <strong>não se somam</strong>: elas comparam cada elemento com ele mesmo, não
-          entre si. Na <strong>ETE</strong> a unidade é a <strong>capacidade acrescentada</strong>{' '}
-          pelos módulos construídos, e não um número de peças. <strong>ETE nova</strong> aparece
-          com travessão: o executor não publica a capacidade dela por sistema, e estimar aqui
-          seria pior que não mostrar.
-        </>
-      }
-      tabela={{
-        colunas: ['Componente', 'Unidades construídas', 'Obras', 'CAPEX'],
-        linhas: itens.map((i) => [i.componente, qtd(i), inteiro(i.obras), brl(i.capex)]),
-      }}
-    >
-      {({ mostrar }) => (
-        <svg viewBox={`0 0 ${W} ${alt}`} aria-hidden="true">
-          {itens.map((i, idx) => {
-            const yLinha = cx.y + idx * alturaLinha
-            const larguraBarra =
-              i.unidadesConstruidas == null ? 0 : Math.max(1, x(i.unidadesConstruidas) - cx.x)
-            return (
-              <g
-                key={i.componente}
-                onMouseEnter={() =>
-                  mostrar({
-                    x: ((cx.x + larguraBarra) / W) * 100,
-                    y: ((yLinha + 8) / alt) * 100,
-                    titulo: i.componente,
-                    linhas: [
-                      { rotulo: 'construído', valor: qtd(i), cor: COR.teal },
-                      { rotulo: 'obras', valor: inteiro(i.obras) },
-                      { rotulo: 'CAPEX', valor: brl(i.capex) },
-                    ],
-                  })
-                }
-              >
-                <text
-                  x={cx.x - 14}
-                  y={yLinha + 21}
-                  textAnchor="end"
-                  fontSize={TXT.nome}
-                  fill="#334155"
-                >
-                  {i.componente}
-                </text>
-                {larguraBarra > 0 && (
-                  <rect
-                    x={cx.x}
-                    y={yLinha + 9}
-                    width={larguraBarra}
-                    height={18}
-                    fill={COR.teal}
-                    rx={3}
-                  />
-                )}
-                <text
-                  x={cx.x + larguraBarra + 12}
-                  y={yLinha + 23}
-                  fontSize={TXT.valor}
-                  fontWeight={700}
-                  fill="#475569"
-                >
-                  {qtd(i)} · {inteiro(i.obras)} obras
+                  {brlMi(i.capex)} · {inteiro(i.obras)} obras · {construido(i)}
                 </text>
               </g>
             )

@@ -169,27 +169,23 @@ describe('nível global', () => {
     expect(texto).not.toContain('Transporte')
   })
 
-  it('mostra o que foi CONSTRUÍDO por elemento, na unidade de cada um', async () => {
-    // O irmao do quadro de CAPEX: mesmas linhas, outra pergunta. Um diz quanto
-    // custou, o outro quanto foi feito — e e a leitura dos dois juntos que responde
-    // se um elemento que leva um terco do orcamento entrega um terco da obra.
+  it('o quadro de CAPEX traz as três leituras do elemento: valor, obras e construído', async () => {
+    // UM quadro, tres numeros. A barra mede CAPEX; a quantidade construida vem ao
+    // lado em NUMERO, porque cada elemento tem a sua unidade e desenha-las na mesma
+    // escala faria 9 unidades de EEE sumirem ao lado de 14 mil metros de rede.
     renderApp(`/resultados/${RUN}`)
-    const quadro = (await screen.findAllByText('Unidades construídas por elemento'))[0].closest(
-      'figure',
-    )
+    const quadro = (await screen.findAllByText('CAPEX por elemento de obra'))[0].closest('figure')
     const texto = within(quadro as HTMLElement).getByRole('table').textContent ?? ''
-    expect(texto).toContain('14.823 m')            // rede coletora
-    expect(texto).toContain('8.012 ligacao')       // ligacoes de esgoto
-    expect(texto).toContain('L/s') // ETE: capacidade acrescentada, na unidade do banco
+    expect(texto).toContain('14.823 m')       // rede coletora
+    expect(texto).toContain('8.012 ligacao')  // ligacoes de esgoto
+    expect(texto).toContain('L/s')            // ETE: capacidade, na unidade do banco
   })
 
   it('elemento sem quantidade apurada mostra travessão, e não zero', async () => {
     // Zero se leria como "nada construido", e o caso e outro: nao ha quantidade a
     // medir naquele elemento. A ETE nova e o caso real disso.
     renderApp(`/resultados/${RUN}`)
-    const quadro = (await screen.findAllByText('Unidades construídas por elemento'))[0].closest(
-      'figure',
-    )
+    const quadro = (await screen.findAllByText('CAPEX por elemento de obra'))[0].closest('figure')
     const linhas = within(quadro as HTMLElement).getAllByRole('row')
     // `ETE` e `ETE (módulo)` comecam igual: a linha da ETE NOVA e a que nao tem
     // parenteses. Ela e a que nao tem quantidade fisica apurada.
@@ -197,6 +193,15 @@ describe('nível global', () => {
                                    !(l.textContent ?? '').startsWith('ETE ('))
     expect(ete).toBeTruthy()
     expect(ete?.textContent).toContain('—')
+  })
+
+  it('não existe um quadro só de unidades: a escala unica nao se sustentava', async () => {
+    // Ele chegou a existir e saiu no mesmo dia: com metro, ligacao e unidade na mesma
+    // escala linear, EEE (9 un) virava uma barra de 1 pixel ao lado de rede (14.823 m).
+    // A informacao voltou para o quadro de CAPEX, em numero.
+    renderApp(`/resultados/${RUN}`)
+    await screen.findByText('VPL do plano')
+    expect(screen.queryByText('Unidades construídas por elemento')).toBeNull()
   })
 
   it('o histograma de VPL por sub-bacia saiu da tela', async () => {
