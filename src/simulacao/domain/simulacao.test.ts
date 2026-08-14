@@ -274,7 +274,9 @@ describe('corpoDaRodada', () => {
     expect(corpo.base_receita).toBe('arrecadada')
     expect(corpo.curva_adocao).toBe('scurve')
     expect(corpo.usar_cts).toBe(true)
-    expect(corpo.incluir_industrial).toBe(true)
+    // O default e NAO recortar: a meta conta todas as ligacoes, como sempre contou.
+    // Trocar o default mudaria em silencio o significado de toda rodada antiga.
+    expect(corpo.cobertura_so_residencial).toBe(false)
   })
 })
 

@@ -54,7 +54,7 @@ describe('parâmetros e rastreabilidade', () => {
     expect(await screen.findByText('FOCO_COBERTURA')).toBeTruthy()
     expect(screen.getByText('PENALIDADE_COBERTURA')).toBeTruthy()
     expect(screen.getByText('USAR_CTS')).toBeTruthy()
-    expect(screen.getByText('INCLUIR_INDUSTRIAL')).toBeTruthy()
+    expect(screen.getByText('COBERTURA_SO_RESIDENCIAL')).toBeTruthy()
     // UNIDADE e ROTULO viajam no corpo da rodada como qualquer outro, e por isso
     // aparecem do mesmo jeito. Eram os dois únicos sem o código ao lado.
     expect(screen.getByText('UNIDADE')).toBeTruthy()

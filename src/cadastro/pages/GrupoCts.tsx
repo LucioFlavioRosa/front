@@ -25,7 +25,7 @@ import {
 } from '@/cadastro/domain/subbacia'
 import { CAMPOS_DB, camposParametros } from '@/cadastro/domain/baseComercial'
 import { NotaDaRegua } from '@/cadastro/components/NotaDaRegua'
-import { NotaIndustrial } from '@/cadastro/components/NotaIndustrial'
+import { NotaResidencial } from '@/cadastro/components/NotaResidencial'
 import { CamposPopulacao } from '@/cadastro/pages/CamposPopulacao'
 import styles from './GrupoSubBacias.module.css'
 import ctsStyles from './GrupoCts.module.css'
@@ -503,7 +503,7 @@ export function GrupoCts() {
                   </>
                 }
               />,
-              <NotaIndustrial key="industrial" />,
+              <NotaResidencial key="residencial" />,
             ]}
           >
             <DbFieldGrid>

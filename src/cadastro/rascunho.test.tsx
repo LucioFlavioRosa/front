@@ -320,8 +320,8 @@ describe('rascunho com formato antigo (chave nova faltando)', () => {
   it('é descartado mesmo se a VERSÃO não tiver sido subida', async () => {
     // Este é o cinto de segurança: a versão do rascunho depende de alguém
     // lembrar de subir, e já foi esquecida duas vezes. Aqui o envelope tem a
-    // versão CERTA e mesmo assim está velho por dentro — sem `vazInd`, o
-    // cálculo de pendência estouraria no primeiro `.trim()`.
+    // versão CERTA e mesmo assim está velho por dentro — sem `ligURes`, a tela
+    // mostraria célula vazia para um dado que o servidor tem.
     const tela = renderApp('/unidade/u-jacarei/sub-bacias')
     await screen.findByRole('button', { name: 'Salvar sub-bacia' })
     fireEvent.change(taxa(), { target: { value: '2.222' } })
@@ -330,8 +330,7 @@ describe('rascunho com formato antigo (chave nova faltando)', () => {
     const chave = Object.keys(sessionStorage).find((k) => k.includes('rascunho'))!
     const envelope = JSON.parse(sessionStorage.getItem(chave)!)
     for (const ficha of Object.values(envelope.estado.subs) as Array<Record<string, never>>) {
-      delete (ficha.params as Record<string, unknown>).vazInd
-      delete (ficha.db as Record<string, unknown>).ligUInd
+      delete (ficha.db as Record<string, unknown>).ligURes
     }
     sessionStorage.setItem(chave, JSON.stringify(envelope))
 
@@ -339,7 +338,7 @@ describe('rascunho com formato antigo (chave nova faltando)', () => {
     await screen.findByRole('button', { name: 'Salvar sub-bacia' })
 
     // A tela abre inteira (não estourou) e o dado voltou do servidor.
-    expect(screen.getByLabelText('Vazão nova industrial')).toBeTruthy()
+    expect(screen.getByText('350')).toBeTruthy()
     expect(taxa().value).not.toBe('2.222')
   })
 })

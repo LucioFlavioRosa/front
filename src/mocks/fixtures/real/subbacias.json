@@ -134,11 +134,11 @@
         "ecoU": "2.716",
         "ecoA": "1.227",
         "ecoN": "1.489",
-        "ligUInd": "",
-        "ligAInd": "",
-        "fatInd": "",
-        "arrInd": "",
-        "ticket": "287,31"
+        "ticket": "287,31",
+        "ligURes": "1.044",
+        "ligARes": "472",
+        "ecoURes": "2.716",
+        "ecoARes": "1.227"
       },
       "params": {
         "preco": "857,86",
@@ -148,8 +148,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 1_1",
       "sisId": "e1s39",
@@ -231,11 +230,11 @@
         "ecoU": "2.096",
         "ecoA": "948",
         "ecoN": "1.148",
-        "ligUInd": "64",
-        "ligAInd": "29",
-        "fatInd": "15.674,57",
-        "arrInd": "12.978,54",
-        "ticket": "118,85"
+        "ticket": "118,85",
+        "ligURes": "742",
+        "ligARes": "335",
+        "ecoURes": "1.930",
+        "ecoARes": "872"
       },
       "params": {
         "preco": "591,89",
@@ -245,8 +244,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 1_2",
       "sisId": "e1s39",
@@ -328,11 +326,11 @@
         "ecoU": "1.676",
         "ecoA": "758",
         "ecoN": "918",
-        "ligUInd": "",
-        "ligAInd": "",
-        "fatInd": "",
-        "arrInd": "",
-        "ticket": "155,65"
+        "ticket": "155,65",
+        "ligURes": "645",
+        "ligARes": "291",
+        "ecoURes": "1.676",
+        "ecoARes": "758"
       },
       "params": {
         "preco": "584,21",
@@ -342,8 +340,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 1_3",
       "sisId": "e1s39",
@@ -425,11 +422,11 @@
         "ecoU": "3.304",
         "ecoA": "1.494",
         "ecoN": "1.810",
-        "ligUInd": "",
-        "ligAInd": "",
-        "fatInd": "",
-        "arrInd": "",
-        "ticket": "197,94"
+        "ticket": "197,94",
+        "ligURes": "1.271",
+        "ligARes": "574",
+        "ecoURes": "3.304",
+        "ecoARes": "1.494"
       },
       "params": {
         "preco": "1.542,56",
@@ -439,8 +436,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 2_1",
       "sisId": "e1s39",
@@ -522,11 +518,11 @@
         "ecoU": "1.506",
         "ecoA": "681",
         "ecoN": "825",
-        "ligUInd": "",
-        "ligAInd": "",
-        "fatInd": "",
-        "arrInd": "",
-        "ticket": "61,72"
+        "ticket": "61,72",
+        "ligURes": "579",
+        "ligARes": "262",
+        "ecoURes": "1.506",
+        "ecoARes": "681"
       },
       "params": {
         "preco": "921,08",
@@ -536,8 +532,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 1_1",
       "sisId": "e1s59",
@@ -619,11 +614,11 @@
         "ecoU": "1.823",
         "ecoA": "824",
         "ecoN": "999",
-        "ligUInd": "",
-        "ligAInd": "",
-        "fatInd": "",
-        "arrInd": "",
-        "ticket": "129,82"
+        "ticket": "129,82",
+        "ligURes": "701",
+        "ligARes": "317",
+        "ecoURes": "1.823",
+        "ecoARes": "824"
       },
       "params": {
         "preco": "526,53",
@@ -633,8 +628,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 1_2",
       "sisId": "e1s59",
@@ -716,11 +710,11 @@
         "ecoU": "1.482",
         "ecoA": "670",
         "ecoN": "812",
-        "ligUInd": "46",
-        "ligAInd": "21",
-        "fatInd": "21.761,78",
-        "arrInd": "18.867,47",
-        "ticket": "243,77"
+        "ticket": "243,77",
+        "ligURes": "524",
+        "ligARes": "237",
+        "ecoURes": "1.362",
+        "ecoARes": "615"
       },
       "params": {
         "preco": "1.178,43",
@@ -730,8 +724,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 1_3",
       "sisId": "e1s59",
@@ -813,11 +806,11 @@
         "ecoU": "1.056",
         "ecoA": "477",
         "ecoN": "579",
-        "ligUInd": "",
-        "ligAInd": "",
-        "fatInd": "",
-        "arrInd": "",
-        "ticket": "224,2"
+        "ticket": "224,2",
+        "ligURes": "406",
+        "ligARes": "184",
+        "ecoURes": "1.056",
+        "ecoARes": "477"
       },
       "params": {
         "preco": "857,39",
@@ -827,8 +820,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 1_4",
       "sisId": "e1s59",
@@ -910,11 +902,11 @@
         "ecoU": "1.074",
         "ecoA": "485",
         "ecoN": "589",
-        "ligUInd": "",
-        "ligAInd": "",
-        "fatInd": "",
-        "arrInd": "",
-        "ticket": "68,99"
+        "ticket": "68,99",
+        "ligURes": "413",
+        "ligARes": "186",
+        "ecoURes": "1.074",
+        "ecoARes": "485"
       },
       "params": {
         "preco": "1.067,65",
@@ -924,8 +916,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 2_1",
       "sisId": "e1s59",
@@ -1007,11 +998,11 @@
         "ecoU": "1.726",
         "ecoA": "780",
         "ecoN": "946",
-        "ligUInd": "",
-        "ligAInd": "",
-        "fatInd": "",
-        "arrInd": "",
-        "ticket": "202,18"
+        "ticket": "202,18",
+        "ligURes": "664",
+        "ligARes": "300",
+        "ecoURes": "1.726",
+        "ecoARes": "780"
       },
       "params": {
         "preco": "1.600,51",
@@ -1021,8 +1012,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 2_2",
       "sisId": "e1s59",
@@ -1104,11 +1094,11 @@
         "ecoU": "1.017",
         "ecoA": "460",
         "ecoN": "557",
-        "ligUInd": "",
-        "ligAInd": "",
-        "fatInd": "",
-        "arrInd": "",
-        "ticket": "43,07"
+        "ticket": "43,07",
+        "ligURes": "391",
+        "ligARes": "177",
+        "ecoURes": "1.017",
+        "ecoARes": "460"
       },
       "params": {
         "preco": "1.130,35",
@@ -1118,8 +1108,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 3_1",
       "sisId": "e1s59",
@@ -1201,11 +1190,11 @@
         "ecoU": "1.012",
         "ecoA": "457",
         "ecoN": "555",
-        "ligUInd": "",
-        "ligAInd": "",
-        "fatInd": "",
-        "arrInd": "",
-        "ticket": "71,95"
+        "ticket": "71,95",
+        "ligURes": "389",
+        "ligARes": "175",
+        "ecoURes": "1.012",
+        "ecoARes": "457"
       },
       "params": {
         "preco": "1.287,25",
@@ -1215,8 +1204,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 3_2",
       "sisId": "e1s59",
@@ -1298,11 +1286,11 @@
         "ecoU": "1.575",
         "ecoA": "712",
         "ecoN": "863",
-        "ligUInd": "",
-        "ligAInd": "",
-        "fatInd": "",
-        "arrInd": "",
-        "ticket": "43,97"
+        "ticket": "43,97",
+        "ligURes": "606",
+        "ligARes": "274",
+        "ecoURes": "1.575",
+        "ecoARes": "712"
       },
       "params": {
         "preco": "604,45",
@@ -1312,8 +1300,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 1_1",
       "sisId": "e1s60",
@@ -1395,11 +1382,11 @@
         "ecoU": "1.735",
         "ecoA": "784",
         "ecoN": "951",
-        "ligUInd": "53",
-        "ligAInd": "24",
-        "fatInd": "5.436,06",
-        "arrInd": "5.017,48",
-        "ticket": "55,56"
+        "ticket": "55,56",
+        "ligURes": "614",
+        "ligARes": "277",
+        "ecoURes": "1.597",
+        "ecoARes": "721"
       },
       "params": {
         "preco": "660,59",
@@ -1409,8 +1396,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 1_2",
       "sisId": "e1s60",
@@ -1492,11 +1478,11 @@
         "ecoU": "1.974",
         "ecoA": "892",
         "ecoN": "1.082",
-        "ligUInd": "",
-        "ligAInd": "",
-        "fatInd": "",
-        "arrInd": "",
-        "ticket": "194,55"
+        "ticket": "194,55",
+        "ligURes": "759",
+        "ligARes": "343",
+        "ecoURes": "1.974",
+        "ecoARes": "892"
       },
       "params": {
         "preco": "784,67",
@@ -1506,8 +1492,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 2_1",
       "sisId": "e1s60",
@@ -1589,11 +1574,11 @@
         "ecoU": "3.092",
         "ecoA": "1.398",
         "ecoN": "1.694",
-        "ligUInd": "",
-        "ligAInd": "",
-        "fatInd": "",
-        "arrInd": "",
-        "ticket": "49,13"
+        "ticket": "49,13",
+        "ligURes": "1.190",
+        "ligARes": "538",
+        "ecoURes": "3.092",
+        "ecoARes": "1.398"
       },
       "params": {
         "preco": "1.046,79",
@@ -1603,8 +1588,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 2_2",
       "sisId": "e1s60",
@@ -1686,11 +1670,11 @@
         "ecoU": "1.921",
         "ecoA": "868",
         "ecoN": "1.053",
-        "ligUInd": "",
-        "ligAInd": "",
-        "fatInd": "",
-        "arrInd": "",
-        "ticket": "213,34"
+        "ticket": "213,34",
+        "ligURes": "739",
+        "ligARes": "334",
+        "ecoURes": "1.921",
+        "ecoARes": "868"
       },
       "params": {
         "preco": "1.198,05",
@@ -1700,8 +1684,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 1_1",
       "sisId": "e1s66",
@@ -1783,11 +1766,11 @@
         "ecoU": "2.123",
         "ecoA": "960",
         "ecoN": "1.163",
-        "ligUInd": "",
-        "ligAInd": "",
-        "fatInd": "",
-        "arrInd": "",
-        "ticket": "121,17"
+        "ticket": "121,17",
+        "ligURes": "816",
+        "ligARes": "369",
+        "ecoURes": "2.123",
+        "ecoARes": "960"
       },
       "params": {
         "preco": "410,89",
@@ -1797,8 +1780,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 2_1",
       "sisId": "e1s66",
@@ -1880,11 +1862,11 @@
         "ecoU": "3.326",
         "ecoA": "1.503",
         "ecoN": "1.823",
-        "ligUInd": "",
-        "ligAInd": "",
-        "fatInd": "",
-        "arrInd": "",
-        "ticket": "46,96"
+        "ticket": "46,96",
+        "ligURes": "1.279",
+        "ligARes": "578",
+        "ecoURes": "3.326",
+        "ecoARes": "1.503"
       },
       "params": {
         "preco": "564,47",
@@ -1894,8 +1876,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 1_1",
       "sisId": "e1s75",
@@ -1977,11 +1958,11 @@
         "ecoU": "2.446",
         "ecoA": "1.106",
         "ecoN": "1.340",
-        "ligUInd": "",
-        "ligAInd": "",
-        "fatInd": "",
-        "arrInd": "",
-        "ticket": "208,55"
+        "ticket": "208,55",
+        "ligURes": "941",
+        "ligARes": "425",
+        "ecoURes": "2.446",
+        "ecoARes": "1.106"
       },
       "params": {
         "preco": "1.230,06",
@@ -1991,8 +1972,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 1_2",
       "sisId": "e1s75",
@@ -2074,11 +2054,11 @@
         "ecoU": "1.573",
         "ecoA": "710",
         "ecoN": "863",
-        "ligUInd": "",
-        "ligAInd": "",
-        "fatInd": "",
-        "arrInd": "",
-        "ticket": "194,49"
+        "ticket": "194,49",
+        "ligURes": "605",
+        "ligARes": "274",
+        "ecoURes": "1.573",
+        "ecoARes": "710"
       },
       "params": {
         "preco": "1.057,39",
@@ -2088,8 +2068,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 1_1",
       "sisId": "e1s8",
@@ -2171,11 +2150,11 @@
         "ecoU": "1.416",
         "ecoA": "640",
         "ecoN": "776",
-        "ligUInd": "",
-        "ligAInd": "",
-        "fatInd": "",
-        "arrInd": "",
-        "ticket": "172,29"
+        "ticket": "172,29",
+        "ligURes": "545",
+        "ligARes": "246",
+        "ecoURes": "1.416",
+        "ecoARes": "640"
       },
       "params": {
         "preco": "818,87",
@@ -2185,8 +2164,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 2_1",
       "sisId": "e1s8",
@@ -2268,11 +2246,11 @@
         "ecoU": "7.043",
         "ecoA": "3.184",
         "ecoN": "3.859",
-        "ligUInd": "217",
-        "ligAInd": "98",
-        "fatInd": "81.143,86",
-        "arrInd": "72.380,32",
-        "ticket": "197,11"
+        "ticket": "197,11",
+        "ligURes": "2.492",
+        "ligARes": "1.126",
+        "ecoURes": "6.479",
+        "ecoARes": "2.929"
       },
       "params": {
         "preco": "1.071,48",
@@ -2282,8 +2260,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 1_1",
       "sisId": "e1s81",
@@ -2365,11 +2342,11 @@
         "ecoU": "6.376",
         "ecoA": "2.882",
         "ecoN": "3.494",
-        "ligUInd": "",
-        "ligAInd": "",
-        "fatInd": "",
-        "arrInd": "",
-        "ticket": "119,55"
+        "ticket": "119,55",
+        "ligURes": "2.452",
+        "ligARes": "1.109",
+        "ecoURes": "6.376",
+        "ecoARes": "2.882"
       },
       "params": {
         "preco": "485,41",
@@ -2379,8 +2356,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 1_2",
       "sisId": "e1s81",
@@ -2462,11 +2438,11 @@
         "ecoU": "458",
         "ecoA": "207",
         "ecoN": "251",
-        "ligUInd": "",
-        "ligAInd": "",
-        "fatInd": "",
-        "arrInd": "",
-        "ticket": "199,78"
+        "ticket": "199,78",
+        "ligURes": "176",
+        "ligARes": "79",
+        "ecoURes": "458",
+        "ecoARes": "207"
       },
       "params": {
         "preco": "1.000,65",
@@ -2476,8 +2452,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 1_1",
       "sisId": "e1s83",
@@ -2559,11 +2534,11 @@
         "ecoU": "309",
         "ecoA": "140",
         "ecoN": "169",
-        "ligUInd": "",
-        "ligAInd": "",
-        "fatInd": "",
-        "arrInd": "",
-        "ticket": "264,37"
+        "ticket": "264,37",
+        "ligURes": "119",
+        "ligARes": "53",
+        "ecoURes": "309",
+        "ecoARes": "140"
       },
       "params": {
         "preco": "436,88",
@@ -2573,8 +2548,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 1_2",
       "sisId": "e1s83",
@@ -2656,11 +2630,11 @@
         "ecoU": "388",
         "ecoA": "175",
         "ecoN": "213",
-        "ligUInd": "12",
-        "ligAInd": "5",
-        "fatInd": "3.231,68",
-        "arrInd": "3.057,17",
-        "ticket": "152,1"
+        "ticket": "152,1",
+        "ligURes": "137",
+        "ligARes": "62",
+        "ecoURes": "357",
+        "ecoARes": "162"
       },
       "params": {
         "preco": "1.227,66",
@@ -2670,8 +2644,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 1_3",
       "sisId": "e1s83",
@@ -2753,11 +2726,11 @@
         "ecoU": "336",
         "ecoA": "152",
         "ecoN": "184",
-        "ligUInd": "",
-        "ligAInd": "",
-        "fatInd": "",
-        "arrInd": "",
-        "ticket": "297,06"
+        "ticket": "297,06",
+        "ligURes": "129",
+        "ligARes": "58",
+        "ecoURes": "336",
+        "ecoARes": "152"
       },
       "params": {
         "preco": "1.070,89",
@@ -2767,8 +2740,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 2_1",
       "sisId": "e1s83",
@@ -2850,11 +2822,11 @@
         "ecoU": "232",
         "ecoA": "105",
         "ecoN": "127",
-        "ligUInd": "",
-        "ligAInd": "",
-        "fatInd": "",
-        "arrInd": "",
-        "ticket": "191"
+        "ticket": "191",
+        "ligURes": "89",
+        "ligARes": "40",
+        "ecoURes": "232",
+        "ecoARes": "105"
       },
       "params": {
         "preco": "1.412,32",
@@ -2864,8 +2836,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 2_2",
       "sisId": "e1s83",
@@ -2947,11 +2918,11 @@
         "ecoU": "259",
         "ecoA": "117",
         "ecoN": "142",
-        "ligUInd": "",
-        "ligAInd": "",
-        "fatInd": "",
-        "arrInd": "",
-        "ticket": "60,17"
+        "ticket": "60,17",
+        "ligURes": "99",
+        "ligARes": "45",
+        "ecoURes": "259",
+        "ecoARes": "117"
       },
       "params": {
         "preco": "1.264,01",
@@ -2961,8 +2932,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 2_3",
       "sisId": "e1s83",
@@ -3044,11 +3014,11 @@
         "ecoU": "395",
         "ecoA": "178",
         "ecoN": "217",
-        "ligUInd": "",
-        "ligAInd": "",
-        "fatInd": "",
-        "arrInd": "",
-        "ticket": "207,75"
+        "ticket": "207,75",
+        "ligURes": "152",
+        "ligARes": "68",
+        "ecoURes": "395",
+        "ecoARes": "178"
       },
       "params": {
         "preco": "1.261,9",
@@ -3058,8 +3028,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 3_1",
       "sisId": "e1s83",
@@ -3141,11 +3110,11 @@
         "ecoU": "395",
         "ecoA": "178",
         "ecoN": "217",
-        "ligUInd": "",
-        "ligAInd": "",
-        "fatInd": "",
-        "arrInd": "",
-        "ticket": "235,8"
+        "ticket": "235,8",
+        "ligURes": "152",
+        "ligARes": "69",
+        "ecoURes": "395",
+        "ecoARes": "178"
       },
       "params": {
         "preco": "1.202,93",
@@ -3155,8 +3124,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 3_2",
       "sisId": "e1s83",
@@ -3238,11 +3206,11 @@
         "ecoU": "549",
         "ecoA": "248",
         "ecoN": "301",
-        "ligUInd": "",
-        "ligAInd": "",
-        "fatInd": "",
-        "arrInd": "",
-        "ticket": "149,02"
+        "ticket": "149,02",
+        "ligURes": "211",
+        "ligARes": "95",
+        "ecoURes": "549",
+        "ecoARes": "248"
       },
       "params": {
         "preco": "748,45",
@@ -3252,8 +3220,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 3_3",
       "sisId": "e1s83",
@@ -3335,11 +3302,11 @@
         "ecoU": "424",
         "ecoA": "191",
         "ecoN": "233",
-        "ligUInd": "13",
-        "ligAInd": "6",
-        "fatInd": "4.238,2",
-        "arrInd": "3.899,14",
-        "ticket": "175,64"
+        "ticket": "175,64",
+        "ligURes": "150",
+        "ligARes": "68",
+        "ecoURes": "390",
+        "ecoARes": "176"
       },
       "params": {
         "preco": "1.297,87",
@@ -3349,8 +3316,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 3_4",
       "sisId": "e1s83",
@@ -3432,11 +3398,11 @@
         "ecoU": "1.118",
         "ecoA": "505",
         "ecoN": "613",
-        "ligUInd": "",
-        "ligAInd": "",
-        "fatInd": "",
-        "arrInd": "",
-        "ticket": "260,93"
+        "ticket": "260,93",
+        "ligURes": "430",
+        "ligARes": "194",
+        "ecoURes": "1.118",
+        "ecoARes": "505"
       },
       "params": {
         "preco": "740,61",
@@ -3446,8 +3412,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 1_1",
       "sisId": "e1s87",
@@ -3529,11 +3494,11 @@
         "ecoU": "1.536",
         "ecoA": "695",
         "ecoN": "841",
-        "ligUInd": "",
-        "ligAInd": "",
-        "fatInd": "",
-        "arrInd": "",
-        "ticket": "144,26"
+        "ticket": "144,26",
+        "ligURes": "591",
+        "ligARes": "267",
+        "ecoURes": "1.536",
+        "ecoARes": "695"
       },
       "params": {
         "preco": "1.144,72",
@@ -3543,8 +3508,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 1_2",
       "sisId": "e1s87",
@@ -3626,11 +3590,11 @@
         "ecoU": "815",
         "ecoA": "369",
         "ecoN": "446",
-        "ligUInd": "25",
-        "ligAInd": "11",
-        "fatInd": "11.973,58",
-        "arrInd": "9.722,55",
-        "ticket": "228,23"
+        "ticket": "228,23",
+        "ligURes": "288",
+        "ligARes": "131",
+        "ecoURes": "750",
+        "ecoARes": "340"
       },
       "params": {
         "preco": "944,86",
@@ -3640,8 +3604,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 1_3",
       "sisId": "e1s87",
@@ -3723,11 +3686,11 @@
         "ecoU": "2.032",
         "ecoA": "919",
         "ecoN": "1.113",
-        "ligUInd": "",
-        "ligAInd": "",
-        "fatInd": "",
-        "arrInd": "",
-        "ticket": "197,68"
+        "ticket": "197,68",
+        "ligURes": "781",
+        "ligARes": "353",
+        "ecoURes": "2.032",
+        "ecoARes": "919"
       },
       "params": {
         "preco": "1.159,85",
@@ -3737,8 +3700,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 1_4",
       "sisId": "e1s87",
@@ -3820,11 +3782,11 @@
         "ecoU": "1.566",
         "ecoA": "708",
         "ecoN": "858",
-        "ligUInd": "",
-        "ligAInd": "",
-        "fatInd": "",
-        "arrInd": "",
-        "ticket": "54,03"
+        "ticket": "54,03",
+        "ligURes": "602",
+        "ligARes": "272",
+        "ecoURes": "1.566",
+        "ecoARes": "708"
       },
       "params": {
         "preco": "984,99",
@@ -3834,8 +3796,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 2_1",
       "sisId": "e1s87",
@@ -3917,11 +3878,11 @@
         "ecoU": "1.074",
         "ecoA": "486",
         "ecoN": "588",
-        "ligUInd": "",
-        "ligAInd": "",
-        "fatInd": "",
-        "arrInd": "",
-        "ticket": "170,89"
+        "ticket": "170,89",
+        "ligURes": "413",
+        "ligARes": "187",
+        "ecoURes": "1.074",
+        "ecoARes": "486"
       },
       "params": {
         "preco": "859,92",
@@ -3931,8 +3892,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 3_1",
       "sisId": "e1s87",
@@ -4014,11 +3974,11 @@
         "ecoU": "2.095",
         "ecoA": "947",
         "ecoN": "1.148",
-        "ligUInd": "",
-        "ligAInd": "",
-        "fatInd": "",
-        "arrInd": "",
-        "ticket": "163,9"
+        "ticket": "163,9",
+        "ligURes": "806",
+        "ligARes": "364",
+        "ecoURes": "2.095",
+        "ecoARes": "947"
       },
       "params": {
         "preco": "561,29",
@@ -4028,8 +3988,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 3_2",
       "sisId": "e1s87",
@@ -4111,11 +4070,11 @@
         "ecoU": "473",
         "ecoA": "213",
         "ecoN": "260",
-        "ligUInd": "",
-        "ligAInd": "",
-        "fatInd": "",
-        "arrInd": "",
-        "ticket": "170,55"
+        "ticket": "170,55",
+        "ligURes": "182",
+        "ligARes": "82",
+        "ecoURes": "473",
+        "ecoARes": "213"
       },
       "params": {
         "preco": "920,33",
@@ -4125,8 +4084,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 1_1",
       "sisId": "e1s91",
@@ -4208,11 +4166,11 @@
         "ecoU": "281",
         "ecoA": "127",
         "ecoN": "154",
-        "ligUInd": "9",
-        "ligAInd": "4",
-        "fatInd": "3.072,74",
-        "arrInd": "2.399,81",
-        "ticket": "163,25"
+        "ticket": "163,25",
+        "ligURes": "99",
+        "ligARes": "45",
+        "ecoURes": "258",
+        "ecoARes": "117"
       },
       "params": {
         "preco": "940,17",
@@ -4222,8 +4180,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 1_2",
       "sisId": "e1s91",
@@ -4305,11 +4262,11 @@
         "ecoU": "416",
         "ecoA": "188",
         "ecoN": "228",
-        "ligUInd": "",
-        "ligAInd": "",
-        "fatInd": "",
-        "arrInd": "",
-        "ticket": "149,16"
+        "ticket": "149,16",
+        "ligURes": "160",
+        "ligARes": "73",
+        "ecoURes": "416",
+        "ecoARes": "188"
       },
       "params": {
         "preco": "1.203,16",
@@ -4319,8 +4276,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 1_3",
       "sisId": "e1s91",
@@ -4402,11 +4358,11 @@
         "ecoU": "403",
         "ecoA": "182",
         "ecoN": "221",
-        "ligUInd": "",
-        "ligAInd": "",
-        "fatInd": "",
-        "arrInd": "",
-        "ticket": "117,35"
+        "ticket": "117,35",
+        "ligURes": "155",
+        "ligARes": "70",
+        "ecoURes": "403",
+        "ecoARes": "182"
       },
       "params": {
         "preco": "562,85",
@@ -4416,8 +4372,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 2_1",
       "sisId": "e1s91",
@@ -4499,11 +4454,11 @@
         "ecoU": "482",
         "ecoA": "218",
         "ecoN": "264",
-        "ligUInd": "",
-        "ligAInd": "",
-        "fatInd": "",
-        "arrInd": "",
-        "ticket": "97,94"
+        "ticket": "97,94",
+        "ligURes": "186",
+        "ligARes": "84",
+        "ecoURes": "482",
+        "ecoARes": "218"
       },
       "params": {
         "preco": "634,93",
@@ -4513,8 +4468,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 2_2",
       "sisId": "e1s91",
@@ -4596,11 +4550,11 @@
         "ecoU": "507",
         "ecoA": "230",
         "ecoN": "277",
-        "ligUInd": "",
-        "ligAInd": "",
-        "fatInd": "",
-        "arrInd": "",
-        "ticket": "237,7"
+        "ticket": "237,7",
+        "ligURes": "195",
+        "ligARes": "88",
+        "ecoURes": "507",
+        "ecoARes": "230"
       },
       "params": {
         "preco": "1.081,71",
@@ -4610,8 +4564,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 3_1",
       "sisId": "e1s91",
@@ -4693,11 +4646,11 @@
         "ecoU": "387",
         "ecoA": "175",
         "ecoN": "212",
-        "ligUInd": "",
-        "ligAInd": "",
-        "fatInd": "",
-        "arrInd": "",
-        "ticket": "130,59"
+        "ticket": "130,59",
+        "ligURes": "149",
+        "ligARes": "68",
+        "ecoURes": "387",
+        "ecoARes": "175"
       },
       "params": {
         "preco": "685,74",
@@ -4707,8 +4660,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 3_2",
       "sisId": "e1s91",
@@ -4790,11 +4742,11 @@
         "ecoU": "402",
         "ecoA": "181",
         "ecoN": "221",
-        "ligUInd": "",
-        "ligAInd": "",
-        "fatInd": "",
-        "arrInd": "",
-        "ticket": "68,64"
+        "ticket": "68,64",
+        "ligURes": "155",
+        "ligARes": "69",
+        "ecoURes": "402",
+        "ecoARes": "181"
       },
       "params": {
         "preco": "1.025,51",
@@ -4804,8 +4756,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1",
-        "vazInd": ""
+        "pot": "1"
       },
       "nome": "subbacia 3_3",
       "sisId": "e1s91",

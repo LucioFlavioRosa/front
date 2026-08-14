@@ -41,11 +41,11 @@
         "ecoU": "422",
         "ecoA": "191",
         "ecoN": "231",
-        "ligUInd": "",
-        "ligAInd": "",
-        "fatInd": "",
-        "arrInd": "",
-        "ticket": "222,99"
+        "ticket": "222,99",
+        "ligURes": "162",
+        "ligARes": "74",
+        "ecoURes": "422",
+        "ecoARes": "191"
       },
       "params": {
         "preco": "857,39",
@@ -55,8 +55,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1,15",
-        "vazInd": ""
+        "pot": "1,15"
       },
       "nome": "cts_e1b59_1_4",
       "subId": "e1b59_1_4",
@@ -127,11 +126,11 @@
         "ecoU": "694",
         "ecoA": "314",
         "ecoN": "380",
-        "ligUInd": "",
-        "ligAInd": "",
-        "fatInd": "",
-        "arrInd": "",
-        "ticket": "55,75"
+        "ticket": "55,75",
+        "ligURes": "267",
+        "ligARes": "120",
+        "ecoURes": "694",
+        "ecoARes": "314"
       },
       "params": {
         "preco": "660,59",
@@ -141,8 +140,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1,15",
-        "vazInd": ""
+        "pot": "1,15"
       },
       "nome": "cts_e1b60_1_2",
       "subId": "e1b60_1_2",
@@ -213,11 +211,11 @@
         "ecoU": "2.817",
         "ecoA": "1.274",
         "ecoN": "1.543",
-        "ligUInd": "",
-        "ligAInd": "",
-        "fatInd": "",
-        "arrInd": "",
-        "ticket": "196,95"
+        "ticket": "196,95",
+        "ligURes": "1.084",
+        "ligARes": "490",
+        "ecoURes": "2.817",
+        "ecoARes": "1.274"
       },
       "params": {
         "preco": "1.071,48",
@@ -227,8 +225,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1,15",
-        "vazInd": ""
+        "pot": "1,15"
       },
       "nome": "cts_e1b81_1_1",
       "subId": "e1b81_1_1",
@@ -299,11 +296,11 @@
         "ecoU": "183",
         "ecoA": "83",
         "ecoN": "100",
-        "ligUInd": "",
-        "ligAInd": "",
-        "fatInd": "",
-        "arrInd": "",
-        "ticket": "197,29"
+        "ticket": "197,29",
+        "ligURes": "70",
+        "ligARes": "32",
+        "ecoURes": "183",
+        "ecoARes": "83"
       },
       "params": {
         "preco": "1.000,65",
@@ -313,8 +310,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1,15",
-        "vazInd": ""
+        "pot": "1,15"
       },
       "nome": "cts_e1b83_1_1",
       "subId": "e1b83_1_1",
@@ -385,11 +381,11 @@
         "ecoU": "104",
         "ecoA": "47",
         "ecoN": "57",
-        "ligUInd": "",
-        "ligAInd": "",
-        "fatInd": "",
-        "arrInd": "",
-        "ticket": "60,17"
+        "ticket": "60,17",
+        "ligURes": "40",
+        "ligARes": "18",
+        "ecoURes": "104",
+        "ecoARes": "47"
       },
       "params": {
         "preco": "1.264,01",
@@ -399,8 +395,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1,15",
-        "vazInd": ""
+        "pot": "1,15"
       },
       "nome": "cts_e1b83_2_3",
       "subId": "e1b83_2_3",
@@ -471,11 +466,11 @@
         "ecoU": "326",
         "ecoA": "148",
         "ecoN": "178",
-        "ligUInd": "",
-        "ligAInd": "",
-        "fatInd": "",
-        "arrInd": "",
-        "ticket": "227,43"
+        "ticket": "227,43",
+        "ligURes": "125",
+        "ligARes": "57",
+        "ecoURes": "326",
+        "ecoARes": "148"
       },
       "params": {
         "preco": "944,86",
@@ -485,8 +480,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1,15",
-        "vazInd": ""
+        "pot": "1,15"
       },
       "nome": "cts_e1b87_1_3",
       "subId": "e1b87_1_3",
@@ -557,11 +551,11 @@
         "ecoU": "161",
         "ecoA": "73",
         "ecoN": "88",
-        "ligUInd": "",
-        "ligAInd": "",
-        "fatInd": "",
-        "arrInd": "",
-        "ticket": "117,34"
+        "ticket": "117,34",
+        "ligURes": "62",
+        "ligARes": "28",
+        "ecoURes": "161",
+        "ecoARes": "73"
       },
       "params": {
         "preco": "562,85",
@@ -571,8 +565,7 @@
         "popU": "",
         "popA": "",
         "popN": "",
-        "pot": "1,15",
-        "vazInd": ""
+        "pot": "1,15"
       },
       "nome": "cts_e1b91_2_1",
       "subId": "e1b91_2_1",

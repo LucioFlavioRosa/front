@@ -34,7 +34,7 @@ export interface ParametrosRodada {
   orcamento: number
   /** 0 = so VPL · 1 = so cobertura. */
   focoCobertura: number
-  incluirIndustrial: boolean
+  coberturaSoResidencial: boolean
 }
 
 /**

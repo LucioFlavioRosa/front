@@ -455,12 +455,12 @@ export function Simular() {
             onToggle={() => set('usarCts', !e.usarCts)}
           />
           <Interruptor
-            rotulo="Incluir demanda industrial"
-            tecnico="INCLUIR_INDUSTRIAL"
-            descricao="SIM: residencial + industrial (usa os totais). Não: só residencial — subtrai a parcela industrial de ligações, receita e vazão; o CAPEX não muda."
-            aviso="Só faz efeito se a base tiver as colunas *_industrial."
-            ligado={e.incluirIndustrial}
-            onToggle={() => set('incluirIndustrial', !e.incluirIndustrial)}
+            rotulo="Medir a meta só em ligações residenciais"
+            tecnico="COBERTURA_SO_RESIDENCIAL"
+            descricao="SIM: a cobertura conta só ligações e economias residenciais. Não: conta todas. Nos dois casos receita, VPL, vazão e CAPEX seguem no total — o recorte para na meta."
+            aviso="Só faz efeito se a base tiver as colunas *_residencial."
+            ligado={e.coberturaSoResidencial}
+            onToggle={() => set('coberturaSoResidencial', !e.coberturaSoResidencial)}
           />
 
         </Secao>
@@ -505,7 +505,7 @@ export function Simular() {
             <Item k="Base de receita" v={e.baseReceita} />
             <Item k="Curva de adesão" v={e.curvaAdocao === 'scurve' ? 'curva S' : 'linear'} />
             <Item k="Usar CTS" v={e.usarCts ? 'sim' : 'não'} />
-            <Item k="Incluir industrial" v={e.incluirIndustrial ? 'sim' : 'não'} />
+            <Item k="Meta só residencial" v={e.coberturaSoResidencial ? 'sim' : 'não'} />
           </dl>
         </div>
 

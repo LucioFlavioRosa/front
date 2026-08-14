@@ -20,23 +20,26 @@ export interface SubBaciaDb {
   ligA: string
   ligN: string
   /**
-   * Recorte INDUSTRIAL das mesmas quatro medidas de cima. Nao e um trio de
-   * cobertura (nao vira denominador de meta nenhuma): e o que explica o ticket,
-   * porque industria e um punhado de ligacoes respondendo por uma fatia
-   * desproporcional da receita.
+   * Recorte RESIDENCIAL: quanto das medidas de cima e residencial. Vem APURADO da
+   * base comercial — nao e estimativa de quem cadastra, e nao se deduz subtraindo
+   * uma parcela industrial, como era antes.
+   *
+   * Serve a UMA coisa: a rodada que mede a meta so em ligacoes residenciais. Nao
+   * entra em receita, VPL, vazao nem CAPEX, que seguem no total em qualquer modo —
+   * quem paga a conta e a ligacao, seja de casa ou de fabrica.
    */
-  /** `universo_ligacoes_industrial` */
-  ligUInd: string
-  /** `ligacoes_atuais_industrial` */
-  ligAInd: string
-  /** `receita_faturada_industrial` */
-  fatInd: string
-  /** `receita_arrecadada_industrial` */
-  arrInd: string
+  /** `universo_ligacoes_residencial` */
+  ligURes: string
+  /** `ligacoes_atuais_residencial` */
+  ligARes: string
   ecoU: string
   ecoA: string
   /** Economias que as obras passam a atender (`economias_novas_obras`). */
   ecoN: string
+  /** `universo_economias_residencial` — o par de `ligURes`, para a cidade que mede a meta em economias. */
+  ecoURes: string
+  /** `economias_atuais_residencial` */
+  ecoARes: string
   ticket: string
 }
 
@@ -46,14 +49,6 @@ export interface SubBaciaParams {
   tarr: string
   ramp: string
   vaz: string
-  /**
-   * `vazao_contribuicao_industrial` — a parcela INDUSTRIAL da vazao nova, ja
-   * contida em `vaz`. Mesma leitura do recorte industrial da base comercial:
-   * com industria vale `vaz`; so residencial, `vaz − vazInd` (analise que o
-   * produto ainda nao faz — por isso o campo nao conta pendencia). Sem industria na
-   * area, o valor e `0` — vazio nao e resposta.
-   */
-  vazInd: string
   pot: string
   /**
    * Populacao do universo e populacao ja atendida. So existem como campo
@@ -188,12 +183,11 @@ export function mkObras(override: Record<string, Partial<Obra>>): Obra[] {
     })
 }
 
-// `vazInd` NAO entra na regua. A planilha de origem nao tem a coluna
-// `vazao_contribuicao_industrial` para sub-bacia (so para CTS): chega NULL nas
-// 4.850 linhas e nao ha de onde preencher. E o motor so usa esse numero para
-// SUBTRAIR a parcela industrial quando se roda `INCLUIR_INDUSTRIAL=False` — na
-// analise de hoje ele nao entra na conta. Cobrar campo que a origem nao tem,
-// para uma simulacao que nao o usa, travava a unidade inteira por nada.
+// A vazao industrial SAIU do cadastro. Ela existia para o motor subtrair a parcela
+// da industria quando a rodada era "so residencial" — e esse recorte deixou de tocar
+// em vazao: ela dimensiona modulo de ETE e rateia obra compartilhada, e industria
+// contribui com esgoto mesmo quando nao conta para a meta. Descontar ali
+// subdimensionaria a estacao. Um campo a menos para a Regional preencher.
 const PARAM_KEYS: (keyof SubBaciaParams)[] = ['preco', 'tarr', 'ramp', 'vaz', 'pot']
 /** Quantos parametros a ficha cobra fora da regua de populacao. */
 export const CAMPOS_PARAMS = PARAM_KEYS.length

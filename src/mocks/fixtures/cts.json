@@ -30,18 +30,17 @@
         "ecoU": "68",
         "ecoA": "21",
         "ecoN": "47",
-        "ligUInd": "1",
-        "ligAInd": "1",
-        "fatInd": "477",
-        "arrInd": "426",
-        "ticket": "R$ 179"
+        "ticket": "R$ 179",
+        "ligURes": "61",
+        "ligARes": "18",
+        "ecoURes": "67",
+        "ecoARes": "20"
       },
       "params": {
         "preco": "1.334",
         "tarr": "2",
         "ramp": "2",
         "vaz": "3,1",
-        "vazInd": "0,2",
         "pot": "1,0",
         "popU": "218",
         "popA": "67"
@@ -115,18 +114,17 @@
         "ecoU": "151",
         "ecoA": "48",
         "ecoN": "103",
-        "ligUInd": "5",
-        "ligAInd": "2",
-        "fatInd": "1.729",
-        "arrInd": "1.412",
-        "ticket": "R$ 186"
+        "ticket": "R$ 186",
+        "ligURes": "133",
+        "ligARes": "42",
+        "ecoURes": "146",
+        "ecoARes": "46"
       },
       "params": {
         "preco": "1.180",
         "tarr": "3",
         "ramp": "4",
         "vaz": "6,7",
-        "vazInd": "0,7",
         "pot": "",
         "popU": "483",
         "popA": "154"
@@ -200,18 +198,17 @@
         "ecoU": "224",
         "ecoA": "72",
         "ecoN": "152",
-        "ligUInd": "2",
-        "ligAInd": "1",
-        "fatInd": "1.098",
-        "arrInd": "886",
-        "ticket": "R$ 205"
+        "ticket": "R$ 205",
+        "ligURes": "202",
+        "ligARes": "65",
+        "ecoURes": "222",
+        "ecoARes": "71"
       },
       "params": {
         "preco": "902",
         "tarr": "4",
         "ramp": "6",
         "vaz": "",
-        "vazInd": "",
         "pot": "",
         "popU": "717",
         "popA": "230"

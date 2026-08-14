@@ -127,14 +127,14 @@ export const DICT_SIMULACAO: Record<string, Verbete> = {
       'Sim: a CTS tem obras, receita e cobertura próprias. Não: ligações, economias, população, receita e vazão dela são somadas à sub-bacia irmã. Só faz efeito se a base tiver CTS cadastrada.',
     exemplo: 'sim',
   },
-  INCLUIR_INDUSTRIAL: {
-    rotulo: 'Incluir demanda industrial',
-    tec: 'INCLUIR_INDUSTRIAL',
+  COBERTURA_SO_RESIDENCIAL: {
+    rotulo: 'Medir a meta só em ligações residenciais',
+    tec: 'COBERTURA_SO_RESIDENCIAL',
     origem: VOCE,
     tipo: 'sim · não',
-    oque: 'Se a parcela industrial entra na conta de ligações, receita e vazão.',
+    oque: 'Se a cobertura é medida contando só ligações e economias residenciais.',
     porque:
-      'As colunas normais JÁ SÃO o total (residencial + industrial). Sim: usa o total como está. Não: subtrai a parcela industrial — residencial = total − industrial. O CAPEX não muda nos dois casos.',
-    exemplo: 'sim',
+      'O RECORTE ACABA NA COBERTURA. Receita, VPL, vazão e CAPEX usam o total nos dois casos — quem paga a conta é a ligação, seja de casa ou de fábrica, e a indústria manda esgoto que a ETE precisa tratar. Sim: universo e base atendida saem das colunas residenciais da base comercial. Não: saem dos totais.',
+    exemplo: 'não',
   },
 }
