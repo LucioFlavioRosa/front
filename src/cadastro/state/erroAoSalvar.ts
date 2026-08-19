@@ -23,7 +23,18 @@ import { useCallback } from 'react'
 import { mensagemDeErro } from '@/cadastro/api/mutations'
 import { useApp } from '@/comum/state/AppContext'
 
-export function useErroAoSalvar(_unidadeId: string | undefined) {
+/**
+ * `formatar` troca so o TEXTO, e nao o que a tela faz com a falha.
+ *
+ * A topologia precisa disso: o 422 dela nao e "confira os campos preenchidos", e
+ * sim a frase do servidor nomeando o ciclo ou quem escoa para o componente. O
+ * resto do comportamento — toast, edicao continua na tela — segue igual para
+ * todas, que e o motivo deste modulo existir.
+ */
+export function useErroAoSalvar(
+  _unidadeId: string | undefined,
+  formatar: (erro: unknown) => string = mensagemDeErro,
+) {
   const { toast } = useApp()
-  return useCallback((erro: unknown) => toast(mensagemDeErro(erro)), [toast])
+  return useCallback((erro: unknown) => toast(formatar(erro)), [toast, formatar])
 }

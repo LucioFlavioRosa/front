@@ -49,7 +49,7 @@ describe('CTS incompleta numa unidade sem ficha de CTS', () => {
   it('o estado vazio não engole a denúncia', async () => {
     renderApp('/unidade/u-jacarei/cts')
 
-    expect(await screen.findByText('Nenhuma CTS cadastrada nesta unidade')).toBeTruthy()
+    expect(await screen.findByText('Nenhuma CTS nesta unidade')).toBeTruthy()
     expect(screen.getByText('2 CTS com cadastro incompleto')).toBeTruthy()
     expect(screen.getByText('cts_c2b12_3_1')).toBeTruthy()
   })

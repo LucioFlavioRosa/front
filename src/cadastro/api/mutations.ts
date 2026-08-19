@@ -13,8 +13,11 @@ import type {
   FichaCidade,
   FichaCts,
   FichaEte,
+  FichaSistema,
   FichaSubBacia,
+  FichaTopologia,
   RespostaSalvar,
+  RespostaTopologia,
 } from '@/cadastro/api/escrita'
 
 /** Mensagem curta, em português, para o toast de falha ao salvar. */
@@ -27,6 +30,27 @@ export function mensagemDeErro(e: unknown): string {
     return `Não foi possível salvar (erro ${e.status}). Suas edições continuam nesta tela.`
   }
   return 'Não foi possível salvar. Suas edições continuam nesta tela.'
+}
+
+/**
+ * Erro de TOPOLOGIA: mostra a frase do servidor, e nao a mensagem generica.
+ *
+ * Aqui o 422 nao e "confira os campos preenchidos" — e "isso fecharia o ciclo
+ * A → B → C → A", ou "'d1b13_1_2' nao pode sair do sistema enquanto 'd1b13_1_1'
+ * escoa para ele". Trocar esse texto por um genérico devolveria a pessoa a um
+ * sistema de sete componentes sem dizer qual ligacao desfazer.
+ */
+export function mensagemDeErroTopologia(e: unknown): string {
+  if (e instanceof ApiError && e.invalido) {
+    try {
+      // O corpo de erro do servico e `{"erro": "..."}` (ver `app/api/erros.py`).
+      const erro: unknown = JSON.parse(e.corpo)?.erro
+      if (typeof erro === 'string' && erro.trim()) return erro
+    } catch {
+      // Corpo que nao e JSON cai na mensagem generica — melhor que exibir cru.
+    }
+  }
+  return mensagemDeErro(e)
 }
 
 /**
@@ -112,5 +136,58 @@ export function useSalvarCts(unidadeId: string | undefined, opcoes?: OpcoesSalva
       conferirContrato(`/unidades/${unidadeId}/cts/${vars.ctsId}`, dado)
       opcoes?.onSalva?.(vars, dado)
     },
+  })
+}
+
+type VarsTopo = { compId: string; ficha: FichaTopologia }
+
+/**
+ * A posicao de um componente — o caminho ate a ETE, e em que sistema ele entra.
+ *
+ * NAO passa por `conferirContrato`: a resposta desta rota nao traz auditoria, de
+ * propósito (ver `RespostaTopologia`). Chamar a conferencia aqui encheria o
+ * console de acusacoes contra um contrato que nunca existiu.
+ *
+ * `sisId` vazio tira o componente do sistema, e e o mesmo caminho do `DELETE`
+ * abaixo — o servidor trata os dois igual. A tela usa o `DELETE` quando a acao e
+ * "tirar", porque o verbo diz o que aconteceu.
+ */
+export function useSalvarTopologia(unidadeId: string | undefined, opcoes?: OpcoesSalvar<VarsTopo>) {
+  return useMutation({
+    mutationFn: ({ compId, ficha }: VarsTopo) =>
+      api.put<RespostaTopologia>(`/unidades/${unidadeId}/topologia/${compId}`, ficha),
+    onSuccess: (dado, vars) =>
+      opcoes?.onSalva?.(vars, { ...dado, atualizadoEm: '', atualizadoPor: '' }),
+  })
+}
+
+type VarsSistema = { sisId: string; ficha: FichaSistema }
+
+/**
+ * O que o sistema declara sobre si. Mesma razao da topologia para nao passar por
+ * `conferirContrato`: `cidade_sistema` nao tem colunas de auditoria, entao a
+ * resposta nao traz `atualizadoPor` — e nao deve trazer.
+ */
+export function useSalvarSistema(
+  unidadeId: string | undefined,
+  opcoes?: OpcoesSalvar<VarsSistema>,
+) {
+  return useMutation({
+    mutationFn: ({ sisId, ficha }: VarsSistema) =>
+      api.put<RespostaTopologia>(`/unidades/${unidadeId}/sistemas/${sisId}`, ficha),
+    onSuccess: (dado, vars) =>
+      opcoes?.onSalva?.(vars, { ...dado, atualizadoEm: '', atualizadoPor: '' }),
+  })
+}
+
+export function useTirarDoSistema(
+  unidadeId: string | undefined,
+  opcoes?: OpcoesSalvar<{ compId: string }>,
+) {
+  return useMutation({
+    mutationFn: ({ compId }: { compId: string }) =>
+      api.del<RespostaTopologia>(`/unidades/${unidadeId}/topologia/${compId}`),
+    onSuccess: (dado, vars) =>
+      opcoes?.onSalva?.(vars, { ...dado, atualizadoEm: '', atualizadoPor: '' }),
   })
 }

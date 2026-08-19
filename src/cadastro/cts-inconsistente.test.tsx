@@ -70,6 +70,6 @@ describe('CTS com cadastro incompleto', () => {
 
     // Esconder a ficha "defeituosa" seria pior que mostrá-la: tiraria do usuário
     // a única tela onde ele veria o problema, e a ficha em si é editável.
-    expect(screen.queryByText('Nenhuma CTS cadastrada nesta unidade')).toBeNull()
+    expect(screen.queryByText('Nenhuma CTS nesta unidade')).toBeNull()
   })
 })

@@ -4,14 +4,17 @@
  * Granularidade: **uma ficha por vez** (o que o botao "Salvar" de cada tela
  * promete). Nao ha autosave por campo; o usuario edita a ficha inteira e salva.
  *
- *   PUT    /unidades/:uid/sub-bacias/:subId   FichaSubBacia  -> 200 (eco da ficha)
- *   PUT    /unidades/:uid/contrato/:cidId     FichaCidade    -> 200
- *   PUT    /unidades/:uid/etes/:eteId         FichaEte       -> 200
- *   PUT    /unidades/:uid/cts/:ctsId          FichaCts       -> 200
+ *   PUT    /unidades/:uid/sub-bacias/:subId   FichaSubBacia   -> 200 (eco da ficha)
+ *   PUT    /unidades/:uid/contrato/:cidId     FichaCidade     -> 200
+ *   PUT    /unidades/:uid/etes/:eteId         FichaEte        -> 200
+ *   PUT    /unidades/:uid/cts/:ctsId          FichaCts        -> 200
+ *   PUT    /unidades/:uid/topologia/:compId   FichaTopologia  -> 200 (SEM auditoria)
+ *   PUT    /unidades/:uid/sistemas/:sisId     FichaSistema    -> 200 (SEM auditoria)
+ *   DELETE /unidades/:uid/topologia/:compId                   -> 200 (SEM auditoria)
  *
  * NAO ha POST nem DELETE de CTS, de proposito: a CTS e no da topologia, e
- * cria-la aqui produziria uma ficha que o motor nunca carrega. O backend
- * responde 405 nessas rotas.
+ * cria-la aqui produziria uma ficha que o motor nunca carrega. Colocar e tirar
+ * CTS de um sistema sao as duas rotas de TOPOLOGIA acima.
  *
  * Regras que valem para todas:
  *  - o corpo carrega a ficha INTEIRA, nao um patch: salvar e idempotente;
@@ -66,6 +69,41 @@ export interface FichaCts extends FichaComum {
 }
 
 /**
+ * A POSICAO de um componente: em que sistema ele esta, e para onde escoa.
+ *
+ * E a ficha do Grupo 01, e a unica que nao descreve numeros — descreve a forma do
+ * sistema. `sisId` vazio tira o componente do sistema (o mesmo efeito do
+ * `DELETE`); `jusante` vazio e caminho ainda nao montado.
+ *
+ * O servidor RECUSA (422) o que deixaria a forma incoerente: ciclo, jusante em
+ * outro sistema, jusante em si mesmo, ETE com jusante, segunda ETE no sistema, e
+ * tirar/mover componente para o qual alguem ainda escoa. A mensagem nomeia os
+ * componentes envolvidos, e e ela que vai para o toast — "topologia invalida" nao
+ * ajudaria quem esta montando um sistema.
+ *
+ * O que e apenas INCOMPLETO passa: durante a montagem o caminho fica pela metade
+ * o tempo todo.
+ */
+export interface FichaTopologia extends FichaComum {
+  sisId: string
+  jusante: string
+}
+
+/**
+ * O que o SISTEMA declara sobre si.
+ *
+ * `usaCts` marcado: o sistema aceita UMA CTS. Desmarcado: aceita varias. O
+ * servidor recusa (422) marcar num sistema que ja tem mais de uma, e recusa
+ * adicionar a segunda num sistema marcado — nomeando as que estao la.
+ *
+ * O NOME do sistema nao entra aqui: vem do Databricks e nao tem rota de escrita,
+ * como o resto dos nomes do Grupo 01.
+ */
+export interface FichaSistema extends FichaComum {
+  usaCts: boolean
+}
+
+/**
  * O que o servidor devolve em qualquer PUT de ficha.
  *
  * A auditoria volta JA COM ESTA GRAVACAO APLICADA, e entra no state na mesma
@@ -81,3 +119,17 @@ export interface RespostaSalvar {
   atualizadoEm: string
   atualizadoPor: string
 }
+
+/**
+ * A resposta da TOPOLOGIA — sem auditoria, e nao por esquecimento.
+ *
+ * `sistema_topologia` nao tem `atualizado_em`/`atualizado_por`: ela e a tabela de
+ * ESTRUTURA, e as colunas de auditoria existem so nas quatro tabelas de ficha
+ * (`006_auditoria_cadastro.sql`). Quem gravou o que esta na trilha, em
+ * `GET /unidades/:uid/alteracoes?tipo=topologia`.
+ *
+ * Por isso as mutations de topologia nao passam por `conferirContrato`: exigir
+ * `atualizadoPor` aqui acusaria o servidor de quebrar um contrato que nunca foi
+ * o dele.
+ */
+export type RespostaTopologia = Pick<RespostaSalvar, 'id' | 'alteracoesGravadas'>
