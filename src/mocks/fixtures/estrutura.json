@@ -1,47 +1,223 @@
 {
-  "unidReg": { "rid": "r1", "rnome": "Regional Metropolitana", "uid": "u1", "unome": "Unidade Litoral", "waccMedio": "0,080" },
+  "unidReg": {
+    "rid": "r1",
+    "rnome": "Regional Metropolitana",
+    "uid": "u1",
+    "unome": "Unidade Litoral",
+    "waccMedio": "0,080"
+  },
   "superintendencias": [
-    { "id": "sup1", "nome": "Superintendência 1" },
-    { "id": "sup2", "nome": "Superintendência 2" },
-    { "id": "sup3", "nome": "Superintendência 3" },
-    { "id": "sup4", "nome": "Superintendência 4" }
+    {
+      "id": "sup1",
+      "nome": "Superintendência 1"
+    },
+    {
+      "id": "sup2",
+      "nome": "Superintendência 2"
+    },
+    {
+      "id": "sup3",
+      "nome": "Superintendência 3"
+    },
+    {
+      "id": "sup4",
+      "nome": "Superintendência 4"
+    }
   ],
   "cidades": [
-    { "id": "c1", "nome": "Maricá", "supId": "sup1" },
-    { "id": "c2", "nome": "Saquarema", "supId": "sup2" },
-    { "id": "c3", "nome": "Araruama", "supId": "sup3" },
-    { "id": "c4", "nome": "Cabo Frio", "supId": "sup4" },
-    { "id": "c5", "nome": "Iguaba", "supId": "sup1" },
-    { "id": "c6", "nome": "Rio das Ostras", "supId": "sup2" },
-    { "id": "c7", "nome": "São Pedro", "supId": "sup3" },
-    { "id": "c8", "nome": "Arraial", "supId": "sup4" },
-    { "id": "c9", "nome": "Búzios", "supId": "sup1" },
-    { "id": "c10", "nome": "Silva Jardim", "supId": "sup2" },
-    { "id": "c11", "nome": "Casimiro", "supId": "sup3" }
+    {
+      "id": "c1",
+      "nome": "Maricá",
+      "supId": "sup1"
+    },
+    {
+      "id": "c2",
+      "nome": "Saquarema",
+      "supId": "sup2"
+    },
+    {
+      "id": "c3",
+      "nome": "Araruama",
+      "supId": "sup3"
+    },
+    {
+      "id": "c4",
+      "nome": "Cabo Frio",
+      "supId": "sup4"
+    },
+    {
+      "id": "c5",
+      "nome": "Iguaba",
+      "supId": "sup1"
+    },
+    {
+      "id": "c6",
+      "nome": "Rio das Ostras",
+      "supId": "sup2"
+    },
+    {
+      "id": "c7",
+      "nome": "São Pedro",
+      "supId": "sup3"
+    },
+    {
+      "id": "c8",
+      "nome": "Arraial",
+      "supId": "sup4"
+    },
+    {
+      "id": "c9",
+      "nome": "Búzios",
+      "supId": "sup1"
+    },
+    {
+      "id": "c10",
+      "nome": "Silva Jardim",
+      "supId": "sup2"
+    },
+    {
+      "id": "c11",
+      "nome": "Casimiro",
+      "supId": "sup3"
+    }
   ],
   "sistemas": [
-    { "id": "s1", "nome": "Sistema 1", "cidId": "c1" },
-    { "id": "s2", "nome": "Sistema 2", "cidId": "c6" },
-    { "id": "s3", "nome": "Sistema 3", "cidId": "c9" },
-    { "id": "s5", "nome": "Sistema 5", "cidId": "c10" },
-    { "id": "s6", "nome": "Sistema 6", "cidId": "c11" },
-    { "id": "s8", "nome": "Sistema 8", "cidId": "c3" },
-    { "id": "s9", "nome": "Sistema 9", "cidId": "c5" },
-    { "id": "s11", "nome": "Sistema 11", "cidId": "c8" }
+    {
+      "id": "s1",
+      "nome": "Sistema 1",
+      "cidId": "c1",
+      "usaCts": "false"
+    },
+    {
+      "id": "s2",
+      "nome": "Sistema 2",
+      "cidId": "c6",
+      "usaCts": "false"
+    },
+    {
+      "id": "s3",
+      "nome": "Sistema 3",
+      "cidId": "c9",
+      "usaCts": "false"
+    },
+    {
+      "id": "s5",
+      "nome": "Sistema 5",
+      "cidId": "c10",
+      "usaCts": "false"
+    },
+    {
+      "id": "s6",
+      "nome": "Sistema 6",
+      "cidId": "c11",
+      "usaCts": "false"
+    },
+    {
+      "id": "s8",
+      "nome": "Sistema 8",
+      "cidId": "c3",
+      "usaCts": "false"
+    },
+    {
+      "id": "s9",
+      "nome": "Sistema 9",
+      "cidId": "c5",
+      "usaCts": "false"
+    },
+    {
+      "id": "s11",
+      "nome": "Sistema 11",
+      "cidId": "c8",
+      "usaCts": "false"
+    }
   ],
   "topo": [
-    { "sis": "s1", "id": "b1_1_1", "nome": "Sub-bacia 1_1", "jus": "e1" },
-    { "sis": "s1", "id": "e1", "nome": "ETE", "jus": "" },
-    { "sis": "s2", "id": "b2_1_1", "nome": "Sub-bacia 1_1", "jus": "b2_1_2" },
-    { "sis": "s2", "id": "b2_1_2", "nome": "Sub-bacia 1_2", "jus": "b2_1_3" },
-    { "sis": "s2", "id": "b2_1_3", "nome": "Sub-bacia 1_3", "jus": "b2_1_4" },
-    { "sis": "s2", "id": "b2_1_4", "nome": "Sub-bacia 1_4", "jus": "e2" },
-    { "sis": "s2", "id": "e2", "nome": "ETE", "jus": "" },
-    { "sis": "s3", "id": "b3_1_1", "nome": "Sub-bacia 1_1", "jus": "b3_1_2" },
-    { "sis": "s3", "id": "b3_1_2", "nome": "Sub-bacia 1_2", "jus": "b3_1_3" },
-    { "sis": "s3", "id": "b3_1_3", "nome": "Sub-bacia 1_3", "jus": "e3" },
-    { "sis": "s3", "id": "b3_2_1", "nome": "Sub-bacia 2_1", "jus": "b3_2_2" },
-    { "sis": "s3", "id": "b3_2_2", "nome": "Sub-bacia 2_2", "jus": "e3" },
-    { "sis": "s3", "id": "e3", "nome": "ETE", "jus": "" }
+    {
+      "sis": "s1",
+      "id": "b1_1_1",
+      "nome": "Sub-bacia 1_1",
+      "jus": "e1"
+    },
+    {
+      "sis": "s1",
+      "id": "e1",
+      "nome": "ETE",
+      "jus": ""
+    },
+    {
+      "sis": "s2",
+      "id": "b2_1_1",
+      "nome": "Sub-bacia 1_1",
+      "jus": "b2_1_2"
+    },
+    {
+      "sis": "s2",
+      "id": "b2_1_2",
+      "nome": "Sub-bacia 1_2",
+      "jus": "b2_1_3"
+    },
+    {
+      "sis": "s2",
+      "id": "b2_1_3",
+      "nome": "Sub-bacia 1_3",
+      "jus": "b2_1_4"
+    },
+    {
+      "sis": "s2",
+      "id": "b2_1_4",
+      "nome": "Sub-bacia 1_4",
+      "jus": "e2"
+    },
+    {
+      "sis": "s2",
+      "id": "e2",
+      "nome": "ETE",
+      "jus": ""
+    },
+    {
+      "sis": "s3",
+      "id": "b3_1_1",
+      "nome": "Sub-bacia 1_1",
+      "jus": "b3_1_2"
+    },
+    {
+      "sis": "s3",
+      "id": "b3_1_2",
+      "nome": "Sub-bacia 1_2",
+      "jus": "b3_1_3"
+    },
+    {
+      "sis": "s3",
+      "id": "b3_1_3",
+      "nome": "Sub-bacia 1_3",
+      "jus": "e3"
+    },
+    {
+      "sis": "s3",
+      "id": "b3_2_1",
+      "nome": "Sub-bacia 2_1",
+      "jus": "b3_2_2"
+    },
+    {
+      "sis": "s3",
+      "id": "b3_2_2",
+      "nome": "Sub-bacia 2_2",
+      "jus": "e3"
+    },
+    {
+      "sis": "s3",
+      "id": "e3",
+      "nome": "ETE",
+      "jus": ""
+    }
+  ],
+  "semSistema": [
+    {
+      "sis": "",
+      "id": "cts_b2_1_3",
+      "nome": "CTS 001",
+      "jus": "",
+      "tipo": "cts"
+    }
   ]
 }

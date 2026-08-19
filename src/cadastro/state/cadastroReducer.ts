@@ -18,7 +18,7 @@ import { auditoriaDe, type Auditoria } from '@/cadastro/domain/auditoria'
 import { reguaDe, type Regua } from '@/cadastro/domain/baseComercial'
 import { g2Pend, type Cidade, type Fator, type Meta } from '@/cadastro/domain/contrato'
 import { etePend, isNova, type Ete } from '@/cadastro/domain/ete'
-import { camposDaCts, ctsPend, OBRAS_POR_CTS, type Cts, type ParCts } from '@/cadastro/domain/cts'
+import { camposDaCts, ctsPend, OBRAS_POR_CTS, type Cts } from '@/cadastro/domain/cts'
 import type {
   CidadeH,
   SistemaH,
@@ -28,6 +28,7 @@ import type {
 } from '@/cadastro/domain/hierarquia'
 import {
   assinatura,
+  assinaturasDaHierarquia,
   chaveCidade,
   chaveCts,
   chaveEte,
@@ -43,7 +44,11 @@ export interface Hier {
   superintendencias: Superintendencia[]
   cidades: CidadeH[]
   sistemas: SistemaH[]
+  /** Componentes da unidade E os que estao fora de sistema — o `SEED_HIER` funde
+   *  as duas listas do servidor aqui, e `sis` vazio marca os de fora. */
   topo: TopoRow[]
+  /** So existe no payload que CHEGA do servidor; depois do seed, vive em `topo`. */
+  semSistema?: TopoRow[]
 }
 
 export interface State {
@@ -55,8 +60,6 @@ export interface State {
   hier: Hier | null
   /** Grupo 05 — CTS (esparsa: so existe para algumas sub-bacias). */
   ctss: Record<string, Cts> | null
-  /** De-para da sobreposicao CTS ↔ sub-bacia (1:1). */
-  pares: ParCts[] | null
   /**
    * De-para sub-bacia → cidade, tirado da arvore no seed. E por ele que a ficha
    * sabe a regua da meta (a cobertura e atributo da CIDADE, grupo 02) — e a
@@ -97,7 +100,6 @@ export const initialState: State = {
   etes: null,
   hier: null,
   ctss: null,
-  pares: null,
   cidadeDaSub: null,
   originalSubs: null,
   originalCtss: null,
@@ -112,7 +114,7 @@ export type Action =
   | { type: 'SEED_CONTRATO'; cidades: Cidade[]; metas: Meta[]; fator: Fator[] }
   | { type: 'SEED_ETES'; etes: Ete[] }
   | { type: 'SEED_HIER'; hier: Hier }
-  | { type: 'SEED_CTS'; ctss: Record<string, Cts>; pares: ParCts[] }
+  | { type: 'SEED_CTS'; ctss: Record<string, Cts> }
   // grupo 03 · sub-bacias
   | { type: 'SET_SUB_PARAM'; subId: string; key: keyof SubBaciaParams; value: string }
   | { type: 'SET_OBRA_FIELD'; subId: string; index: number; key: keyof Obra; value: string }
@@ -136,7 +138,12 @@ export type Action =
   | { type: 'SET_HIER_SUP_NOME'; supId: string; value: string }
   | { type: 'SET_HIER_CID_NOME'; cidId: string; value: string }
   | { type: 'SET_HIER_SIS_NOME'; sisId: string; value: string }
-  | { type: 'SET_HIER_TOPO_JUSANTE'; index: number; value: string }
+  // A topologia e por ID, e nao por indice como os nomes acima: colocar um
+  // componente num sistema muda a lista que a tela mostra, e um indice guardado
+  // de um render anterior passaria a apontar para outra linha.
+  | { type: 'SET_HIER_TOPO_JUSANTE'; compId: string; value: string }
+  | { type: 'SET_HIER_TOPO_SISTEMA'; compId: string; sisId: string }
+  | { type: 'SET_HIER_SISTEMA_USA_CTS'; sisId: string; value: boolean }
   // o servidor aceitou uma ficha: ela passa a ser o novo "sem mudancas"
   | { type: 'FICHA_SALVA'; chave: ChaveFicha; assinatura: string; auditoria?: Partial<Auditoria> }
 
@@ -221,24 +228,49 @@ export function reducer(state: State, action: Action): State {
         comImpressao({ ...state, etes: clone(action.etes) }, 'etes', action.etes),
         action.etes.map((e) => chaveEte(e.id)),
       )
-    case 'SEED_HIER':
-      // A hierarquia nao tem ficha: o backend ainda nao expoe gravacao dela.
-      return comImpressao(
-        { ...state, hier: clone(action.hier), originalHier: clone(action.hier) },
+    case 'SEED_HIER': {
+      // Os componentes FORA de sistema entram na mesma lista dos que estao
+      // dentro, com `sis` vazio. Sao a mesma coisa — uma linha de
+      // `sistema_topologia` — e a diferenca e so ter ou nao sistema; duas listas
+      // separadas obrigariam cada consumidor a lembrar de olhar as duas, e o que
+      // esquecesse trataria "fora de sistema" como "nao existe".
+      const hier: Hier = {
+        ...action.hier,
+        topo: [...action.hier.topo, ...(action.hier.semSistema ?? [])],
+      }
+      // A LINHA-BASE entrou junto com a topologia virar ficha: sem ela, TODO
+      // componente nasceria sujo e a tela abriria com o Salvar aceso, oferecendo
+      // gravar o que acabou de chegar do servidor.
+      //
+      // Calculada de uma vez (`assinaturasDaHierarquia`), e nao por
+      // `semMudancas`: aquele monta a ficha a partir do ID, e para a topologia
+      // isso custa um `find` por chave — com mais de mil componentes, quadratico,
+      // no instante exato em que a tela esta abrindo.
+      //
+      // A impressao e do payload CRU, e nao do fundido: ela e comparada contra
+      // `assinatura(hierQ.data)` para detectar "o servidor mudou desde este
+      // rascunho" (CadastroContext). Guardar a versao fundida faria toda sessao
+      // recuperada acusar mudanca que nao houve.
+      const semeado = comImpressao(
+        { ...state, hier: clone(hier), originalHier: clone(hier) },
         'hier',
         action.hier,
       )
+      return {
+        ...semeado,
+        salvas: { ...semeado.salvas, ...assinaturasDaHierarquia(hier) },
+      }
+    }
     case 'SEED_CTS':
       return semMudancas(
         comImpressao(
           {
             ...state,
             ctss: clone(action.ctss),
-            pares: clone(action.pares),
             originalCtss: clone(action.ctss),
           },
           'cts',
-          { ctss: action.ctss, pares: action.pares },
+          { ctss: action.ctss },
         ),
         Object.keys(action.ctss).map(chaveCts),
       )
@@ -428,8 +460,34 @@ export function reducer(state: State, action: Action): State {
         ...state,
         hier: {
           ...state.hier!,
-          topo: state.hier!.topo.map((t, j) =>
-            j === action.index ? { ...t, jus: action.value } : t,
+          topo: state.hier!.topo.map((t) =>
+            t.id === action.compId ? { ...t, jus: action.value } : t,
+          ),
+        },
+      }
+    case 'SET_HIER_SISTEMA_USA_CTS':
+      return {
+        ...state,
+        hier: {
+          ...state.hier!,
+          sistemas: state.hier!.sistemas.map((s) =>
+            s.id === action.sisId ? { ...s, usaCts: action.value ? 'true' : 'false' } : s,
+          ),
+        },
+      }
+    case 'SET_HIER_TOPO_SISTEMA':
+      return {
+        ...state,
+        hier: {
+          ...state.hier!,
+          // TIRAR do sistema zera o jusante junto, e isso espelha o servidor: o
+          // `DELETE` poe os dois como nulos. Guardar um jusante orfao aqui faria
+          // a ficha parecer suja para sempre — a assinatura local nunca bateria
+          // com a que voltou do servidor.
+          topo: state.hier!.topo.map((t) =>
+            t.id === action.compId
+              ? { ...t, sis: action.sisId, jus: action.sisId ? t.jus : '' }
+              : t,
           ),
         },
       }
@@ -493,10 +551,20 @@ export function reguaDaSub(state: State, subId: string): Regua | null {
   return reguaDe(state.cidades?.find((c) => c.id === cidId)?.cob)
 }
 
-/** A CTS herda a regua da sub-bacia pareada (a area e a mesma cidade). */
+/**
+ * A regua da CTS vem da cidade do SISTEMA em que ela foi colocada.
+ *
+ * Antes vinha da sub-bacia pareada, o que so funcionava enquanto a CTS
+ * pertencesse a mesma cidade da irma — e dava `null` (nenhuma regua) para
+ * qualquer CTS sem par. Hoje a CTS esta num sistema, o sistema esta numa cidade,
+ * e a cidade e que decide se a cobertura se mede em ligacoes ou em populacao.
+ */
 export function reguaDaCts(state: State, ctsId: string): Regua | null {
-  const subId = state.pares?.find((p) => p.cts === ctsId)?.sub
-  return subId ? reguaDaSub(state, subId) : null
+  const sisId = state.ctss?.[ctsId]?.sisId
+  if (!sisId) return null
+  const cidId = state.hier?.sistemas.find((s) => s.id === sisId)?.cidId
+  if (!cidId) return null
+  return reguaDe(state.cidades?.find((c) => c.id === cidId)?.cob)
 }
 
 /** true quando as 5 fatias ja foram semeadas. */
@@ -514,8 +582,7 @@ export function seeded(state: State): boolean {
     state.fator &&
     state.etes &&
     state.hier &&
-    state.ctss &&
-    state.pares
+    state.ctss
   )
 }
 

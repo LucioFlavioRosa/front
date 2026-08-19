@@ -1,34 +1,4 @@
 {
-  "pares": [
-    {
-      "sub": "e1b59_1_4",
-      "cts": "cts_e1b59_1_4"
-    },
-    {
-      "sub": "e1b60_1_2",
-      "cts": "cts_e1b60_1_2"
-    },
-    {
-      "sub": "e1b81_1_1",
-      "cts": "cts_e1b81_1_1"
-    },
-    {
-      "sub": "e1b83_1_1",
-      "cts": "cts_e1b83_1_1"
-    },
-    {
-      "sub": "e1b83_2_3",
-      "cts": "cts_e1b83_2_3"
-    },
-    {
-      "sub": "e1b87_1_3",
-      "cts": "cts_e1b87_1_3"
-    },
-    {
-      "sub": "e1b91_2_1",
-      "cts": "cts_e1b91_2_1"
-    }
-  ],
   "ctss": {
     "cts_e1b59_1_4": {
       "id": "cts_e1b59_1_4",
@@ -58,7 +28,6 @@
         "pot": "1,15"
       },
       "nome": "cts_e1b59_1_4",
-      "subId": "e1b59_1_4",
       "sisId": "e1s59",
       "sistema": "Sistema 59 Interior1",
       "jusante": "e1e59",
@@ -143,7 +112,6 @@
         "pot": "1,15"
       },
       "nome": "cts_e1b60_1_2",
-      "subId": "e1b60_1_2",
       "sisId": "e1s60",
       "sistema": "Sistema 60 Interior1",
       "jusante": "e1e60",
@@ -228,7 +196,6 @@
         "pot": "1,15"
       },
       "nome": "cts_e1b81_1_1",
-      "subId": "e1b81_1_1",
       "sisId": "e1s81",
       "sistema": "Sistema 81 Interior1",
       "jusante": "e1b81_1_2",
@@ -313,7 +280,6 @@
         "pot": "1,15"
       },
       "nome": "cts_e1b83_1_1",
-      "subId": "e1b83_1_1",
       "sisId": "e1s83",
       "sistema": "Sistema 83 Interior1",
       "jusante": "e1b83_1_2",
@@ -398,7 +364,6 @@
         "pot": "1,15"
       },
       "nome": "cts_e1b83_2_3",
-      "subId": "e1b83_2_3",
       "sisId": "e1s83",
       "sistema": "Sistema 83 Interior1",
       "jusante": "e1e83",
@@ -483,7 +448,6 @@
         "pot": "1,15"
       },
       "nome": "cts_e1b87_1_3",
-      "subId": "e1b87_1_3",
       "sisId": "e1s87",
       "sistema": "Sistema 87 Interior1",
       "jusante": "e1b87_1_4",
@@ -568,7 +532,6 @@
         "pot": "1,15"
       },
       "nome": "cts_e1b91_2_1",
-      "subId": "e1b91_2_1",
       "sisId": "e1s91",
       "sistema": "Sistema 91 Interior1",
       "jusante": "e1b91_2_2",

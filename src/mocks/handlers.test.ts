@@ -87,26 +87,22 @@ describe('contrato de dados (shape que o backend deve honrar)', () => {
     }
   })
 
-  it('/unidades/:id/cts → { pares[], ctss{} } pareados 1:1 com sub-bacias', () => {
-    expect(Array.isArray(cts.pares)).toBe(true)
-    const ctss = cts.ctss as Record<string, { id: string; subId: string }>
-    // De-para 1:1: cada sub-bacia aparece uma vez, cada CTS aparece uma vez.
-    expect(new Set(cts.pares.map((p) => p.sub)).size).toBe(cts.pares.length)
-    expect(new Set(cts.pares.map((p) => p.cts)).size).toBe(cts.pares.length)
-    // Todo par aponta para uma CTS existente, e ela concorda com o par.
-    for (const par of cts.pares) {
-      expect(ctss[par.cts]).toBeDefined()
-      expect(ctss[par.cts].subId).toBe(par.sub)
-      expect(Object.keys(subbacias.subs)).toContain(par.sub)
-    }
+  it('/unidades/:id/cts → { ctss{} }, cada uma COLOCADA num sistema', () => {
+    const ctss = cts.ctss as Record<string, { id: string; sisId: string }>
+    // Nao ha mais `pares`: o de-para com a sub-bacia era sobreposicao de area, e
+    // nao dizia onde a CTS esta. Quem diz e o sistema.
+    expect('pares' in cts).toBe(false)
     for (const c of Object.values(ctss)) {
       expect(c).toMatchObject({
         id: expect.any(String),
-        subId: expect.any(String),
+        // `sisId` nao vazio: a leitura so serve CTS ja adicionadas a um sistema.
+        // Uma sem sistema nao e de unidade nenhuma e nao chega nesta rota.
+        sisId: expect.stringMatching(/.+/),
         db: expect.any(Object),
         params: expect.any(Object),
         obrasOverride: expect.any(Object),
       })
+      expect(Object.keys(ctss)).not.toContain('subId')
     }
   })
 

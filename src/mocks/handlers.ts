@@ -48,9 +48,12 @@ const ctsList = Object.values(ctsFx.ctss as unknown as Record<string, Cts>)
 const cidadeDoSub = cidadePorSub(subbacias.arvore)
 const porPopulacaoSub = (subId: string) =>
   contratoData.cidades.find((c) => c.id === cidadeDoSub[subId])?.cob === 'populacao'
+// A regua da CTS vem da cidade do SISTEMA em que ela foi colocada — a mesma
+// regra de `reguaDaCts` no reducer. Antes vinha da sub-bacia pareada.
 const porPopulacaoCts = (ctsId: string) => {
-  const sub = ctsFx.pares.find((p) => p.cts === ctsId)?.sub
-  return sub ? porPopulacaoSub(sub) : false
+  const sisId = ctsFx.ctss[ctsId as keyof typeof ctsFx.ctss]?.sisId
+  const cidId = estrutura.sistemas.find((s) => s.id === sisId)?.cidId
+  return contratoData.cidades.find((c) => c.id === cidId)?.cob === 'populacao'
 }
 
 const g2 = g2Pend(contratoData)
@@ -263,6 +266,32 @@ export const handlers = [
     const falta = recusaDaFicha(ficha)
     if (falta) return recusa(falta)
     return HttpResponse.json(ficha)
+  }),
+
+  // TOPOLOGIA e SISTEMA — o Grupo 01 passou a gravar, e sem estes handlers a tela
+  // no modo mock caía em erro de rede ao Salvar, como se o contrato estivesse
+  // errado. A resposta NÃO leva auditoria: `sistema_topologia` e `cidade_sistema`
+  // não têm as colunas, e devolvê-las aqui esconderia justamente o caso que o
+  // front trata de propósito.
+  //
+  // As validações de FORMA (ciclo, jusante de outro sistema, segunda ETE, limite
+  // de uma CTS) ficam de fora: elas dependem do estado do banco, e um mock que as
+  // imitasse pela metade ensinaria uma regra que não é a do servidor.
+  http.put(`${BASE}/unidades/:id/topologia/:compId`, async ({ request, params }) => {
+    const ficha = (await request.json()) as Record<string, unknown>
+    const falta = exigir(ficha, ['sisId', 'jusante'])
+    if (falta) return recusa(falta)
+    return HttpResponse.json({ id: String(params.compId), alteracoesGravadas: 1 })
+  }),
+
+  http.delete(`${BASE}/unidades/:id/topologia/:compId`, ({ params }) =>
+    HttpResponse.json({ id: String(params.compId), alteracoesGravadas: 2 }),
+  ),
+
+  http.put(`${BASE}/unidades/:id/sistemas/:sisId`, async ({ request, params }) => {
+    const ficha = (await request.json()) as Record<string, unknown>
+    if (typeof ficha.usaCts !== 'boolean') return recusa('usaCts')
+    return HttpResponse.json({ id: String(params.sisId), alteracoesGravadas: 1 })
   }),
 
   // NAO ha POST nem DELETE de CTS aqui, e nao pode haver: o backend real responde

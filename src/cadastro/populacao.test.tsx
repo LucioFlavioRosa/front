@@ -243,9 +243,9 @@ describe('CTS', () => {
     expect(ehRegua('Ligações — universo')).toBe(true)
     expect(celula('Economias novas (obras)')).toBe('152')
 
-    // Rio das Ostras mede por população — e a população da CTS é dela, não da
-    // sub-bacia pareada.
-    fireEvent.change(screen.getByLabelText('Buscar CTS, sub-bacia ou sistema'), {
+    // Rio das Ostras mede por população — e a população da CTS é dela, e não de
+    // sub-bacia nenhuma.
+    fireEvent.change(screen.getByLabelText('Buscar CTS ou sistema'), {
       target: { value: 'cts_b2_1_1' },
     })
     fireEvent.click(await screen.findByRole('button', { name: /cts_b2_1_1/ }))

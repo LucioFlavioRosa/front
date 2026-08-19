@@ -1,10 +1,19 @@
 import { useEffect, useId, useState } from 'react'
+import { useParams } from 'react-router-dom'
 import { CascadeTree, type TreeNode } from '@/cadastro/components/CascadeTree'
 import { Carregando, ErroCarga, Vazio } from '@/comum/components/Estado'
 import { GrupoHeader } from '@/cadastro/pages/GrupoHeader'
+import { MarcaSalvamento } from '@/cadastro/components/MarcaSalvamento'
 import { useApp } from '@/comum/state/AppContext'
 import { useCadastro } from '@/cadastro/state/CadastroContext'
-import type { SistemaH, UnidReg } from '@/cadastro/domain/hierarquia'
+import {
+  mensagemDeErroTopologia,
+  useSalvarSistema,
+  useSalvarTopologia,
+} from '@/cadastro/api/mutations'
+import { useErroAoSalvar } from '@/cadastro/state/erroAoSalvar'
+import { chaveSistema, chaveTopo } from '@/cadastro/state/fichas'
+import type { SistemaH, TopoRow, UnidReg } from '@/cadastro/domain/hierarquia'
 import styles from './grupo.module.css'
 
 const CONFIRM = {
@@ -22,6 +31,7 @@ const SUB = (
 )
 
 export function GrupoHierarquia() {
+  const { unidadeId } = useParams()
   const { askConfirm, openDict } = useApp()
   const {
     hier,
@@ -31,12 +41,27 @@ export function GrupoHierarquia() {
     erroBruto,
     recarregar,
     recarregando,
+    sujas,
+    marcarSalva,
     setHierUnidReg,
     setHierSupNome,
     setHierCidNome,
     setHierSisNome,
     setHierTopoJusante,
+    setHierTopoSistema,
+    setHierSistemaUsaCts,
   } = useCadastro()
+
+  const aoFalhar = useErroAoSalvar(unidadeId, mensagemDeErroTopologia)
+  // Uma gravacao por componente, e nao um lote: o `PUT` e por componente, e a
+  // recusa do servidor tambem — se uma ligacao fecha ciclo, so ela volta, e as
+  // outras ja entraram.
+  const salvarM = useSalvarTopologia(unidadeId, {
+    onSalva: ({ compId, ficha }) => marcarSalva(chaveTopo(compId), ficha),
+  })
+  const salvarSisM = useSalvarSistema(unidadeId, {
+    onSalva: ({ sisId, ficha }) => marcarSalva(chaveSistema(sisId), ficha),
+  })
 
   const [selSis, setSelSis] = useState('')
   const [busca, setBusca] = useState('')
@@ -111,7 +136,56 @@ export function GrupoHierarquia() {
   const setSup = (v: string) => sup && setHierSupNome(sup.id, v)
   const setCid = (v: string) => cid && setHierCidNome(cid.id, v)
   const setSis = (v: string) => setHierSisNome(selSis, v)
-  const setJus = (idx: number, v: string) => setHierTopoJusante(idx, v)
+
+  // ---------------------------------------------------------------- gravacao
+  const topoSujo = sujas.filter((c) => c.startsWith('topo:')).map((c) => c.slice(5))
+  const sisSujo = sujas.filter((c) => c.startsWith('sis:')).map((c) => c.slice(4))
+  const nSujo = topoSujo.length + sisSujo.length
+  const salvando = salvarM.isPending || salvarSisM.isPending
+
+  /**
+   * Grava componente a componente, e SOLTAR ANTES DE LIGAR.
+   *
+   * A ordem importa porque o servidor valida contra o que ESTA gravado, e nao
+   * contra o que a tela tem: inverter um trecho (`A → B` virar `B → A`) manda
+   * duas mudancas, e se a ligacao nova for primeiro o servidor ainda ve a antiga
+   * e recusa, com razao, por ciclo. Soltando primeiro, as duas passam.
+   *
+   * O MESMO vale entre desmarcar "usa sistema de CTS" e adicionar a segunda CTS:
+   * por isso os sistemas DESMARCADOS vao primeiro, a topologia no meio, e os
+   * MARCADOS no fim — marcar so pode valer depois que as excedentes sairam.
+   *
+   * Sequencial, e nao em paralelo: as recusas dependem umas das outras, e disparar
+   * tudo de uma vez tornaria o resultado dependente de quem chegasse primeiro.
+   */
+  const salvar = async () => {
+    const fichasTopo = topoSujo
+      .map((id) => hier.topo.find((t) => t.id === id))
+      .filter((t): t is TopoRow => !!t)
+      .map((t) => ({ compId: t.id, ficha: { sisId: t.sis, jusante: t.jus } }))
+    const solta = (f: (typeof fichasTopo)[number]) => !f.ficha.sisId || !f.ficha.jusante
+    const fichasSis = sisSujo
+      .map((id) => sistemas.find((s) => s.id === id))
+      .filter((s): s is SistemaH => !!s)
+      .map((s) => ({ sisId: s.id, ficha: { usaCts: s.usaCts === 'true' } }))
+
+    const passos: (() => Promise<unknown>)[] = [
+      ...fichasSis.filter((f) => !f.ficha.usaCts).map((f) => () => salvarSisM.mutateAsync(f)),
+      ...fichasTopo.filter(solta).map((f) => () => salvarM.mutateAsync(f)),
+      ...fichasTopo.filter((x) => !solta(x)).map((f) => () => salvarM.mutateAsync(f)),
+      ...fichasSis.filter((f) => f.ficha.usaCts).map((f) => () => salvarSisM.mutateAsync(f)),
+    ]
+    for (const passo of passos) {
+      try {
+        await passo()
+      } catch (e) {
+        // Para na primeira recusa: as seguintes provavelmente dependem desta, e
+        // uma pilha de toasts contraditorios seria pior que um motivo claro.
+        aoFalhar(e)
+        return
+      }
+    }
+  }
 
   // Arvore Sup -> Cidade -> Sistema (folha).
   const q = busca.trim().toLowerCase()
@@ -170,7 +244,12 @@ export function GrupoHierarquia() {
   cidades.forEach((c) => allBranch.add(c.id))
   const effExpanded = q !== '' ? allBranch : expanded
 
-  const topoSis = topo.map((t, i) => ({ t, i })).filter((x) => x.t.sis === selSis)
+  const topoSis = topo.filter((t) => t.sis === selSis)
+  const ctsDoSistema = topoSis.filter((t) => t.tipo === 'cts')
+  // As CTS que ainda nao estao em sistema nenhum — o que o seletor abaixo do
+  // caminho ate a ETE oferece. NAO e recortado por unidade, e nao poderia ser:
+  // sem sistema nao ha cidade, nem superintendencia, nem unidade.
+  const ctsDisponiveis = topo.filter((t) => !t.sis && t.tipo === 'cts')
 
   return (
     <section>
@@ -185,17 +264,32 @@ export function GrupoHierarquia() {
         >
           🔒 Databricks · editável com confirmação
         </span>
+        <MarcaSalvamento sujo={nSujo > 0} />
+        <button
+          type="button"
+          className={`${styles.salvar} ${!nSujo && !salvando ? styles.semMudanca : ''}`}
+          onClick={salvar}
+          disabled={salvando || !nSujo}
+          title={
+            nSujo
+              ? `${nSujo} alteração(ões) de topologia não salva(s)`
+              : 'Nada mudou desde o último salvamento'
+          }
+        >
+          {salvando ? 'Salvando…' : `Salvar topologia${nSujo ? ` (${nSujo})` : ''}`}
+        </button>
       </GrupoHeader>
 
-      {/* Esta tela nao tem Salvar: o contrato de escrita ainda nao cobre a
-          hierarquia (ver DEPLOY.md). Dizer isso e melhor do que deixar o
-          usuario supor que a correcao foi para o cadastro. O rascunho guarda
-          estas correcoes junto com o resto (fichas.ts, hierAlterada), entao a
-          promessa de "sobrevive a um F5" vale tambem aqui. */}
+      {/* O aviso ficou SO com os nomes. A topologia saiu dele porque agora tem
+          para onde ir (`PUT /topologia/:compId`), e manter os dois juntos faria
+          a tela dizer, sobre a mesma edicao, que ela grava (botao Salvar) e que
+          nao grava (este paragrafo). Os nomes continuam sem rota de escrita. */}
       <p className={styles.avisoSemSalvar}>
-        As correções desta tela ainda <strong>não são gravadas no cadastro</strong> — o backend não
-        expõe escrita da hierarquia. Elas ficam guardadas nesta aba do navegador (sobrevivem a
-        recarregar a página) e servem para conferência, mas ninguém mais as vê.
+        O <strong>caminho até a ETE</strong> e o sistema de cada componente são gravados no cadastro
+        pelo botão <strong>Salvar topologia</strong>. Já as correções de <strong>nome</strong>{' '}
+        (regional, unidade, superintendência, cidade, sistema) ainda não têm onde ser gravadas —
+        ficam nesta aba do navegador, sobrevivem a recarregar a página e servem para conferência,
+        mas ninguém mais as vê.
       </p>
 
       {/* unidade-regional */}
@@ -311,6 +405,15 @@ export function GrupoHierarquia() {
                 onChange={setSis}
               />
             </div>
+            {/* A caixa fica FORA do grid travado acima: aquele bloco é dado do
+                Databricks, e este campo é da Regional. Juntá-los faria a tela
+                dizer que ele também vem de fora — e ele é justamente o único do
+                sistema que alguém daqui preenche. */}
+            <UsaSistemaCts
+              marcado={sis.usaCts === 'true'}
+              quantasCts={ctsDoSistema.length}
+              onChange={(v) => setHierSistemaUsaCts(sis.id, v)}
+            />
           </div>
 
           {/* Topologia */}
@@ -345,16 +448,24 @@ export function GrupoHierarquia() {
                           ?
                         </button>
                       </th>
+                      <th scope="col" style={{ textAlign: 'right' }}>
+                        {editTopo ? 'Ações' : ''}
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
-                    {topoSis.map(({ t, i }) => (
+                    {topoSis.map((t) => (
                       <tr key={t.id}>
                         <td className={styles.topoId}>{t.id}</td>
                         <td style={{ color: 'var(--text-600)' }}>{t.nome}</td>
                         <td>
                           {editTopo ? (
-                            <input
+                            // SELETOR, e nao campo livre: o jusante e um id de
+                            // componente DO MESMO sistema, e digitar um id de
+                            // outro sistema (ou com um typo) so descobriria o
+                            // erro no Salvar. Aqui o conjunto de opcoes ja e a
+                            // regra.
+                            <select
                               className={styles.topoInput}
                               style={{
                                 border: '1.5px solid var(--pend-border)',
@@ -362,8 +473,17 @@ export function GrupoHierarquia() {
                               }}
                               value={t.jus}
                               aria-label={`Escoa para — ${t.nome} (${t.id})`}
-                              onChange={(e) => setJus(i, e.target.value)}
-                            />
+                              onChange={(e) => setHierTopoJusante(t.id, e.target.value)}
+                            >
+                              <option value="">— não escoa (fim do caminho)</option>
+                              {topoSis
+                                .filter((o) => o.id !== t.id)
+                                .map((o) => (
+                                  <option key={o.id} value={o.id}>
+                                    {o.id} · {o.nome}
+                                  </option>
+                                ))}
+                            </select>
                           ) : t.jus ? (
                             <span
                               className={styles.topoJus}
@@ -373,6 +493,23 @@ export function GrupoHierarquia() {
                             </span>
                           ) : (
                             <span style={{ color: 'var(--text-400)' }}>— (ETE final)</span>
+                          )}
+                        </td>
+                        <td style={{ textAlign: 'right' }}>
+                          {/* SO a CTS sai daqui. Sub-bacia e ETE pertencem ao
+                              sistema por carga do Databricks — tira-las nao e
+                              decisao desta tela, e oferecer o botao convidaria a
+                              desmontar o que veio de fora. */}
+                          {editTopo && t.tipo === 'cts' && (
+                            <button
+                              type="button"
+                              className={styles.del}
+                              aria-label={`Tirar ${t.nome} (${t.id}) do sistema`}
+                              title="Tira a CTS do sistema. A ficha continua no cadastro."
+                              onClick={() => setHierTopoSistema(t.id, '')}
+                            >
+                              tirar do sistema
+                            </button>
                           )}
                         </td>
                       </tr>
@@ -390,9 +527,183 @@ export function GrupoHierarquia() {
               O esgoto percorre o campo "escoa para" de componente em componente até chegar à ETE.
             </div>
           </div>
+
+          <CtsDoSistema
+            disponiveis={ctsDisponiveis}
+            sistema={sis}
+            // Marcado, o sistema aceita UMA CTS: com uma já lá, não há o que
+            // adicionar. O servidor recusa de todo jeito (422) — aqui a tela só
+            // evita oferecer o que ela sabe que será negado.
+            travado={sis.usaCts === 'true' && ctsDoSistema.length > 0}
+            onColocar={(compId) => setHierTopoSistema(compId, selSis)}
+          />
         </div>
       </div>
     </section>
+  )
+}
+
+/**
+ * "Este sistema usa sistema de CTS" — quantas CTS ele comporta.
+ *
+ * MARCADO, o sistema aceita UMA CTS. DESMARCADO, aceita quantas forem colocadas
+ * nele. É regra de CADASTRO, e não de simulação: o motor nunca contou CTS por
+ * sistema, e para ele uma ou duas são nós como quaisquer outros.
+ *
+ * A caixa fica DESABILITADA quando o sistema já tem mais de uma CTS, em vez de
+ * aceitar e falhar no Salvar: o servidor recusa marcar nesse estado (422), e um
+ * controle que muda de posição para depois voltar sozinha é pior que um que não
+ * se mexe e diz por quê.
+ */
+function UsaSistemaCts({
+  marcado,
+  quantasCts,
+  onChange,
+}: {
+  marcado: boolean
+  quantasCts: number
+  onChange: (v: boolean) => void
+}) {
+  const id = useId()
+  const impedido = !marcado && quantasCts > 1
+
+  return (
+    <div style={{ padding: '12px 18px', borderTop: '1px solid var(--border)' }}>
+      <label
+        htmlFor={id}
+        style={{ display: 'flex', gap: 8, alignItems: 'baseline', cursor: 'pointer' }}
+      >
+        <input
+          id={id}
+          type="checkbox"
+          checked={marcado}
+          disabled={impedido}
+          onChange={(e) => onChange(e.target.checked)}
+        />
+        <span className={styles.dbFieldLabel} style={{ margin: 0 }}>
+          Usar o sistema de CTS
+        </span>
+      </label>
+      <div className={styles.dbHint} style={{ marginLeft: 24 }}>
+        {impedido ? (
+          <>
+            O sistema tem <strong>{quantasCts} CTS</strong>. Tire as excedentes para poder marcar —
+            marcado, ele aceita uma só.
+          </>
+        ) : marcado ? (
+          <>
+            O sistema aceita <strong>uma CTS</strong>.
+          </>
+        ) : (
+          <>
+            O sistema aceita <strong>mais de uma CTS</strong>.
+            {quantasCts > 0 && ` Hoje tem ${quantasCts}.`}
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
+/**
+ * ADICIONAR UMA CTS AO SISTEMA.
+ *
+ * A CTS e o unico componente que a Regional coloca. Do Databricks vem quais
+ * sub-bacias e qual ETE pertencem ao sistema — e TODAS as CTS cadastradas, sem
+ * dizer de qual sistema sao. Nenhuma nasce atrelada: em que sistema cada uma
+ * entra e decisao de quem monta, aqui.
+ *
+ * A lista sao as CTS que NAO estao em nenhum outro sistema. Uma CTS ja colocada
+ * nao aparece, porque um componente esta em um sistema so — coloca-la noutro
+ * seria move-la, e mover e tirar de la primeiro.
+ *
+ * NAO e recortado por unidade: CTS fora de sistema nao tem cidade, nem
+ * superintendencia, nem unidade. Por isso o texto diz "da base" — colocar uma
+ * aqui e trazer para ca algo que nao era de ninguem.
+ *
+ * SELETOR, e nao lista com um botao por linha: a base tem centenas de CTS, e uma
+ * lista dessas empurraria o caminho ate a ETE — que e o assunto da tela — para
+ * fora do campo de visao.
+ */
+function CtsDoSistema({
+  disponiveis,
+  sistema,
+  travado,
+  onColocar,
+}: {
+  disponiveis: TopoRow[]
+  sistema: SistemaH
+  travado: boolean
+  onColocar: (compId: string) => void
+}) {
+  const [sel, setSel] = useState('')
+  const id = useId()
+
+  if (travado)
+    return (
+      <div className={styles.dbGridCard} style={{ marginTop: 16 }}>
+        <div className={styles.dbGridHeader}>
+          <span className={styles.dbGridTitle}>adicionar CTS ao sistema</span>
+        </div>
+        <div style={{ padding: '12px 18px' }} className={styles.dbHint}>
+          Este sistema está marcado como <strong>sistema de CTS</strong>, e já tem a dele. Para
+          adicionar outra, desmarque a opção no quadro do sistema, acima — ou tire a atual na tabela
+          do caminho até a ETE.
+        </div>
+      </div>
+    )
+
+  return (
+    <div className={styles.dbGridCard} style={{ marginTop: 16 }}>
+      <div className={styles.dbGridHeader}>
+        <span className={styles.dbGridTitle}>
+          adicionar CTS ao sistema · {disponiveis.length} disponíve
+          {disponiveis.length === 1 ? 'l' : 'is'} na base
+        </span>
+      </div>
+      <div style={{ padding: '12px 18px' }}>
+        <label className={styles.dbFieldLabel} htmlFor={id}>
+          Colocar em <strong>{sistema.nome}</strong>{' '}
+          <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-400)' }}>
+            {sistema.id}
+          </span>
+        </label>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+          <select
+            id={id}
+            className={styles.dbInput}
+            style={{ maxWidth: 420 }}
+            value={sel}
+            disabled={!disponiveis.length}
+            onChange={(e) => setSel(e.target.value)}
+          >
+            <option value="">
+              {disponiveis.length ? 'Escolha uma CTS…' : 'Nenhuma CTS livre na base'}
+            </option>
+            {disponiveis.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.id} · {c.nome}
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            className={styles.addLink}
+            disabled={!sel}
+            onClick={() => {
+              onColocar(sel)
+              setSel('')
+            }}
+          >
+            + adicionar ao sistema
+          </button>
+        </div>
+        <div className={styles.dbHint}>
+          Só aparecem CTS que não estão em nenhum outro sistema. CTS fora de sistema não entra na
+          simulação — depois de colocá-la, defina para onde ela escoa e salve.
+        </div>
+      </div>
+    </div>
   )
 }
 

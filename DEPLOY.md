@@ -388,20 +388,27 @@ Três regras, e as três importam:
 
 A escrita de ficha **não tem controle otimista** (R6): ver §6.
 
-> **Não há criar nem remover CTS.** A CTS é um **nó do sistema**, como a sub-bacia:
-> a posição dela vem da topologia (`sistema_topologia`), com jusante próprio. O motor
-> monta os nós percorrendo a topologia e faz `cts_ids = fichas ∩ nós` — só é CTS
-> efetiva a ficha que **também** é nó.
+> **Colocar e tirar CTS é pela topologia.** A CTS é um **nó do sistema**, como a
+> sub-bacia: onde ela está é uma linha de `sistema_topologia`, com jusante próprio.
+> O motor monta os nós percorrendo a topologia e faz `cts_ids = fichas ∩ nós` — só
+> é CTS efetiva a ficha que **também** é nó. Por isso as rotas são
+> `PUT`/`DELETE /unidades/:uid/topologia/:componenteId`, e não um `POST`/`DELETE`
+> de ficha.
 >
 > Um `POST` que gravasse ficha e par sem tocar na topologia criaria uma CTS visível
 > no cadastro e invisível para a simulação. Um `DELETE` que apagasse a ficha e
-> deixasse o nó seria pior: a CTS viraria um nó de demanda **zero** e, sem o par, a
-> demanda dela deixaria de ser somada à sub-bacia irmã com `USAR_CTS` desligado.
+> deixasse o nó seria pior: a CTS viraria um nó de demanda **zero**. Daí as duas
+> defesas do servidor: gravar topologia exige que o componente já tenha ficha, e o
+> `DELETE` de topologia **não apaga a linha** — põe `sistema_id` nulo, e o
+> componente fica cadastrado, fora de qualquer sistema, com o nome preservado.
 >
-> `subbacia_cts` é **sobreposição de área**, não pertencimento — é o que permite ao
-> `USAR_CTS` escolher entre CTS como estrutura própria ou demanda somada à
-> sub-bacia pareada. Criar ou remover CTS é mudança de topologia, e topologia vem do
-> cadastro estrutural (Grupo 01).
+> **Em que sistema cada CTS entra não vem do Databricks.** De lá vêm quais
+> sub-bacias e qual ETE pertencem ao sistema, e **todas** as CTS cadastradas — quem
+> monta o sistema é a Regional, e ela pode colocar qualquer CTS que exista na base.
+> As que ainda não foram colocadas vêm em `semSistema`, na hierarquia.
+>
+> `subbacia_cts` é **sobreposição de área**, e não pertencimento: ela não diz onde
+> a CTS está.
 
 **`inconsistencias`** é o outro lado dessa modelagem. Como a CTS precisa de três
 coisas para existir — nó na topologia, ficha em `cts_operacional` e par em
@@ -532,12 +539,12 @@ senão um refetch de fundo apagaria o que a pessoa está digitando.
   10/08 14:32", e o painel de histórico abre por ela. Se um dia o conflito
   precisar ser barrado, o caminho é comparar por CAMPO — não o hash da ficha.
 
-- **A hierarquia não tem gravação.** A tela do Grupo 01 deixa corrigir dado do
-  Databricks, mas não há endpoint para mandar isso — a tela avisa o usuário, e as
-  correções ficam só no rascunho da aba. Quando existir um
-  `PUT /unidades/:uid/hierarquia` (corpo: a hierarquia inteira), ela entra como
-  as outras: vira uma ficha em `src/cadastro/state/fichas.ts`, entra em `sujas` e
-  ganha o botão Salvar.
+- **A tela do Grupo 01 ainda não usa a gravação que já existe.** O servidor expõe
+  `PUT` e `DELETE /unidades/:uid/topologia/:componenteId` — por componente, e não
+  a hierarquia inteira, para uma ligação não obrigar a reenviar mil linhas. A tela
+  continua editando contra o rascunho da aba e avisando o usuário; ligá-la é
+  entrar como as outras fichas: `src/cadastro/state/fichas.ts`, `sujas`, botão
+  Salvar. É o que falta para montar o caminho até a ETE pelo produto.
 - **Importar planilha** é um stub: o botão no hub só mostra um aviso.
 - **O rascunho é da aba**: fechar a aba (não recarregar) descarta o que não foi
   salvo. O aviso do navegador ao fechar é o que existe hoje contra isso.

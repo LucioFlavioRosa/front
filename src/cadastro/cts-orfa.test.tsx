@@ -3,11 +3,14 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, screen } from '@testing-library/react'
 
 /**
- * De-para de CTS fora de sincronia com a árvore de sub-bacias: as 3 CTS do mock
- * apontam para sub-bacias que a árvore não lista. Elas continuam existindo no
- * cadastro, então a tela tem de mostrá-las num ramo próprio — antes elas
- * desapareciam do rail e a tela caía no estado "nenhuma CTS cadastrada" com os
- * dados no store.
+ * CTS num sistema que a árvore do rail não lista.
+ *
+ * O rail do Grupo 05 é montado a partir das SUB-BACIAS, então um sistema que só
+ * tenha CTS e ETE não aparece nele. As CTS desse sistema continuam existindo no
+ * cadastro, e a tela tem de mostrá-las num ramo próprio — senão elas somem do
+ * rail e a tela cai no estado "nenhuma CTS" com os dados no store.
+ *
+ * Aqui o cenário é forçado tirando da árvore os sistemas que têm CTS.
  */
 vi.mock('@/comum/api/client', async (importOriginal) => {
   const original = (await importOriginal()) as Record<string, unknown>
@@ -15,17 +18,12 @@ vi.mock('@/comum/api/client', async (importOriginal) => {
   const subbacias = (await import('@/mocks/fixtures/subbacias.json')).default
   const cts = (await import('@/mocks/fixtures/cts.json')).default
 
-  // A mesma árvore, sem as sub-bacias que têm CTS: é o payload fora de sincronia
-  // que este teste existe para cobrir.
-  const pareadas = new Set(cts.pares.map((p) => p.sub))
+  const comCts = new Set(Object.values(cts.ctss).map((c) => c.sisId))
   const arvore = subbacias.arvore.map((sup) => ({
     ...sup,
     cidades: sup.cidades.map((c) => ({
       ...c,
-      sistemas: c.sistemas.map((s) => ({
-        ...s,
-        subIds: s.subIds.filter((id) => !pareadas.has(id)),
-      })),
+      sistemas: c.sistemas.filter((s) => !comCts.has(s.id)),
     })),
   }))
   return { ...original, api: apiFake(api, await dadosDaUnidade({ arvore })) }
@@ -35,27 +33,25 @@ import { renderApp } from '@/testes/renderApp'
 
 afterEach(cleanup)
 
-describe('CTS órfã da árvore de sub-bacias', () => {
+describe('CTS em sistema fora da árvore de sub-bacias', () => {
   it('aparece num ramo próprio em vez de sumir da tela', async () => {
     renderApp('/unidade/u-jacarei/cts')
 
     // A ficha abre normalmente — não é o estado vazio.
-    expect(await screen.findByText(/CTS ↔ sub-bacia b/)).toBeTruthy()
-    expect(screen.queryByText('Nenhuma CTS cadastrada nesta unidade')).toBeNull()
+    expect(await screen.findByRole('button', { name: 'Salvar CTS' })).toBeTruthy()
+    expect(screen.queryByText('Nenhuma CTS nesta unidade')).toBeNull()
 
     // As 3 CTS existentes ficam alcançáveis pelo ramo de exceção.
-    expect(screen.getByRole('button', { name: /Fora da árvore de sub-bacias/ })).toBeTruthy()
-    expect(screen.getByText(/3 CTS · confira o de-para no Databricks/)).toBeTruthy()
+    expect(screen.getByRole('button', { name: /Sistemas sem sub-bacia/ })).toBeTruthy()
+    expect(screen.getByText(/3 CTS/)).toBeTruthy()
 
     // E o chip do grupo segue contando as pendências delas.
     expect(await screen.findByText('6 pendências')).toBeTruthy()
 
-    // Sem árvore não dá para saber a régua da meta: a base do Databricks
-    // aparece inteira, sem destaque em nenhum trio, e a tela diz o porquê.
+    // A régua da meta vem da cidade do SISTEMA, e o sistema não está na árvore
+    // do rail — mas continua na hierarquia, então a régua é conhecida assim
+    // mesmo. É a diferença do modelo antigo, em que sumir da árvore de
+    // sub-bacias significava perder a régua junto.
     expect(screen.getByText('Economias novas (obras)')).toBeTruthy()
-    expect(screen.getByText(/não está na árvore/)).toBeTruthy()
-    // Os campos de população dependem da régua, então ficam de fora — preenchê-los
-    // sem saber se contam seria trabalho no escuro.
-    expect(screen.queryByLabelText('População — universo')).toBeNull()
   })
 })

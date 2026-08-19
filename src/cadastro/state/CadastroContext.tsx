@@ -20,7 +20,7 @@ import {
 import { cidadePend, type Cidade, type Fator, type Meta } from '@/cadastro/domain/contrato'
 import { etePend, type Ete } from '@/cadastro/domain/ete'
 import type { UnidReg } from '@/cadastro/domain/hierarquia'
-import { ctsPend, type Cts, type CtsInconsistente, type ParCts } from '@/cadastro/domain/cts'
+import { ctsPend, type Cts, type CtsInconsistente } from '@/cadastro/domain/cts'
 import type { Regua } from '@/cadastro/domain/baseComercial'
 import {
   derive,
@@ -77,7 +77,6 @@ interface CadastroValue {
   etes: Ete[]
   hier: Hier | null
   ctss: Record<string, Cts>
-  pares: ParCts[]
   /** CTS incompletas denunciadas pelo servidor. Vem da query, nao do reducer. */
   ctsInconsistentes: CtsInconsistente[]
   derivado: Derivado
@@ -104,7 +103,6 @@ interface CadastroValue {
   cidadePendOf: (id: string) => number
   ctsPendOf: (id: string) => number
   /** Id da CTS pareada com a sub-bacia, se houver (relacao 1:1). */
-  ctsDaSub: (subId: string) => string | null
   // Regua da meta e cidade de cada ficha (a cobertura e atributo da cidade).
   reguaDaSub: (subId: string) => Regua | null
   reguaDaCts: (ctsId: string) => Regua | null
@@ -126,7 +124,9 @@ interface CadastroValue {
   setHierSupNome: (supId: string, value: string) => void
   setHierCidNome: (cidId: string, value: string) => void
   setHierSisNome: (sisId: string, value: string) => void
-  setHierTopoJusante: (index: number, value: string) => void
+  setHierTopoJusante: (compId: string, value: string) => void
+  setHierTopoSistema: (compId: string, sisId: string) => void
+  setHierSistemaUsaCts: (sisId: string, value: boolean) => void
   // grupo 05 · CTS
   setCtsParam: (ctsId: string, key: keyof SubBaciaParams, value: string) => void
   setCtsObraField: (ctsId: string, index: number, key: keyof Obra, value: string) => void
@@ -184,8 +184,7 @@ export function CadastroProvider({
     if (hierQ.data && !state.hier) dispatch({ type: 'SEED_HIER', hier: hierQ.data })
   }, [hierQ.data, state.hier])
   useEffect(() => {
-    if (ctsQ.data && !state.ctss)
-      dispatch({ type: 'SEED_CTS', ctss: ctsQ.data.ctss, pares: ctsQ.data.pares })
+    if (ctsQ.data && !state.ctss) dispatch({ type: 'SEED_CTS', ctss: ctsQ.data.ctss })
   }, [ctsQ.data, state.ctss])
 
   const seeded = isSeeded(state)
@@ -268,7 +267,7 @@ export function CadastroProvider({
       }),
       etes: assinatura(eteQ.data.etes),
       hier: assinatura(hierQ.data),
-      cts: assinatura({ ctss: ctsQ.data.ctss, pares: ctsQ.data.pares }),
+      cts: assinatura({ ctss: ctsQ.data.ctss }),
     }
     const mudou = Object.entries(agora).some(
       ([fatia, imp]) => impressoes[fatia as keyof typeof impressoes] !== imp,
@@ -323,12 +322,15 @@ export function CadastroProvider({
     (subId: string) => state.cidades?.find((c) => c.id === state.cidadeDaSub?.[subId]) ?? null,
     [state.cidades, state.cidadeDaSub],
   )
+  // A cidade da CTS vem do SISTEMA em que ela foi colocada, e nao da sub-bacia
+  // pareada: a CTS e um no do sistema, e o sistema e que esta numa cidade.
   const cidadeCts = useCallback(
     (ctsId: string) => {
-      const subId = state.pares?.find((p) => p.cts === ctsId)?.sub
-      return subId ? cidadeSub(subId) : null
+      const sisId = state.ctss?.[ctsId]?.sisId
+      const cidId = sisId && state.hier?.sistemas.find((x) => x.id === sisId)?.cidId
+      return (cidId && state.cidades?.find((c) => c.id === cidId)) || null
     },
-    [state.pares, cidadeSub],
+    [state.ctss, state.hier, state.cidades],
   )
 
   const subPendOf = useCallback(
@@ -347,10 +349,6 @@ export function CadastroProvider({
     (id: string) =>
       state.ctss?.[id] ? ctsPend(state.ctss[id], reguaDaCts(state, id) === 'populacao') : 0,
     [state],
-  )
-  const ctsDaSub = useCallback(
-    (subId: string) => state.pares?.find((p) => p.sub === subId)?.cts ?? null,
-    [state.pares],
   )
   const cidadePendOf = useCallback(
     (id: string) => {
@@ -390,8 +388,12 @@ export function CadastroProvider({
         dispatch({ type: 'SET_HIER_CID_NOME', cidId, value }),
       setHierSisNome: (sisId: string, value: string) =>
         dispatch({ type: 'SET_HIER_SIS_NOME', sisId, value }),
-      setHierTopoJusante: (index: number, value: string) =>
-        dispatch({ type: 'SET_HIER_TOPO_JUSANTE', index, value }),
+      setHierTopoJusante: (compId: string, value: string) =>
+        dispatch({ type: 'SET_HIER_TOPO_JUSANTE', compId, value }),
+      setHierTopoSistema: (compId: string, sisId: string) =>
+        dispatch({ type: 'SET_HIER_TOPO_SISTEMA', compId, sisId }),
+      setHierSistemaUsaCts: (sisId: string, value: boolean) =>
+        dispatch({ type: 'SET_HIER_SISTEMA_USA_CTS', sisId, value }),
       setCtsParam: (ctsId: string, key: keyof SubBaciaParams, value: string) =>
         dispatch({ type: 'SET_CTS_PARAM', ctsId, key, value }),
       setCtsObraField: (ctsId: string, index: number, key: keyof Obra, value: string) =>
@@ -422,7 +424,6 @@ export function CadastroProvider({
       etes: state.etes ?? [],
       hier: state.hier,
       ctss: state.ctss ?? {},
-      pares: state.pares ?? [],
       ctsInconsistentes: ctsQ.data?.inconsistencias ?? [],
       derivado,
       sujas,
@@ -438,7 +439,6 @@ export function CadastroProvider({
       etePendOf,
       cidadePendOf,
       ctsPendOf,
-      ctsDaSub,
       reguaDaSub: reguaSub,
       reguaDaCts: reguaCts,
       cidadeDaSub: cidadeSub,
@@ -463,7 +463,6 @@ export function CadastroProvider({
       etePendOf,
       cidadePendOf,
       ctsPendOf,
-      ctsDaSub,
       reguaSub,
       reguaCts,
       cidadeSub,

@@ -1,23 +1,8 @@
 {
-  "pares": [
-    {
-      "sub": "b2_1_1",
-      "cts": "cts_b2_1_1"
-    },
-    {
-      "sub": "b2_1_4",
-      "cts": "cts_b2_1_4"
-    },
-    {
-      "sub": "b3_1_1",
-      "cts": "cts_b3_1_1"
-    }
-  ],
   "ctss": {
     "cts_b2_1_1": {
       "id": "cts_b2_1_1",
       "nome": "CTS 1_1",
-      "subId": "b2_1_1",
       "sisId": "s2",
       "sistema": "Sistema 2 · Rio das Ostras",
       "jusante": "b2_1_2",
@@ -101,7 +86,6 @@
     "cts_b2_1_4": {
       "id": "cts_b2_1_4",
       "nome": "CTS 1_4",
-      "subId": "b2_1_4",
       "sisId": "s2",
       "sistema": "Sistema 2 · Rio das Ostras",
       "jusante": "e2",
@@ -185,7 +169,6 @@
     "cts_b3_1_1": {
       "id": "cts_b3_1_1",
       "nome": "CTS 1_1",
-      "subId": "b3_1_1",
       "sisId": "s3",
       "sistema": "Sistema 3 · Búzios",
       "jusante": "b3_1_2",

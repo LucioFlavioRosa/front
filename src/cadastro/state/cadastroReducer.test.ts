@@ -7,7 +7,7 @@ import ctsFx from '@/mocks/fixtures/cts.json'
 import type { SubBacia, SupNode } from '@/cadastro/domain/subbacia'
 import type { Cidade, Fator, Meta } from '@/cadastro/domain/contrato'
 import type { Ete } from '@/cadastro/domain/ete'
-import type { Cts, ParCts } from '@/cadastro/domain/cts'
+import type { Cts } from '@/cadastro/domain/cts'
 import {
   derive,
   initialState,
@@ -39,7 +39,6 @@ function seededState(): State {
   s = reducer(s, {
     type: 'SEED_CTS',
     ctss: ctsFx.ctss as unknown as Record<string, Cts>,
-    pares: ctsFx.pares as ParCts[],
   })
   return s
 }
@@ -146,7 +145,7 @@ describe('derive() — base vazia', () => {
         ),
         { type: 'SEED_HIER', hier: { ...(estrutura as unknown as Hier), sistemas: [] } },
       ),
-      { type: 'SEED_CTS', ctss: {}, pares: [] },
+      { type: 'SEED_CTS', ctss: {} },
     )
     expect(seeded(vazio)).toBe(true)
     const d = derive(vazio)
@@ -204,13 +203,90 @@ describe('EDIT_DB_FIELD', () => {
 })
 
 describe('SET_HIER_TOPO_JUSANTE — o "escoa para"', () => {
-  it('muda o jusante e marca a hierarquia como editada', () => {
+  it('muda o jusante e deixa a ficha do componente suja', () => {
     const s0 = seededState()
     const original = s0.hier!.topo[0].jus // 'e1'
-    const s1 = reducer(s0, { type: 'SET_HIER_TOPO_JUSANTE', index: 0, value: 'e9' })
+    const s1 = reducer(s0, { type: 'SET_HIER_TOPO_JUSANTE', compId: 'b1_1_1', value: 'e9' })
     expect(s1.hier!.topo[0].jus).toBe('e9')
     expect(s1.originalHier!.topo[0].jus).toBe(original)
+    expect(sujas(s1)).toContain('topo:b1_1_1')
+  })
+
+  it('a topologia NAO conta como "hierarquia alterada"', () => {
+    // As duas coisas viram sinais opostos na tela: `sujas` acende o botao
+    // Salvar, e `hierAlterada` acende o aviso de "isto nao vai para o cadastro".
+    // Se a topologia entrasse nos dois, a tela diria, sobre a mesma edicao, que
+    // ela grava e que nao grava.
+    const s1 = reducer(seededState(), {
+      type: 'SET_HIER_TOPO_JUSANTE',
+      compId: 'b1_1_1',
+      value: 'e9',
+    })
+    expect(hierAlterada(s1)).toBe(false)
+  })
+
+  it('corrigir um NOME continua sendo "hierarquia alterada" — esse nao tem rota', () => {
+    const s1 = reducer(seededState(), { type: 'SET_HIER_SIS_NOME', sisId: 's1', value: 'Outro' })
     expect(hierAlterada(s1)).toBe(true)
+  })
+})
+
+describe('SET_HIER_SISTEMA_USA_CTS — quantas CTS o sistema comporta', () => {
+  it('marcar deixa a ficha do sistema suja, e não a hierarquia', () => {
+    // As duas coisas são sinais opostos na tela: `sujas` acende o Salvar,
+    // `hierAlterada` acende o aviso de "isto não vai para o cadastro". `usaCts`
+    // tem rota de escrita, então é ficha — os NOMES do sistema é que não têm.
+    const s1 = reducer(seededState(), {
+      type: 'SET_HIER_SISTEMA_USA_CTS',
+      sisId: 's2',
+      value: true,
+    })
+    expect(s1.hier!.sistemas.find((s) => s.id === 's2')!.usaCts).toBe('true')
+    expect(sujas(s1)).toContain('sis:s2')
+    expect(hierAlterada(s1)).toBe(false)
+  })
+
+  it('voltar ao valor original limpa a sujeira', () => {
+    const s0 = seededState()
+    const s1 = reducer(s0, { type: 'SET_HIER_SISTEMA_USA_CTS', sisId: 's2', value: true })
+    const s2 = reducer(s1, { type: 'SET_HIER_SISTEMA_USA_CTS', sisId: 's2', value: false })
+    expect(sujas(s2)).not.toContain('sis:s2')
+  })
+
+  it('não mexe nos outros sistemas', () => {
+    const s0 = seededState()
+    const s1 = reducer(s0, { type: 'SET_HIER_SISTEMA_USA_CTS', sisId: 's2', value: true })
+    expect(sujas(s1).filter((c) => c.startsWith('sis:'))).toEqual(['sis:s2'])
+  })
+})
+
+describe('SET_HIER_TOPO_SISTEMA — colocar e tirar do sistema', () => {
+  it('tirar do sistema zera o jusante junto', () => {
+    // Espelha o servidor: o `DELETE` poe sistema e jusante nulos. Guardar um
+    // jusante orfao aqui faria a ficha nascer suja de novo logo depois de salva,
+    // porque a assinatura local nunca bateria com a que o servidor tem.
+    const s1 = reducer(seededState(), {
+      type: 'SET_HIER_TOPO_SISTEMA',
+      compId: 'b2_1_1',
+      sisId: '',
+    })
+    const linha = s1.hier!.topo.find((t) => t.id === 'b2_1_1')!
+    expect(linha.sis).toBe('')
+    expect(linha.jus).toBe('')
+  })
+
+  it('colocar num sistema preserva o jusante ja escolhido', () => {
+    const s0 = reducer(seededState(), {
+      type: 'SET_HIER_TOPO_SISTEMA',
+      compId: 'b2_1_1',
+      sisId: '',
+    })
+    const s1 = reducer(s0, { type: 'SET_HIER_TOPO_JUSANTE', compId: 'b2_1_1', value: 'b2_1_2' })
+    const s2 = reducer(s1, { type: 'SET_HIER_TOPO_SISTEMA', compId: 'b2_1_1', sisId: 's2' })
+    expect(s2.hier!.topo.find((t) => t.id === 'b2_1_1')).toMatchObject({
+      sis: 's2',
+      jus: 'b2_1_2',
+    })
   })
 })
 

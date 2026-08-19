@@ -33,27 +33,32 @@ import ctsStyles from './GrupoCts.module.css'
 /**
  * Grupo 05 — CTS (Coletor de Tempo Seco).
  *
- * A CTS e a "irma" da sub-bacia: mesmos dados operacionais, pareada 1:1 com uma
- * sub-bacia (areas sobrepostas) e ESPARSA — a maioria das sub-bacias nao tem CTS.
- * A tela e a do grupo 03 reaproveitada, com tres diferencas:
- *  1. a lista de obras e a da CTS (4 componentes, ancorada no Coletor de tempo seco);
- *  2. todo lugar que mostra a CTS mostra tambem a sub-bacia pareada;
- *  3. existe "adicionar CTS a esta sub-bacia" — a CTS e um acrescimo, nao um item
- *     obrigatorio do cadastro.
+ * A CTS e a "irma" da sub-bacia: mesmos dados operacionais, e um no do sistema
+ * como ela. A tela e a do grupo 03 reaproveitada, com duas diferencas: a lista de
+ * obras e a da CTS (4 componentes, ancorada no Coletor de tempo seco), e o rail se
+ * orienta pelo SISTEMA em que a CTS foi colocada.
+ *
+ * SO APARECEM AS CTS COLOCADAS num sistema desta unidade. Uma CTS ainda nao
+ * colocada nao e de unidade nenhuma, nao entra na simulacao e nao tem o que
+ * preencher — ela espera no Grupo 01, na lista de CTS disponiveis da base.
+ *
+ * NAO HA VINCULO COM SUB-BACIA aqui. Ele existiu (`subbacia_cts`, 1:1) e nunca
+ * significou pertencimento: e sobreposicao de area, e nao diz onde a CTS esta.
  *
  * O seletor "Usar CTS?" NAO esta aqui de proposito: e parametro da rodada de
- * simulacao (orcar a CTS a parte x somar a demanda dela a sub-bacia), nao dado de
- * cadastro. A tela so explica o efeito da escolha.
+ * simulacao, nao dado de cadastro. A tela so explica o efeito da escolha.
  */
 
-/** Ramo do rail que recolhe CTS cuja sub-bacia pareada nao esta na arvore. */
-const RAMO_ORFAS = '__sem-arvore__'
+/** Ramo do rail que recolhe CTS cujo SISTEMA nao aparece na arvore de sub-bacias
+ *  (sistema que so tem CTS e ETE). */
+const RAMO_SEM_ARVORE = '__sem-arvore__'
 
 const TITULO = 'CTS · Coletor de Tempo Seco'
 const SUB = (
   <>
-    Estrutura de coleta irmã da sub-bacia, pareada <strong>1:1</strong> e opcional. Mesmos dados
-    operacionais, com <strong>4 obras próprias</strong> — a âncora é o coletor de tempo seco.
+    Estrutura de coleta irmã da sub-bacia, com os mesmos dados operacionais e{' '}
+    <strong>4 obras próprias</strong> — a âncora é o coletor de tempo seco. Aparecem aqui as CTS já{' '}
+    <strong>adicionadas a um sistema</strong> desta unidade, no Grupo 01.
   </>
 )
 
@@ -62,9 +67,7 @@ export function GrupoCts() {
   const { openDict, askConfirm, toast } = useApp()
   const { data } = useSubBacias(unidadeId)
   const {
-    subs,
     ctss,
-    pares,
     ctsInconsistentes,
     cidadeDaCts: cidadeCts,
     reguaDaCts,
@@ -95,54 +98,48 @@ export function GrupoCts() {
   const [soPend, setSoPend] = useState(false)
   const [override, setOverride] = useState(false)
 
-  // Caminho [sup, cid, sis] de cada sub-bacia + ordem linear das CTS existentes.
-  const { path, ordered, orfas } = useMemo(() => {
+  // Caminho [sup, cid, sis] de cada SISTEMA + ordem linear das CTS.
+  //
+  // A geografia da CTS e a do sistema em que ela foi colocada. Antes vinha da
+  // sub-bacia pareada, o que so coincidia enquanto as duas fossem da mesma
+  // cidade — e deixava sem lugar qualquer CTS sem par.
+  const { path, ordered, semRamo } = useMemo(() => {
     const path: Record<string, [string, string, string]> = {}
-    const ordemSubs: string[] = []
+    const ordemSis: string[] = []
     data?.arvore.forEach((sup) =>
       sup.cidades.forEach((c) =>
-        c.sistemas.forEach((s) =>
-          s.subIds.forEach((id) => {
-            path[id] = [sup.id, c.id, s.id]
-            ordemSubs.push(id)
-          }),
-        ),
+        c.sistemas.forEach((s) => {
+          path[s.id] = [sup.id, c.id, s.id]
+          ordemSis.push(s.id)
+        }),
       ),
     )
-    // A ordem das CTS segue a ordem das sub-bacias pareadas (mesma geografia).
-    const porSub = new Map(pares.map((p) => [p.sub, p.cts]))
-    const naArvore = ordemSubs.map((s) => porSub.get(s)).filter((x): x is string => !!x)
-    // CTS cuja sub-bacia pareada nao esta na arvore (payloads fora de sincronia)
-    // continuam existindo no cadastro: entram no fim da ordem e num ramo proprio
-    // do rail, em vez de desaparecerem da tela.
+    // A ordem SEGUE A ARVORE, e nao a do payload: e ela que o rail desenha, e e
+    // por `ordered` que "proxima pendente" anda. Ordens diferentes fariam o botao
+    // pular para uma ficha que esta longe de onde o olho estava.
+    const ids = Object.keys(ctss)
+    const naArvore = ordemSis.flatMap((sis) => ids.filter((id) => ctss[id]?.sisId === sis))
+    // A arvore do rail e montada a partir das SUB-BACIAS, entao um sistema que
+    // so tenha CTS e ETE nao aparece nela. Essas CTS entram num ramo proprio em
+    // vez de sumirem da tela.
     const vistas = new Set(naArvore)
-    const orfas = pares.map((p) => p.cts).filter((c) => !vistas.has(c))
-    return { path, ordered: [...naArvore, ...orfas], orfas }
-  }, [data, pares])
+    const semRamo = ids.filter((id) => !vistas.has(id))
+    return { path, ordered: [...naArvore, ...semRamo], semRamo }
+  }, [data, ctss])
 
-  // NAO HA "criar CTS" NEM "remover CTS" nesta tela, e isso e deliberado.
+  // COLOCAR e TIRAR CTS e no GRUPO 01, e nao aqui. Aqui se le e se edita a ficha
+  // de uma CTS que ja esta num sistema.
   //
-  // A CTS e um NO DO SISTEMA, como a sub-bacia: a posicao dela ja esta na
-  // topologia (`sistema_topologia`), com jusante proprio: no cadastro carregado
-  // da planilha, TODAS estao la. O motor monta os nos percorrendo a topologia e faz
-  // `cts_ids = fichas ∩ nos`: so e CTS efetiva a ficha que TAMBEM e no.
-  //
-  // Criar uma CTS aqui gravava ficha e par sem tocar na topologia — ela aparecia
-  // no cadastro e NAO existia para a simulacao. Remover era pior: apagava a ficha
-  // e deixava o no, que virava um no de demanda ZERO; e como o par sumia junto,
-  // com `USAR_CTS` desligado a demanda dela deixava de ser somada a sub-bacia
-  // irma. Duas perdas ao mesmo tempo, nenhuma com erro visivel.
-  //
-  // `subbacia_cts` e SOBREPOSICAO de area, e nao pertencimento: e ela que permite
-  // ao `USAR_CTS` escolher entre tratar a CTS como estrutura propria ou somar
-  // ligacoes, receita e vazao dela na sub-bacia pareada.
-  //
-  // Criar ou remover CTS e mudanca de TOPOLOGIA, e topologia vem do cadastro
-  // estrutural (Grupo 01). Aqui se le e se edita a ficha de uma CTS que existe.
+  // Nao e divisao arbitraria: a CTS precisa de duas metades — o no na topologia
+  // (onde ela esta) e a ficha em `cts_operacional` (a demanda dela). O motor faz
+  // `cts_ids = fichas ∩ nos`, entao mexer numa metade sem a outra produz meia
+  // CTS: ficha sem no e invisivel para a simulacao, no sem ficha ENTRA nela com
+  // demanda zero. As duas ja aconteceram no cadastro real.
 
   // Seleciona a primeira CTS quando a lista muda.
-  // Espera a arvore: a ordem das CTS vem da geografia das sub-bacias, e sem ela
-  // toda CTS parece orfa — a primeira escolhida seria outra, e a escolha fica.
+  // Espera a arvore: e dela que sai o caminho ate o sistema no rail, e sem ela
+  // toda CTS cairia no ramo de excecao — a primeira escolhida seria outra, e a
+  // escolha fica.
   // (Com rascunho recuperado o estado ja chega pronto, antes da arvore.)
   useEffect(() => {
     if (!data || !ordered.length) return
@@ -154,7 +151,7 @@ export function GrupoCts() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelCts(inicial)
     setOverride(false)
-    setExpanded(new Set(path[ctss[inicial]?.subId ?? ''] ?? [RAMO_ORFAS]))
+    setExpanded(new Set(path[ctss[inicial]?.sisId ?? ''] ?? [RAMO_SEM_ARVORE]))
   }, [data, ordered, selCts, ctss, path])
 
   if (erro)
@@ -184,8 +181,8 @@ export function GrupoCts() {
 
   const g5Chip = chipPendencias(derivado.g5)
 
-  /** Ramos a abrir para revelar uma CTS no rail (ou o ramo das orfas). */
-  const caminhoDaCts = (ctsId: string) => path[ctss[ctsId]?.subId ?? ''] ?? [RAMO_ORFAS]
+  /** Ramos a abrir para revelar uma CTS no rail. */
+  const caminhoDaCts = (ctsId: string) => path[ctss[ctsId]?.sisId ?? ''] ?? [RAMO_SEM_ARVORE]
 
   // O servidor denuncia as CTS que existem pela metade. Isto NAO e erro de
   // carregamento: a leitura funcionou, o cadastro e que esta incompleto. Fica
@@ -203,7 +200,7 @@ export function GrupoCts() {
         {ctsInconsistentes.map((x) => (
           <li key={`${x.tipo}:${x.id}`}>
             <span className={ctsStyles.inconsId}>{x.id}</span>
-            {x.subId ? ` (par de ${x.subId})` : ''} — {x.detalhe}
+            {x.nome ? ` (${x.nome})` : ''} — {x.detalhe}
           </li>
         ))}
       </ul>
@@ -215,32 +212,31 @@ export function GrupoCts() {
     </div>
   )
 
-  // Nenhuma CTS cadastrada: a tela nao tem ficha para mostrar.
+  // Nenhuma CTS COLOCADA nesta unidade: a tela nao tem ficha para mostrar. Nao
+  // quer dizer que a base nao tenha CTS — quer dizer que nenhuma foi adicionada
+  // a um sistema daqui ainda, e e no Grupo 01 que isso se faz.
   if (!selCts || !ctss[selCts])
     return (
       <section>
         <GrupoHeader titulo={TITULO} sub={SUB} />
         {aviso}
         <div className={ctsStyles.vazio}>
-          <div className={ctsStyles.vazioTitulo}>Nenhuma CTS cadastrada nesta unidade</div>
+          <div className={ctsStyles.vazioTitulo}>Nenhuma CTS nesta unidade</div>
           <p className={ctsStyles.vazioTexto}>
             O coletor de tempo seco capta o esgoto que escorre em dias sem chuva e o leva até a ETE.
-            As CTS desta unidade vêm do cadastro estrutural, junto da topologia do sistema — elas
-            não se criam por aqui. Se esta unidade deveria ter CTS, é no Grupo 01 que a topologia é
-            corrigida.
+            Nenhuma CTS da base foi adicionada a um sistema desta unidade ainda — é no{' '}
+            <strong>Grupo 01</strong>, logo abaixo do caminho até a ETE, que se escolhe qual CTS
+            entra em qual sistema. Depois disso ela aparece aqui para ser preenchida.
           </p>
         </div>
       </section>
     )
 
   const cur = ctss[selCts]
-  const subPar = subs[cur.subId]
   const pCts = ctsPendOf(selCts)
   const obras = mkObrasCts(cur.obrasOverride)
 
-  // A régua da meta vem da cidade da sub-bacia pareada (a CTS não aparece
-  // sozinha na árvore). CTS órfã fica sem cidade: os três trios continuam na
-  // tela, sem destaque em nenhum.
+  // A régua da meta vem da cidade do SISTEMA em que a CTS foi colocada.
   const cidadeDaCts = cidadeCts(selCts)
   const regua = reguaDaCts(selCts)
 
@@ -288,7 +284,6 @@ export function GrupoCts() {
 
   // ---- arvore Sup -> Cidade -> Sistema -> CTS (so ramos com CTS) ----
   const q = busca.trim().toLowerCase()
-  const ctsDoSub = new Map(pares.map((p) => [p.sub, p.cts]))
   const leafOk = (ctsId: string) => {
     const c = ctss[ctsId]
     if (!c) return false
@@ -296,7 +291,7 @@ export function GrupoCts() {
       (!soPend || ctsPendOf(ctsId) > 0) &&
       (q === '' ||
         c.id.toLowerCase().includes(q) ||
-        c.subId.toLowerCase().includes(q) ||
+        c.nome.toLowerCase().includes(q) ||
         c.sistema.toLowerCase().includes(q))
     )
   }
@@ -305,8 +300,8 @@ export function GrupoCts() {
     const p = ctsPendOf(id)
     return {
       id,
-      titulo: id,
-      sub: `↔ ${ctss[id].subId}`,
+      titulo: ctss[id].nome || id,
+      sub: id,
       leaf: true,
       status: { ok: p === 0, label: p === 0 ? '✓' : `${p} pend.` },
     }
@@ -315,9 +310,8 @@ export function GrupoCts() {
   const nodes: TreeNode[] = data.arvore.flatMap((sup) => {
     const cids = sup.cidades.flatMap((cid) => {
       const siss = cid.sistemas.flatMap((sis) => {
-        const leaves = sis.subIds
-          .map((subId) => ctsDoSub.get(subId))
-          .filter((id): id is string => !!id && leafOk(id))
+        const leaves = ordered
+          .filter((id) => ctss[id]?.sisId === sis.id && leafOk(id))
           .map(folhaCts)
         if (!leaves.length) return []
         return [
@@ -350,20 +344,20 @@ export function GrupoCts() {
     ]
   })
 
-  // Ramo de exceção: CTS existentes cuja sub-bacia pareada não está na árvore.
-  // Sem ele a CTS ficava invisível e a tela podia até cair no estado "nenhuma
-  // CTS cadastrada" com dados no store.
-  const orfasVisiveis = orfas.filter(leafOk)
-  if (orfasVisiveis.length)
+  // Ramo de exceção: CTS num sistema que não aparece na árvore de sub-bacias —
+  // um sistema que só tem CTS e ETE. Sem ele a CTS ficava invisível e a tela
+  // podia até cair no estado "nenhuma CTS" com dados no store.
+  const semRamoVisiveis = semRamo.filter(leafOk)
+  if (semRamoVisiveis.length)
     nodes.push({
-      id: RAMO_ORFAS,
-      titulo: 'Fora da árvore de sub-bacias',
-      sub: `${orfasVisiveis.length} CTS · confira o de-para no Databricks`,
-      children: orfasVisiveis.map(folhaCts),
+      id: RAMO_SEM_ARVORE,
+      titulo: 'Sistemas sem sub-bacia',
+      sub: `${semRamoVisiveis.length} CTS`,
+      children: semRamoVisiveis.map(folhaCts),
     })
 
   const filtrando = q !== '' || soPend
-  const allBranchIds = new Set<string>([RAMO_ORFAS])
+  const allBranchIds = new Set<string>([RAMO_SEM_ARVORE])
   data.arvore.forEach((sup) => {
     allBranchIds.add(sup.id)
     sup.cidades.forEach((c) => {
@@ -408,8 +402,8 @@ export function GrupoCts() {
           }}
           busca={busca}
           onBusca={setBusca}
-          buscaPlaceholder="⌕ Buscar CTS, sub-bacia ou sistema…"
-          buscaLabel="Buscar CTS, sub-bacia ou sistema"
+          buscaPlaceholder="⌕ Buscar CTS ou sistema…"
+          buscaLabel="Buscar CTS ou sistema"
           aria="CTS por superintendência, cidade e sistema"
           filtros={{
             pendentes: {
@@ -444,12 +438,11 @@ export function GrupoCts() {
           salvando={salvarM.isPending}
           sujo={estaSuja(chaveCts(selCts))}
         >
-          {/* Vinculo com a sub-bacia pareada — a area das duas se sobrepoe. */}
-          <div className={styles.sheetFoot}>
-            <span className={ctsStyles.parChip}>
-              {`CTS ↔ sub-bacia ${cur.subId}${subPar ? ` · ${subPar.nome}` : ''}`}
-            </span>
-          </div>
+          {/* AQUI HAVIA o chip do par com a sub-bacia (`CTS ↔ sub-bacia b2_1_1`).
+              Ele saiu com o vinculo: o par era sobreposicao de area, e nao dizia
+              onde a CTS esta. Quem diz e o sistema, e ele ja aparece no subtitulo
+              da ficha junto do "escoa para" — repetir aqui seria a mesma frase
+              duas vezes na mesma tela. Colocar e tirar do sistema e no Grupo 01. */}
 
           {/* O que a escolha "Usar CTS?" muda — e onde ela e feita. */}
           <div className={ctsStyles.notaRodada}>
@@ -458,9 +451,9 @@ export function GrupoCts() {
             </div>
             <p className={ctsStyles.notaTexto}>
               <strong>Sim</strong> = a CTS é orçada à parte, com as obras dela no plano.{' '}
-              <strong>Não</strong> = a área da CTS é atendida pela rede da sub-bacia {cur.subId} e a
-              demanda daqui é somada à dela. A demanda atendida é a mesma nos dois modos — muda o
-              CAPEX, o VPL e o plano de obras.
+              <strong>Não</strong> = o coletor não é construído, e as sub-bacias do sistema passam a
+              ser lidas pelas colunas que já incluem a área sobreposta. A escolha muda o CAPEX, o
+              VPL e o plano de obras.
             </p>
           </div>
 
@@ -491,15 +484,14 @@ export function GrupoCts() {
                 escopo="desta CTS"
                 semCidade={
                   <>
-                    A sub-bacia pareada {cur.subId} não está na árvore, então não dá para saber a
-                    régua da meta desta CTS. Preencha os três trios e confira o de-para no
-                    Databricks.
+                    O sistema {cur.sistema} não está numa cidade conhecida, então não dá para saber
+                    a régua da meta desta CTS. Preencha os três trios.
                   </>
                 }
                 extra={
                   <>
-                    Os números são <strong>da CTS</strong>, não uma fatia da sub-bacia {cur.subId}:
-                    as áreas se sobrepõem, a demanda não.
+                    Os números são <strong>da CTS</strong>, e não uma fatia de sub-bacia nenhuma: as
+                    áreas se sobrepõem, a demanda não.
                   </>
                 }
               />,
@@ -572,8 +564,8 @@ export function GrupoCts() {
               onChange={setObra}
               nota={
                 <>
-                  Obras próprias da CTS — ela não compartilha as obras da sub-bacia {cur.subId}.
-                  WACC vazio = usa o WACC médio da unidade.
+                  Obras próprias da CTS — ela não compartilha as obras de nenhuma sub-bacia. WACC
+                  vazio = usa o WACC médio da unidade.
                 </>
               }
             />

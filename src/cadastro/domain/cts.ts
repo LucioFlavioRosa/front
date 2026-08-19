@@ -23,8 +23,9 @@ import { CAMPOS_PARAMS, CAMPOS_POR_OBRA, mkObras, pendDe } from '@/cadastro/doma
 export interface Cts extends Auditoria {
   id: string
   nome: string
-  /** Sub-bacia pareada 1:1 — a area da CTS se sobrepoe a dela. */
-  subId: string
+  /** O sistema em que a CTS foi COLOCADA (Grupo 01). Uma CTS so aparece aqui
+   *  depois de adicionada a um sistema — antes disso ela nao e de unidade
+   *  nenhuma e nao entra na simulacao. */
   sisId: string
   sistema: string
   /** Proximo no no caminho até a ETE (a CTS entra na topologia como a sub-bacia). */
@@ -35,29 +36,25 @@ export interface Cts extends Auditoria {
   obrasOverride: Record<string, Partial<Obra>>
 }
 
-/** De-para da sobreposicao (tabela `subbacia-cts`). */
-export interface ParCts {
-  sub: string
-  cts: string
-}
-
 /**
- * Uma CTS que existe pela metade — o servidor a denuncia em vez de servi-la
- * calada. Ver `_cts_inconsistentes` no back para o porque de cada tipo.
+ * Componente COLOCADO num sistema que nao tem ficha em lugar nenhum — o servidor
+ * o denuncia em vez de servir a unidade calada. Ver `_cts_inconsistentes` no back.
  *
- * `ficha-sem-no`   tem ficha e par, nao esta na topologia: a simulacao nao a ve.
- * `no-sem-ficha`   esta na topologia sem ficha: ENTRA na conta com demanda zero.
- * `sem-par`        sem sub-bacia pareada: com USAR_CTS desligado a demanda some.
+ * E o unico estado meio-existente que sobrou, e o unico que MUDA O RESULTADO: o
+ * no entra na simulacao com demanda ZERO, ocupa posicao na rede e puxa a media do
+ * sistema para baixo, sem erro em lugar nenhum.
+ *
+ * Componente fora de sistema nao entra aqui: nao estar colocado e estado normal —
+ * e o de toda CTS antes de a Regional adiciona-la a um sistema.
  */
 export interface CtsInconsistente {
-  tipo: 'ficha-sem-no' | 'no-sem-ficha' | 'sem-par'
+  tipo: 'no-sem-ficha'
   id: string
-  subId: string | null
+  nome: string | null
   detalhe: string
 }
 
 export interface CtsPayload {
-  pares: ParCts[]
   ctss: Record<string, Cts>
   /**
    * Diagnostico, e nao ficha. Nao passa pelo reducer de propósito: e verdade do
