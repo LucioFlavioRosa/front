@@ -318,9 +318,7 @@ export function Simular() {
           <div className={styles.totais}>
             <span>
               Total{' '}
-              <strong className={styles.calculado}>
-                R$ {orc.total.toLocaleString('pt-BR')} Mi
-              </strong>
+              <strong className={styles.calculado}>R$ {orc.total.toLocaleString('pt-BR')}</strong>
             </span>
             <span>
               Anos com verba <strong>{orc.anosComVerba.length}</strong>
@@ -493,7 +491,7 @@ export function Simular() {
                 )}
               </>
             )}
-            <Item k="Orçamento total" v={`R$ ${orc.total.toLocaleString('pt-BR')} Mi`} calc />
+            <Item k="Orçamento total" v={`R$ ${orc.total.toLocaleString('pt-BR')}`} calc />
             <Item k="Janela de CAPEX" v={orc.janelaTexto} calc />
             <Item
               k="Foco em cobertura"
