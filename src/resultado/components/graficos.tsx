@@ -1029,7 +1029,7 @@ export function GraficoReceitaSubBacia({ receita }: { receita: ReceitaAno[] }) {
             cx={cx}
             dominio={dominio}
             rotuloY="R$"
-            formataY={(v) => (v >= 1000 ? `${Math.round(v / 1000)}k` : String(Math.round(v)))}
+            formataY={(v) => Math.round(v).toLocaleString('pt-BR')}
             rotulosX={rotulosDeAno(
               receita.map((r) => r.ano),
               x,
