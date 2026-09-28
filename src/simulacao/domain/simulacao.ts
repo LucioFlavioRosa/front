@@ -84,7 +84,7 @@ export function estadoInicial(): EstadoSimulacao {
     nome: '',
     modoOrcamento: 'ano',
     orcamento: ORCAMENTO_PADRAO.map(([ano, v]) => ({ ano: String(ano), valor: String(v) })),
-    orcamentoValor: '50000000',   // R$ 50 milhões, em reais
+    orcamentoValor: '50000000', // R$ 50 milhões, em reais
     horizonte: '8',
     foco: '1',
     penalidade: 'meta+cobertura',

@@ -59,8 +59,8 @@ export function Global() {
       </h1>
       <p className={styles.resumo}>
         Janela de {meta.data.parametros.janelaCapex} anos · foco{' '}
-        {meta.data.parametros.focoCobertura} · orçamento {brl(meta.data.parametros.orcamento)} ·
-        VPL {brl(k.vpl)} — lido das tabelas materializadas da rodada, sem recomputar nada.
+        {meta.data.parametros.focoCobertura} · orçamento {brl(meta.data.parametros.orcamento)} · VPL{' '}
+        {brl(k.vpl)} — lido das tabelas materializadas da rodada, sem recomputar nada.
       </p>
 
       <KpiGrid>
