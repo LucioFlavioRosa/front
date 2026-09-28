@@ -6,7 +6,7 @@ import { decorrido, demorandoDemais } from '@/comum/domain/espera'
 import { Carregando, ErroCarga, Vazio } from '@/comum/components/Estado'
 import { useCrumbs } from '@/resultado/state/Crumbs'
 import { useApp } from '@/comum/state/AppContext'
-import { brlMi, dataHora, deTotal, duracao, pct } from '@/resultado/lib/formato'
+import { brl, dataHora, deTotal, duracao, pct } from '@/resultado/lib/formato'
 import type { RunResumo } from '@/resultado/domain/resultado'
 import { DetalhesDaSimulacao } from '@/resultado/components/DetalhesDaSimulacao'
 import styles from './Historico.module.css'
@@ -287,8 +287,8 @@ function CardRodada({
         </p>
       ) : (
         <dl className={styles.metricas}>
-          <Metrica k="VPL" v={brlMi(r.metricas?.vpl)} destaque />
-          <Metrica k="CAPEX" v={brlMi(r.metricas?.capex)} />
+          <Metrica k="VPL" v={brl(r.metricas?.vpl)} destaque />
+          <Metrica k="CAPEX" v={brl(r.metricas?.capex)} />
           <Metrica
             k="Uso do orçamento"
             v={pct(r.metricas?.usoOrcamentoPct)}
@@ -301,7 +301,7 @@ function CardRodada({
             k="Metas atingidas"
             v={deTotal(r.metricas?.metasAtingidas, r.metricas?.metasTotal)}
           />
-          <Metrica k="EBITDA total" v={brlMi(r.metricas?.ebitdaTotal)} />
+          <Metrica k="EBITDA total" v={brl(r.metricas?.ebitdaTotal)} />
         </dl>
       )}
 
@@ -313,7 +313,7 @@ function CardRodada({
       {r.parametros && (
         <ul className={styles.params}>
           <Param k="janela de CAPEX" v={`${r.parametros.janelaCapex} anos`} />
-          <Param k="orçamento" v={brlMi(r.parametros.orcamento)} />
+          <Param k="orçamento" v={brl(r.parametros.orcamento)} />
           <Param k="foco" v={String(r.parametros.focoCobertura)} />
           <Param k="usar CTS" v={r.parametros.usarCts ? 'sim' : 'não'} />
           <Param k="base de receita" v={r.parametros.baseReceita} />

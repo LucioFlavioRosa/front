@@ -10,7 +10,16 @@
  */
 
 /** O orcamento e digitado e exibido em MILHOES; o payload vai em reais. */
-export const MILHAO = 1_000_000
+/**
+ * O ORCAMENTO E DIGITADO, EXIBIDO E ENVIADO EM REAIS.
+ *
+ * Era em MILHOES, com a multiplicacao na saida do payload. A troca e decisao do
+ * dono do produto (28/09/2026): dinheiro sempre em reais, sem abreviacao, em toda
+ * a solucao — um campo em milhoes ao lado de um resultado em reais e um fator
+ * 1.000.000 que so existe na cabeca de quem digita. O outro front
+ * (`front-final-capex`) mudou junto, para os dois nao pedirem a mesma verba em
+ * reguas diferentes.
+ */
 
 export type ModoOrcamento = 'ano' | 'unico'
 /**
@@ -47,25 +56,25 @@ export interface EstadoSimulacao {
 }
 
 /**
- * Cronograma padrao do notebook (em milhoes). Nao e exemplo: e o cronograma com
- * que a equipe roda hoje.
+ * Cronograma padrao do notebook, EM REAIS. Nao e exemplo: e o cronograma com que
+ * a equipe roda hoje — os mesmos valores, por extenso.
  */
 const ORCAMENTO_PADRAO: [number, number][] = [
-  [2026, 60],
-  [2027, 60],
-  [2028, 50],
-  [2029, 50],
-  [2030, 50],
-  [2031, 50],
-  [2032, 40],
-  [2033, 40],
-  [2034, 30],
-  [2035, 30],
-  [2036, 30],
-  [2037, 20],
-  [2038, 20],
-  [2039, 20],
-  [2040, 10],
+  [2026, 60_000_000],
+  [2027, 60_000_000],
+  [2028, 50_000_000],
+  [2029, 50_000_000],
+  [2030, 50_000_000],
+  [2031, 50_000_000],
+  [2032, 40_000_000],
+  [2033, 40_000_000],
+  [2034, 30_000_000],
+  [2035, 30_000_000],
+  [2036, 30_000_000],
+  [2037, 20_000_000],
+  [2038, 20_000_000],
+  [2039, 20_000_000],
+  [2040, 10_000_000],
 ]
 
 export function estadoInicial(): EstadoSimulacao {
@@ -75,7 +84,7 @@ export function estadoInicial(): EstadoSimulacao {
     nome: '',
     modoOrcamento: 'ano',
     orcamento: ORCAMENTO_PADRAO.map(([ano, v]) => ({ ano: String(ano), valor: String(v) })),
-    orcamentoValor: '50',
+    orcamentoValor: '50000000',   // R$ 50 milhões, em reais
     horizonte: '8',
     foco: '1',
     penalidade: 'meta+cobertura',
@@ -128,9 +137,9 @@ export function num(v: string | number): number {
 }
 
 export interface DerivadoOrcamento {
-  /** Verba de cada ano, em milhoes, na ordem do cronograma. */
+  /** Verba de cada ano, em REAIS, na ordem do cronograma. */
   valores: number[]
-  /** Soma, em milhoes. */
+  /** Soma, em REAIS. */
   total: number
   /** Anos que efetivamente recebem verba, ordenados. */
   anosComVerba: number[]
@@ -340,9 +349,9 @@ export function bloqueado(checklist: ItemChecklist[]): boolean {
 /**
  * Corpo do `POST /runs`, na ordem em que o resumo da tela mostra.
  *
- * Duas conversoes acontecem aqui, e so aqui: milhoes viram reais, e os campos
- * vazios viram `null` em vez de 0 — `TETO_EXECUCAO_ANUAL` vazio significa "usa o
- * pico", que e diferente de "teto zero".
+ * Uma conversao acontece aqui, e so aqui: os campos vazios viram `null` em vez de
+ * 0 — `TETO_EXECUCAO_ANUAL` vazio significa "usa o pico", que e diferente de "teto
+ * zero". O orcamento NAO e mais convertido: ele ja chega em reais do campo.
  */
 export interface CorpoNovaRodada {
   unidade_id: string
@@ -376,10 +385,10 @@ export function corpoDaRodada(e: EstadoSimulacao): CorpoNovaRodada {
     base.orcamento = Object.fromEntries(
       e.orcamento
         .filter((l) => num(l.valor) > 0)
-        .map((l) => [String(Math.round(num(l.ano))), num(l.valor) * MILHAO] as const),
+        .map((l) => [String(Math.round(num(l.ano))), num(l.valor)] as const),
     )
   } else {
-    base.orcamento_anual = num(e.orcamentoValor) * MILHAO
+    base.orcamento_anual = num(e.orcamentoValor)
     base.horizonte_capex = Math.max(0, Math.round(num(e.horizonte)))
   }
   return base

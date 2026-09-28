@@ -250,7 +250,7 @@ export function Simular() {
                           className={styles.anoValor}
                           value={linha.valor}
                           inputMode="decimal"
-                          aria-label={`Verba de ${linha.ano}, em milhões`}
+                          aria-label={`Verba de ${linha.ano}, em reais`}
                           onChange={(ev) =>
                             setE((s) => {
                               const o = s.orcamento.map((x) => ({ ...x }))

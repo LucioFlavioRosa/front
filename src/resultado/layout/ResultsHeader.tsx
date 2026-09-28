@@ -3,7 +3,7 @@ import { useNavigate, useParams, Link } from 'react-router-dom'
 import { Logo } from '@/comum/components/Logo'
 import { useRunMeta, useRuns } from '@/resultado/api/queries'
 import { useCrumbsAtuais } from '@/resultado/state/Crumbs'
-import { brlMi, dataCurta } from '@/resultado/lib/formato'
+import { brl, dataCurta } from '@/resultado/lib/formato'
 import type { ParametrosRodada } from '@/resultado/domain/resultado'
 import styles from './ResultsHeader.module.css'
 
@@ -144,7 +144,7 @@ export function ResultsHeader() {
 function chipsDeParametro(p: ParametrosRodada): { k: string; v: string }[] {
   return [
     { k: 'janela', v: `${p.janelaCapex}a` },
-    { k: 'orçamento', v: brlMi(p.orcamento) },
+    { k: 'orçamento', v: brl(p.orcamento) },
     { k: 'foco', v: String(p.focoCobertura) },
     { k: 'usar CTS', v: p.usarCts ? 'sim' : 'não' },
     { k: 'base', v: p.baseReceita },

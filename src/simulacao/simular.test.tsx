@@ -84,9 +84,13 @@ describe('parâmetros e rastreabilidade', () => {
 
   it('abre com os defaults do notebook', async () => {
     renderApp('/simular')
-    // 15 anos de cronograma, comecando em 60 Mi.
-    expect(await screen.findByLabelText('Verba de 2026, em milhões')).toHaveProperty('value', '60')
-    expect(screen.getByLabelText('Verba de 2040, em milhões')).toHaveProperty('value', '10')
+    // 15 anos de cronograma, comecando em R$ 60.000.000 — o campo e em REAIS desde
+    // 28/09/2026, e antes disso o mesmo default aparecia como '60'.
+    expect(await screen.findByLabelText('Verba de 2026, em reais')).toHaveProperty(
+      'value',
+      '60000000',
+    )
+    expect(screen.getByLabelText('Verba de 2040, em reais')).toHaveProperty('value', '10000000')
   })
 })
 
@@ -168,7 +172,7 @@ describe('orçamento', () => {
     expect((await screen.findAllByText('2026–2040 (15 anos)')).length).toBe(2)
 
     // Zerar 2040 encurta a janela sem tirar a linha da lista.
-    fireEvent.change(screen.getByLabelText('Verba de 2040, em milhões'), {
+    fireEvent.change(screen.getByLabelText('Verba de 2040, em reais'), {
       target: { value: '0' },
     })
     expect((await screen.findAllByText('2026–2039 (14 anos)')).length).toBe(2)
@@ -177,20 +181,20 @@ describe('orçamento', () => {
   it('adicionar ano cria o seguinte ao último, com verba zero', async () => {
     renderApp('/simular')
     fireEvent.click(await screen.findByRole('button', { name: '+ Adicionar ano' }))
-    expect(await screen.findByLabelText('Verba de 2041, em milhões')).toBeTruthy()
+    expect(await screen.findByLabelText('Verba de 2041, em reais')).toBeTruthy()
   })
 
   it('remover um ano tira o card da lista', async () => {
     renderApp('/simular')
     fireEvent.click(await screen.findByRole('button', { name: 'Remover o ano 2026' }))
-    await waitFor(() => expect(screen.queryByLabelText('Verba de 2026, em milhões')).toBeNull())
+    await waitFor(() => expect(screen.queryByLabelText('Verba de 2026, em reais')).toBeNull())
   })
 
   it('não há redistribuição de verba nem teto de execução', async () => {
     // Saíram por decisão do produto: a verba de cada ano é a do cronograma. O teto
     // só existia dentro da redistribuição, então foi junto.
     renderApp('/simular')
-    await screen.findByLabelText('Verba de 2026, em milhões')
+    await screen.findByLabelText('Verba de 2026, em reais')
     expect(screen.queryByText('REDISTRIBUIR_ORCAMENTO')).toBeNull()
     expect(screen.queryByText('TETO_EXECUCAO_ANUAL')).toBeNull()
   })
