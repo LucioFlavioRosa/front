@@ -335,7 +335,7 @@ export function validar(e: EstadoSimulacao, prontidao: Prontidao | undefined): I
   } else {
     itens.push({
       severidade: 'ok',
-      texto: `Orçamento de R$ ${total.toLocaleString('pt-BR')} Mi distribuído em ${anosComVerba.length} anos.`,
+      texto: `Orçamento de R$ ${total.toLocaleString('pt-BR')} distribuído em ${anosComVerba.length} anos.`,
     })
   }
 

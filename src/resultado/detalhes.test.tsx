@@ -130,8 +130,8 @@ describe('clicar na simulação abre os metadados, e não o resultado', () => {
   it('formata o que `String(v)` estragaria', async () => {
     const modal = await abrir('Cenário conservador')
     // Orçamento por ano: o JSON cru é ilegível, e é o parâmetro mais consultado.
-    expect(modal.textContent).toMatch(/2026: R\$ 60 mi/)
-    expect(modal.textContent).toMatch(/2027: R\$ 40 mi/)
+    expect(modal.textContent).toMatch(/2026: R\$\s60\.000\.000/)
+    expect(modal.textContent).toMatch(/2027: R\$\s40\.000\.000/)
     // Booleano vira sim/não — "true" é vocabulário de máquina.
     expect(modal.textContent).toContain('sim')
     // Objeto vira par legível.
