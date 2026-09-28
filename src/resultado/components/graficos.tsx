@@ -21,7 +21,7 @@ import {
   marcas,
   passosCascata,
 } from '@/resultado/lib/svg'
-import { brl, brlMi, inteiro, pct, VAZIO } from '@/resultado/lib/formato'
+import { brl, inteiro, pct, VAZIO } from '@/resultado/lib/formato'
 import { ChartFrame } from '@/resultado/components/ChartFrame'
 import frame from './ChartFrame.module.css'
 import type {
@@ -120,7 +120,14 @@ function rotulosDeAno(anos: number[], x: (a: number) => number) {
   return anos.filter((_, i) => i % passo === 0).map((a) => ({ x: x(a), texto: String(a) }))
 }
 
-const milhoes = (v: number) => (v === 0 ? '0' : `${Math.round(v / 1_000_000)}`)
+/**
+ * A MARCA DO EIXO EM REAIS, por extenso — era em milhões até 28/09/2026.
+ *
+ * Decisão do dono do produto: dinheiro sempre em reais, sem abreviação, em toda a
+ * solução. A marca do eixo é onde o leitor ancora a escala do quadro inteiro, e
+ * uma marca "146" sob um rótulo "R$ mi" cobra a multiplicação de quem lê.
+ */
+const reaisDoEixo = (v: number) => v.toLocaleString('pt-BR', { maximumFractionDigits: 0 })
 
 /**
  * Estado vazio de um quadro.
@@ -252,7 +259,7 @@ export function GraficoCascata({
     >
       {({ mostrar }) => (
         <svg viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
-          <Eixos cx={cx} dominio={dominio} rotuloY="R$ mi (VP)" formataY={milhoes} rotulosX={[]} />
+          <Eixos cx={cx} dominio={dominio} rotuloY="R$ (VP)" formataY={reaisDoEixo} rotulosX={[]} />
           {passos.map((p, i) => {
             const cxBarra = cx.x + (cx.largura / passos.length) * (i + 0.5)
             const yTopo = y(Math.max(p.de, p.ate))
@@ -290,7 +297,7 @@ export function GraficoCascata({
                   fontWeight={700}
                   fill={corDe(p.tipo, p.valor)}
                 >
-                  {milhoes(p.valor)}
+                  {reaisDoEixo(p.valor)}
                 </text>
                 {/* Rotulo em ate 2 linhas, sob a barra. Truncar com reticencias
                     escondia qual parcela era: "Receita…" e "Receita…" ficavam
@@ -375,8 +382,8 @@ export function GraficoDesembolso({ anos }: { anos: AnoFinanceiro[] }) {
           <Eixos
             cx={cx}
             dominio={dominio}
-            rotuloY="R$ mi"
-            formataY={milhoes}
+            rotuloY="R$"
+            formataY={reaisDoEixo}
             rotulosX={rotulosDeAno(
               anos.map((a) => a.ano),
               x,
@@ -480,8 +487,8 @@ export function GraficoCurvaS({ pontos }: { pontos: PontoCurvaS[] }) {
           <Eixos
             cx={cx}
             dominio={dominio}
-            rotuloY="R$ mi"
-            formataY={milhoes}
+            rotuloY="R$"
+            formataY={reaisDoEixo}
             rotulosX={anos.map((a) => ({
               x: x(pontos.findIndex((p) => p.mes.startsWith(String(a)))),
               texto: String(a),
@@ -536,7 +543,7 @@ export function GraficoCapexComponente({ itens }: { itens: CapexPorComponente[] 
     )
   const alturaLinha = 38
   const alt = itens.length * alturaLinha + 26
-  // A esquerda cabe "Coletor de tempo seco"; a direita, "R$ 137,0 Mi · 45,1%".
+  // A esquerda cabe "Coletor de tempo seco"; a direita, "R$ 137.000.000 · 45,1%".
   const cx = areaUtil(W, alt, { topo: 10, direita: 200, baixo: 16, esquerda: 230 })
   const max = Math.max(...itens.map((i) => i.capex), 1)
   const x = escala([0, max], [cx.x, cx.x + cx.largura])
@@ -615,7 +622,7 @@ export function GraficoCapexComponente({ itens }: { itens: CapexPorComponente[] 
                   fontWeight={700}
                   fill="#475569"
                 >
-                  {brlMi(i.capex)} · {inteiro(i.obras)} obras · {construido(i)}
+                  {brl(i.capex)} · {inteiro(i.obras)} obras · {construido(i)}
                 </text>
               </g>
             )
@@ -783,8 +790,8 @@ export function GraficoEbitda({
           <Eixos
             cx={cx}
             dominio={dominio}
-            rotuloY="R$ mi/ano"
-            formataY={milhoes}
+            rotuloY="R$/ano"
+            formataY={reaisDoEixo}
             rotulosX={rotulosDeAno(
               anos.map((a) => a.ano),
               x,

@@ -36,17 +36,6 @@ export function brl(v: number | null | undefined): string {
   return ausente(v) ? VAZIO : BRL.format(v)
 }
 
-/**
- * R$ 168,1 Mi — para eixos e cards onde o numero cheio nao cabe.
- * Abaixo de 1 milhao cai para o formato cheio: "R$ 0,3 Mi" esconde a ordem de
- * grandeza de quem le rapido.
- */
-export function brlMi(v: number | null | undefined): string {
-  if (ausente(v)) return VAZIO
-  if (Math.abs(v) < 1_000_000) return BRL.format(v)
-  return `R$ ${NUM1.format(v / 1_000_000)} Mi`
-}
-
 /** 94,1% — percentuais com 1 casa, como o handoff pede. */
 export function pct(v: number | null | undefined): string {
   return ausente(v) ? VAZIO : `${NUM1.format(v)}%`

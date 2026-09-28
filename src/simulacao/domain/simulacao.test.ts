@@ -9,7 +9,6 @@ import {
   derivarOrcamento,
   estadoInicial,
   etapaDe,
-  MILHAO,
   num,
   numOuNulo,
   rotuloFoco,
@@ -101,7 +100,7 @@ describe('derivarOrcamento', () => {
 
   it('o pico é o default do teto de execução', () => {
     const e = estadoInicial()
-    expect(derivarOrcamento(e).pico).toBe(60)
+    expect(derivarOrcamento(e).pico).toBe(60_000_000)
   })
 
   it('no modo valor único, replica a verba pelo horizonte', () => {
@@ -210,10 +209,12 @@ describe('validar — o que bloqueia e o que só avisa', () => {
 })
 
 describe('corpoDaRodada', () => {
-  it('converte milhões para reais', () => {
+  it('o orçamento viaja em REAIS, sem fator no meio', () => {
+    // Era digitado em reais e multiplicado por 1e6 na saída. Agora a régua é uma
+    // só, e este teste impede o fator de voltar: 60 aqui seria R$ 60.
     const e = { ...estadoInicial(), unidadeId: 'u1' }
     const corpo = corpoDaRodada(e)
-    expect(corpo.orcamento?.['2026']).toBe(60 * MILHAO)
+    expect(corpo.orcamento?.['2026']).toBe(60_000_000)
   })
 
   it('só manda anos COM verba no cronograma', () => {
@@ -263,7 +264,7 @@ describe('corpoDaRodada', () => {
     const e = { ...estadoInicial(), unidadeId: 'u1', modoOrcamento: 'unico' as const }
     const corpo = corpoDaRodada(e)
     expect(corpo.orcamento).toBeUndefined()
-    expect(corpo.orcamento_anual).toBe(50 * MILHAO)
+    expect(corpo.orcamento_anual).toBe(50_000_000)
     expect(corpo.horizonte_capex).toBe(8)
   })
 
